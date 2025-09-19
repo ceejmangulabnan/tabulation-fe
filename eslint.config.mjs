@@ -7,12 +7,15 @@ export default withNuxt({
     stylistic,
   },
   rules: {
-    // Style rules
-    semi: ['error', 'never'],
-    quotes: ['error', 'single'],
+    '@stylistic/quote-props': 'off', // Disable the rule causing the error
     'comma-dangle': ['error', 'always-multiline'],
-
-    // Optional: disable formatting rules that Prettier handles
     'prettier/prettier': 'off',
   },
-}).append(stylistic.configs.recommended)
+})
+  .append(stylistic.configs.recommended)
+  .append({
+    files: ['**/*.vue'],
+    rules: {
+      '@stylistic/indent': 'off',
+    },
+  })

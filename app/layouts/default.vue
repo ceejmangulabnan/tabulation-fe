@@ -1,9 +1,5 @@
 <template>
   <v-app id="inspire">
-    <v-navigation-drawer v-model="drawer">
-      <!-- Drawer content goes here -->
-    </v-navigation-drawer>
-
     <v-app-bar>
       <v-app-bar-nav-icon @click="drawer = !drawer" />
       <v-app-bar-title>Tabulation System</v-app-bar-title>
@@ -12,6 +8,15 @@
         <v-btn icon="mdi-dots-vertical" />
       </template>
     </v-app-bar>
+
+    <v-navigation-drawer v-model="drawer">
+      <v-list-nav>
+        <NuxtLink to="/"><v-list-item>Home</v-list-item></NuxtLink>
+        <NuxtLink to="/dashboard">
+          <v-list-item>Dashboard</v-list-item>
+        </NuxtLink>
+      </v-list-nav>
+    </v-navigation-drawer>
 
     <v-main>
       <v-container fluid>
@@ -25,8 +30,8 @@
   </v-app>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+  import { ref } from 'vue'
 
-const drawer = ref(false) // Default value for the drawer
+  const drawer = ref(false)
 </script>
