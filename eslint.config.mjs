@@ -1,11 +1,13 @@
-import stylistic from '@stylistic/eslint-plugin'
-import withNuxt from './.nuxt/eslint.config.mjs'
+import stylistic from "@stylistic/eslint-plugin";
+import withNuxt from "./.nuxt/eslint.config.mjs";
 
 export default withNuxt({
+  extends: [
+    "plugin:prettier/recommended", // Automatically turns off rules that conflict with Prettier
+  ],
   rules: {
-    // Your rules here
-  }
-}).append(
-  // Use stylistic as ES module instead of requiring it
-  stylistic.configs.recommended
-)
+    semi: ["error", "never"],
+
+    "comma-dangle": ["error", "always-multiline"],
+  },
+}).append(stylistic.configs.recommended);
