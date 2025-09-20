@@ -1,18 +1,11 @@
 <template>
-  <v-app id="inspire" :theme="theme.global.name.value">
+  <v-app id="inspire">
     <v-app-bar>
       <v-app-bar-nav-icon @click="drawer = !drawer" />
-      <v-app-bar-title>Tabulation System</v-app-bar-title>
+      <v-app-bar-title>Dashboard Layout</v-app-bar-title>
 
       <template #append>
-        <div class="px-4">
-          <v-icon
-            :icon="
-              theme.global.current.value.dark ? 'mdi-weather-night' : 'mdi-white-balance-sunny'
-            "
-            @click="theme.toggle()"
-          />
-        </div>
+        <v-btn icon="mdi-dots-vertical" />
       </template>
     </v-app-bar>
 
@@ -33,12 +26,6 @@
 
 <script setup lang="ts">
   import { ref } from 'vue'
-  import { useTheme } from 'vuetify'
 
   const drawer = ref(false)
-  const theme = useTheme()
-
-  function toggleTheme() {
-    theme.toggle()
-  }
 </script>
