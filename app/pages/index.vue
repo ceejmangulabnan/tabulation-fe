@@ -1,21 +1,12 @@
 <script setup lang="ts">
-const count = ref(0)
-
-function increment() {
-  count.value++
-}
+  definePageMeta({
+    layout: 'landing',
+  })
 </script>
 
 <template>
-  <div class="p-top">
-    Hello World
-    {{ count }}
-    <button @click="increment">Increment Count</button>
+  <div class="d-flex align-center justify-between ga-10">
+    <AuthRegisterForm />
+    <AuthLoginForm />
   </div>
 </template>
-
-<style>
-.p-top {
-  padding-top: 10rem;
-}
-</style>

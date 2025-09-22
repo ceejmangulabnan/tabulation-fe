@@ -1,20 +1,23 @@
 <template>
-  <v-app id="inspire">
+  <v-app id="inspire" :theme="theme">
     <v-app-bar>
       <v-app-bar-nav-icon @click="drawer = !drawer" />
       <v-app-bar-title>Tabulation System</v-app-bar-title>
 
       <template #append>
-        <v-btn icon="mdi-dots-vertical" />
+        <div class="px-4">
+          <v-icon
+            :icon="theme === 'dark' ? 'mdi-weather-night' : 'mdi-white-balance-sunny'"
+            @click="toggleTheme"
+          />
+        </div>
       </template>
     </v-app-bar>
 
     <v-navigation-drawer v-model="drawer">
       <v-list-nav>
-        <NuxtLink to="/"><v-list-item>Home</v-list-item></NuxtLink>
-        <NuxtLink to="/dashboard">
-          <v-list-item>Dashboard</v-list-item>
-        </NuxtLink>
+        <v-list-item to="/">Home</v-list-item>
+        <v-list-item to="/dashboard">Dashboard</v-list-item>
       </v-list-nav>
     </v-navigation-drawer>
 
@@ -34,4 +37,9 @@
   import { ref } from 'vue'
 
   const drawer = ref(false)
+  const theme = ref('dark')
+
+  function toggleTheme() {
+    theme.value = theme.value === 'dark' ? 'light' : 'dark'
+  }
 </script>
