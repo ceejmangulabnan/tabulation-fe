@@ -15,15 +15,22 @@
     "@strapi/client": "^1.5.0",
     "eslint": "^9.35.0",
     "nuxt": "^4.1.1",
+    "nuxt-auth-utils": "0.5.25",
     "vue": "^3.5.21",
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^5.3.1",
+    "@types/node": "^24.5.2",
+    "@typescript-eslint/eslint-plugin": "^8.44.1",
+    "@typescript-eslint/parser": "^8.44.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
     "vite-plugin-vuetify": "^2.1.2",
+    "vue-tsc": "^3.0.8",
     "vuetify": "^3.10.0"
-  }
+  },
+  "packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67"
 }

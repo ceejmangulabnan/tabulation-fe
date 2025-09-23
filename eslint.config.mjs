@@ -20,13 +20,10 @@ export default withNuxt({
     // run Prettier inside ESLint
     'prettier/prettier': 'error',
   },
+}).append({
+  files: ['**/*.vue'],
+  rules: {
+    '@stylistic/indent': 'off',
+    '@stylistic/brace-style': 'off', // explicitly off
+  },
 })
-  // remove stylistic recommended formatting (let Prettier own it)
-  // .append(stylistic.configs.recommended) ❌ REMOVE THIS
-  .append({
-    files: ['**/*.vue'],
-    rules: {
-      '@stylistic/indent': 'off',
-      '@stylistic/brace-style': 'off', // explicitly off
-    },
-  })

@@ -5,7 +5,7 @@
 </script>
 
 <template>
-  <div class="d-flex align-center justify-between ga-10">
+  <div class="d-flex align-stretch justify-between ga-10">
     <AuthRegisterForm />
     <AuthLoginForm />
   </div>

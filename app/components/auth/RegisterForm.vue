@@ -1,21 +1,24 @@
 <template>
-  <v-card width="400" class="py-4">
+  <v-card width="400" class="py-4 h-100">
     <v-card-item>
       <v-card-title class="text-center">Register</v-card-title>
-      <v-card-text class="py-4 gap-10">
-        <v-form @submit.prevent="register">
-          <v-text-field ref="usernameField" v-model="username" focused label="Username" />
-          <v-text-field v-model="email" label="Email" />
-          <v-text-field v-model="password" label="Password" type="password" />
-          <v-btn type="submit" variant="elevated" block>Submit</v-btn>
-        </v-form>
-
+      <v-card-text class="py-4 h-100 d-flex flex-column">
+        <div v-if="!result && !errorMsg">
+          <v-form class="h-100 d-flex flex-column" @submit.prevent="register">
+            <div>
+              <v-text-field v-model="username" focused label="Username" />
+              <v-text-field v-model="email" label="Email" />
+              <v-text-field v-model="password" label="Password" type="password" />
+            </div>
+            <div class="flex-grow-1"></div>
+            <v-btn type="submit" variant="elevated" block>Submit</v-btn>
+          </v-form>
+        </div>
         <div v-if="result">
           ✅ Registered User {{ result.user.username }}
           <br />
           🔑 JWT Generated
         </div>
-
         <div v-if="errorMsg" style="color: red">❌ {{ errorMsg }}</div>
       </v-card-text>
     </v-card-item>
@@ -28,8 +31,6 @@
   const password = ref('')
   const errorMsg = ref()
   const result = ref()
-
-  const usernameField = ref()
 
   async function register() {
     try {

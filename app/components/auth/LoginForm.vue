@@ -1,27 +1,33 @@
 <template>
-  <v-card width="400" class="py-4">
+  <v-card width="400" class="py-4 d-flex flex-column">
     <v-card-item>
       <v-card-title class="text-center">Login</v-card-title>
-      <v-card-text class="py-4 gap-10">
-        <v-form @submit.prevent="login">
-          <v-text-field ref="usernameField" v-model="username" focused label="Username" />
-          <v-text-field v-model="password" label="Password" type="password" />
-          <v-btn type="submit" variant="elevated" block>Submit</v-btn>
-        </v-form>
+    </v-card-item>
 
-        <div v-if="result">
-          ✅ Registered Usere{{ result.user.username }}
-          <br />
-          🔑 JWT Generated
+    <v-card-text class="d-flex flex-column flex-grow-1">
+      <v-form class="d-flex flex-column flex-grow-1 justify-space-between" @submit.prevent="login">
+        <div>
+          <v-text-field ref="usernameField" v-model="username" label="Username" />
+          <v-text-field v-model="password" label="Password" type="password" />
         </div>
 
-        <div v-if="errorMsg" style="color: red">❌ {{ errorMsg }}</div>
-      </v-card-text>
-    </v-card-item>
+        <v-btn class="mt-4 flex-grow-0" type="submit" variant="elevated" block>Submit</v-btn>
+      </v-form>
+
+      <div v-if="result" class="mt-4">
+        ✅ Registered User {{ result.user.username }}
+        <br />
+        🔑 JWT Generated
+      </div>
+
+      <div v-if="errorMsg" class="mt-2" style="color: red">❌ {{ errorMsg }}</div>
+    </v-card-text>
   </v-card>
 </template>
 
 <script setup lang="ts">
+  const { loggedIn, session, user } = useUserSession()
+  console.log(loggedIn, session, user)
   const username = ref('')
   const password = ref('')
   const errorMsg = ref()
@@ -31,7 +37,7 @@
 
   async function login() {
     try {
-      result.value = await $fetch('/api/auth/local', {
+      result.value = await $fetch('/api/auth/login', {
         method: 'POST',
         body: {
           identifier: username.value,
@@ -45,5 +51,9 @@
 
   watch(result, () => {
     console.log(result.value)
+  })
+
+  watch(loggedIn, () => {
+    console.log(loggedIn.value)
   })
 </script>
