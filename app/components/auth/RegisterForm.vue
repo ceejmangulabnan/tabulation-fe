@@ -14,11 +14,6 @@
             <v-btn type="submit" variant="elevated" block>Submit</v-btn>
           </v-form>
         </div>
-        <div v-if="result">
-          ✅ Registered User {{ result.user.username }}
-          <br />
-          🔑 JWT Generated
-        </div>
         <div v-if="errorMsg" style="color: red">❌ {{ errorMsg }}</div>
       </v-card-text>
     </v-card-item>
@@ -26,6 +21,7 @@
 </template>
 
 <script setup lang="ts">
+  const emit = defineEmits(['success'])
   const username = ref('')
   const email = ref('')
   const password = ref('')
@@ -42,12 +38,9 @@
           password: password.value,
         },
       })
+      emit('success')
     } catch (error) {
       errorMsg.value = error?.data?.error?.message || 'Registration failed'
     }
   }
-
-  watch(result, () => {
-    console.log(result.value)
-  })
 </script>

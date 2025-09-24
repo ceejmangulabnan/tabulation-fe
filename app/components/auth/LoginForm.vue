@@ -14,18 +14,13 @@
         <v-btn class="mt-4 flex-grow-0" type="submit" variant="elevated" block>Submit</v-btn>
       </v-form>
 
-      <div v-if="result" class="mt-4">
-        ✅ Registered User {{ result.user.username }}
-        <br />
-        🔑 JWT Generated
-      </div>
-
       <div v-if="errorMsg" class="mt-2" style="color: red">❌ {{ errorMsg }}</div>
     </v-card-text>
   </v-card>
 </template>
 
 <script setup lang="ts">
+  const emit = defineEmits(['success'])
   const { loggedIn } = useUserSession()
   const username = ref('')
   const password = ref('')
@@ -43,16 +38,9 @@
           password: password.value,
         },
       })
+      emit('success')
     } catch (error) {
       errorMsg.value = error?.data?.error?.message || 'Login failed'
     }
   }
-
-  watch(result, () => {
-    console.log('Login Response on Form', result.value)
-  })
-
-  watch(loggedIn, () => {
-    console.log(loggedIn.value)
-  })
 </script>
