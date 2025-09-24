@@ -26,8 +26,7 @@
 </template>
 
 <script setup lang="ts">
-  const { loggedIn, session, user } = useUserSession()
-  console.log(loggedIn, session, user)
+  const { loggedIn } = useUserSession()
   const username = ref('')
   const password = ref('')
   const errorMsg = ref()
@@ -50,7 +49,7 @@
   }
 
   watch(result, () => {
-    console.log(result.value)
+    console.log('Login Response on Form', result.value)
   })
 
   watch(loggedIn, () => {

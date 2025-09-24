@@ -6,7 +6,7 @@
         <div v-if="!result && !errorMsg">
           <v-form class="h-100 d-flex flex-column" @submit.prevent="register">
             <div>
-              <v-text-field v-model="username" focused label="Username" />
+              <v-text-field v-model="username" label="Username" />
               <v-text-field v-model="email" label="Email" />
               <v-text-field v-model="password" label="Password" type="password" />
             </div>
