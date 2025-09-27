@@ -17,10 +17,17 @@
     </v-app-bar>
 
     <v-navigation-drawer v-model="drawer">
-      <v-list-nav>
-        <v-list-item to="/">Home</v-list-item>
-        <v-list-item to="/dashboard">Dashboard</v-list-item>
-      </v-list-nav>
+      <v-list>
+        <v-list-item to="/">
+          <v-list-item-title>Home</v-list-item-title>
+        </v-list-item>
+        <v-list-item to="/dashboard">
+          <v-list-item-title>Dashboard</v-list-item-title>
+        </v-list-item>
+      </v-list>
+      <template #append>
+        <v-btn block :rounded="false" class="bg-red" @click="logout">Logout</v-btn>
+      </template>
     </v-navigation-drawer>
 
     <v-main>
@@ -32,14 +39,17 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue'
-  import { useTheme } from 'vuetify'
-
   const drawer = ref(false)
   const theme = useTheme()
+  const { clear } = useUserSession()
 
   function toggleTheme() {
     // theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark'
     theme.toggle(['dark', 'light'])
+  }
+
+  async function logout() {
+    await clear() // clear session
+    await navigateTo('/') // redirect to landing page
   }
 </script>

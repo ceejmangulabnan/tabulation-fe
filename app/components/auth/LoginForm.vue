@@ -21,7 +21,6 @@
 
 <script setup lang="ts">
   const emit = defineEmits(['success'])
-  const { loggedIn } = useUserSession()
   const username = ref('')
   const password = ref('')
   const errorMsg = ref()

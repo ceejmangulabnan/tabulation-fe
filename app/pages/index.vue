@@ -30,6 +30,7 @@
   }
 
   async function onAuthSuccess() {
-    await navigateTo('/dashboard')
+    await useUserSession().fetch()
+    navigateTo('/dashboard')
   }
 </script>
