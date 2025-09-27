@@ -10,7 +10,7 @@
             :icon="
               theme.global.current.value.dark ? 'mdi-weather-night' : 'mdi-white-balance-sunny'
             "
-            @click="theme.toggle()"
+            @click="toggleTheme"
           />
         </div>
       </template>
@@ -39,6 +39,7 @@
   const theme = useTheme()
 
   function toggleTheme() {
-    theme.toggle()
+    // theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark'
+    theme.toggle(['dark', 'light'])
   }
 </script>

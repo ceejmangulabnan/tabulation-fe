@@ -1,7 +1,7 @@
 <template>
   <v-app :theme="theme.global.name.value">
     <div class="position-absolute top-0 right-0 pa-4">
-      <v-btn
+      <v-icon
         :icon="theme.global.current.value.dark ? 'mdi-weather-night' : 'mdi-white-balance-sunny'"
         variant="text"
         @click="toggleTheme"
@@ -19,6 +19,7 @@
   const theme = useTheme()
 
   function toggleTheme() {
-    theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark'
+    // theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark'
+    theme.toggle(['dark', 'light'])
   }
 </script>
