@@ -15,7 +15,7 @@ export default withNuxt({
     ...eslintConfigPrettier.rules,
 
     // keep logical rules if you want
-    'comma-dangle': ['error', 'always-multiline'],
+    // 'comma-dangle': ['error', 'always-multiline'],
 
     // run Prettier inside ESLint
     'prettier/prettier': 'error',

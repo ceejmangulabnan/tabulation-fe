@@ -12,7 +12,7 @@ export default defineNuxtConfig({
 
     // Public environment variables (exposed to client)
     public: {
-      strapiUrl: process.env.NUXT_STRAPI_URL || 'http://localhost:1337',
+      strapiUrl: process.env.NUXT_PUBLIC_STRAPI_URL || 'http://localhost:1337',
     },
   },
 })

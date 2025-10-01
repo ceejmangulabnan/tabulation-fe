@@ -8,5 +8,6 @@
   "htmlWhitespaceSensitivity": "ignore",
   "vueIndentScriptAndStyle": true,
   "bracketSameLine": false,
-  "singleAttributePerLine": false
+  "singleAttributePerLine": false,
+  "endOfLine": "auto"
 }

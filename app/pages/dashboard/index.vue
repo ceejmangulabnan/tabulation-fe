@@ -6,5 +6,8 @@
 </script>
 
 <template>
-  <div>Dashboard</div>
+  <div>
+    Dashboard
+    <DashboardDataTable />
+  </div>
 </template>
