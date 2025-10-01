@@ -4,7 +4,7 @@ export default defineNuxtConfig({
   build: {
     transpile: ['vuetify'],
   },
-  modules: ['@nuxt/eslint', 'vuetify-nuxt-module', 'nuxt-auth-utils'],
+  modules: ['@nuxt/eslint', 'vuetify-nuxt-module', 'nuxt-auth-utils', '@pinia/nuxt'],
   runtimeConfig: {
     // Server-side environment variables
     authSecret: process.env.NUXT_AUTH_SECRET,
