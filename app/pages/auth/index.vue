@@ -21,7 +21,7 @@
 <script setup lang="ts">
   definePageMeta({
     layout: 'landing',
-    middleware: 'guest'
+    middleware: 'guest',
   })
 
   const formType = ref('login')
@@ -30,8 +30,7 @@
     formType.value = type
   }
 
-  async function onAuthSuccess() {
-    await useUserSession().fetch()
+  function onAuthSuccess() {
     navigateTo('/dashboard')
   }
 </script>

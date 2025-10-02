@@ -3,7 +3,7 @@
     <v-card-item>
       <v-card-title class="text-center">Register</v-card-title>
       <v-card-text class="py-4 h-100 d-flex flex-column">
-        <div v-if="!result && !errorMsg">
+        <div v-if="!errorMsg">
           <v-form class="h-100 d-flex flex-column" @submit.prevent="register">
             <div>
               <v-text-field v-model="username" label="Username" />
@@ -11,7 +11,9 @@
               <v-text-field v-model="password" label="Password" type="password" />
             </div>
             <div class="flex-grow-1"></div>
-            <v-btn type="submit" variant="elevated" block>Submit</v-btn>
+            <v-btn type="submit" variant="elevated" block :loading="authStore.isLoading">
+              Submit
+            </v-btn>
           </v-form>
         </div>
         <div v-if="errorMsg" style="color: red">❌ {{ errorMsg }}</div>
@@ -21,26 +23,22 @@
 </template>
 
 <script setup lang="ts">
+  import { useAuthStore } from '~/stores/auth'
+
   const emit = defineEmits(['success'])
+  const authStore = useAuthStore()
+
   const username = ref('')
   const email = ref('')
   const password = ref('')
-  const errorMsg = ref()
-  const result = ref()
+  const errorMsg = ref<string | null>(null)
 
   async function register() {
     try {
-      result.value = await $fetch('/api/auth/local/register', {
-        method: 'POST',
-        body: {
-          username: username.value,
-          email: email.value,
-          password: password.value,
-        },
-      })
+      await authStore.register(username.value, email.value, password.value)
       emit('success')
-    } catch (error) {
-      errorMsg.value = error?.data?.error?.message || 'Registration failed'
+    } catch (error: any) {
+      errorMsg.value = error.response?.data?.message || 'Registration failed'
     }
   }
 </script>

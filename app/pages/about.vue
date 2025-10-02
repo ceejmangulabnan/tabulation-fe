@@ -1,15 +1,10 @@
 <template>
-  <div>
-
-  </div>
+  <div></div>
 </template>
 
 <script setup>
-const hello = ref("")
-  const wolrd = ref("")
-
+  const hello = ref('')
+  const wolrd = ref('')
 </script>
 
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>

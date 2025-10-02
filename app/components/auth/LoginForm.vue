@@ -11,7 +11,15 @@
           <v-text-field v-model="password" label="Password" type="password" />
         </div>
 
-        <v-btn class="mt-4 flex-grow-0" type="submit" variant="elevated" block>Submit</v-btn>
+        <v-btn
+          class="mt-4 flex-grow-0"
+          type="submit"
+          variant="elevated"
+          block
+          :loading="authStore.isLoading"
+        >
+          Submit
+        </v-btn>
       </v-form>
 
       <div v-if="errorMsg" class="mt-2" style="color: red">❌ {{ errorMsg }}</div>
@@ -20,26 +28,23 @@
 </template>
 
 <script setup lang="ts">
+  import { useAuthStore } from '~/stores/auth'
+
   const emit = defineEmits(['success'])
+  const authStore = useAuthStore()
+
   const username = ref('')
   const password = ref('')
-  const errorMsg = ref()
-  const result = ref()
+  const errorMsg = ref<string | null>(null)
 
   const usernameField = ref()
 
   async function login() {
     try {
-      result.value = await $fetch('/api/auth/login', {
-        method: 'POST',
-        body: {
-          identifier: username.value,
-          password: password.value,
-        },
-      })
+      await authStore.login(username.value, password.value)
       emit('success')
     } catch (error) {
-      errorMsg.value = error?.data?.error?.message || 'Login failed'
+      errorMsg.value = error.response?.data?.message || 'Login failed'
     }
   }
 </script>

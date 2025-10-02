@@ -1,0 +1,117 @@
+// app/stores/auth.ts
+import { defineStore } from 'pinia'
+import type { AuthState, StrapiUser, AuthResponse } from '#shared/types/auth'
+import { useStrapiApi } from '~/composables/useStrapiApi'
+
+const JWT_COOKIE_NAME = 'strapi_jwt'
+
+export const useAuthStore = defineStore('auth', {
+  state: (): AuthState => ({
+    user: null,
+    jwt: null,
+    isLoading: false,
+  }),
+
+  getters: {
+    isAuthenticated: (state): boolean => !!state.jwt && !!state.user,
+    token: (state): string | null => state.jwt,
+    userInfo: (state): StrapiUser | null => state.user,
+  },
+
+  actions: {
+    async login(identifier: string, password: string): Promise<StrapiUser> {
+      this.isLoading = true
+      try {
+        const api = useStrapiApi()
+        const response = await api.post<AuthResponse>('/auth/local', {
+          identifier,
+          password,
+        })
+
+        const { jwt, user } = response.data
+
+        this.jwt = jwt
+        this.user = user
+
+        const tokenCookie = useCookie<string | null>(JWT_COOKIE_NAME, { maxAge: 60 * 60 * 24 * 7 })
+        tokenCookie.value = jwt
+
+        return user
+      } catch (error) {
+        this.user = null
+        this.jwt = null
+
+        // Let caller handle auth error
+        return Promise.reject(error)
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async register(username: string, email: string, password: string): Promise<StrapiUser> {
+      this.isLoading = true
+      try {
+        const api = useStrapiApi()
+        const response = await api.post<AuthResponse>('/auth/local/register', {
+          username,
+          email,
+          password,
+        })
+
+        const { jwt, user } = response.data
+
+        this.jwt = jwt
+        this.user = user
+
+        const tokenCookie = useCookie<string | null>(JWT_COOKIE_NAME, { maxAge: 60 * 60 * 24 * 7 })
+        tokenCookie.value = jwt
+
+        return user
+      } catch (error) {
+        this.user = null
+        this.jwt = null
+        return Promise.reject(error)
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    logout(): void {
+      this.user = null
+      this.jwt = null
+
+      const tokenCookie = useCookie<string | null>(JWT_COOKIE_NAME)
+      tokenCookie.value = null
+
+      useRouter().push('/auth')
+    },
+
+    async initializeAuth(): Promise<void> {
+      if (this.isAuthenticated) return
+
+      const tokenCookie = useCookie<string | null>(JWT_COOKIE_NAME)
+      const storedToken = tokenCookie.value
+
+      if (storedToken) {
+        this.jwt = storedToken
+        await this.fetchUser()
+      }
+    },
+
+    // Validate token and fetch user
+    async fetchUser(): Promise<void> {
+      this.isLoading = true
+      try {
+        const api = useStrapiApi()
+        const response = await api.get<StrapiUser>('/users/me')
+        this.user = response.data
+      } catch (error) {
+        // If token is invalid/expired
+        console.error('User token is invalid, refresh failed', error)
+        this.logout()
+      } finally {
+        this.isLoading = false
+      }
+    },
+  },
+})

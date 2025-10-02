@@ -26,7 +26,7 @@
         </v-list-item>
       </v-list>
       <template #append>
-        <v-btn block :rounded="false" class="bg-red" @click="logout">Logout</v-btn>
+        <v-btn block :rounded="false" class="bg-red" @click="authStore.logout()">Logout</v-btn>
       </template>
     </v-navigation-drawer>
 
@@ -41,15 +41,10 @@
 <script setup lang="ts">
   const drawer = ref(false)
   const theme = useTheme()
-  const { clear } = useUserSession()
+  const authStore = useAuthStore()
 
   function toggleTheme() {
     // theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark'
     theme.toggle(['dark', 'light'])
-  }
-
-  async function logout() {
-    await clear() // clear session
-    await navigateTo('/') // redirect to landing page
   }
 </script>
