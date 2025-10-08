@@ -1,5 +1,5 @@
 <template>
-  <v-app id="inspire" :theme="theme.global.name.value">
+  <v-app id="inspire" :theme="theme.current">
     <v-app-bar>
       <v-app-bar-nav-icon @click="drawer = !drawer" />
       <v-app-bar-title>Tabulation System</v-app-bar-title>
@@ -7,9 +7,7 @@
       <template #append>
         <div class="px-4">
           <v-icon
-            :icon="
-              theme.global.current.value.dark ? 'mdi-weather-night' : 'mdi-white-balance-sunny'
-            "
+            :icon="theme.current == 'light' ? 'mdi-weather-night' : 'mdi-white-balance-sunny'"
             @click="toggleTheme"
           />
         </div>
@@ -40,11 +38,12 @@
 
 <script setup lang="ts">
   const drawer = ref(false)
-  const theme = useTheme()
+  // const theme = useTheme()
   const authStore = useAuthStore()
+  const theme = useThemeStore()
 
   function toggleTheme() {
     // theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark'
-    theme.toggle(['dark', 'light'])
+    theme.toggle()
   }
 </script>

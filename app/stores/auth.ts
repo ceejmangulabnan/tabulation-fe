@@ -76,12 +76,14 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    logout(): void {
+    async logout() {
       this.user = null
       this.jwt = null
 
       const tokenCookie = useCookie<string | null>(JWT_COOKIE_NAME)
       tokenCookie.value = null
+
+      await navigateTo('/')
     },
 
     async initializeAuth(): Promise<void> {

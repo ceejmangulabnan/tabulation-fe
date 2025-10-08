@@ -7,7 +7,6 @@
 
 <template>
   <div>
-    Dashboard
     <DashboardDataTable />
   </div>
 </template>
