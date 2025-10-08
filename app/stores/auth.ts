@@ -82,8 +82,6 @@ export const useAuthStore = defineStore('auth', {
 
       const tokenCookie = useCookie<string | null>(JWT_COOKIE_NAME)
       tokenCookie.value = null
-
-      useRouter().push('/auth')
     },
 
     async initializeAuth(): Promise<void> {
