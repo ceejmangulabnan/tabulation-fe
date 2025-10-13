@@ -10,11 +10,9 @@ export const useThemeStore = defineStore('theme', {
     setTheme(theme: 'light' | 'dark') {
       this.current = theme
 
-      // persist to cookie
       const cookie = useCookie<'light' | 'dark'>('theme', { path: '/', maxAge: 60 * 60 * 24 * 365 })
       cookie.value = theme
 
-      // update Vuetify
       const { $vuetify } = useNuxtApp()
       if ($vuetify?.theme?.global?.name) {
         $vuetify.theme.global.name.value = theme

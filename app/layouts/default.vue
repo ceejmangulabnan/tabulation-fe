@@ -8,7 +8,7 @@
         <div class="px-4">
           <v-icon
             :icon="theme.current == 'light' ? 'mdi-weather-night' : 'mdi-white-balance-sunny'"
-            @click="toggleTheme"
+            @click="theme.toggle()"
           />
         </div>
       </template>
@@ -38,12 +38,6 @@
 
 <script setup lang="ts">
   const drawer = ref(false)
-  // const theme = useTheme()
   const authStore = useAuthStore()
   const theme = useThemeStore()
-
-  function toggleTheme() {
-    // theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark'
-    theme.toggle()
-  }
 </script>

@@ -1,10 +1,10 @@
 <template>
-  <v-app :theme="theme.global.name.value">
+  <v-app :theme="theme.current">
     <div class="position-absolute top-0 right-0 pa-4">
       <v-icon
-        :icon="theme.global.current.value.dark ? 'mdi-weather-night' : 'mdi-white-balance-sunny'"
+        :icon="theme.current == 'light' ? 'mdi-weather-night' : 'mdi-white-balance-sunny'"
         variant="text"
-        @click="toggleTheme"
+        @click="theme.toggle()"
       />
     </div>
     <v-main class="d-flex align-center justify-center" style="min-height: 100vh">
@@ -14,12 +14,5 @@
 </template>
 
 <script setup lang="ts">
-  import { useTheme } from 'vuetify'
-
-  const theme = useTheme()
-
-  function toggleTheme() {
-    // theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark'
-    theme.toggle(['dark', 'light'])
-  }
+  const theme = useThemeStore()
 </script>
