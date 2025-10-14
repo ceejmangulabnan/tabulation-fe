@@ -7,7 +7,11 @@
         @click="theme.toggle()"
       />
     </div>
-    <v-main class="d-flex align-center justify-center" style="min-height: 100vh">
+    <v-main
+      class="d-flex align-center justify-center"
+      style="min-height: 100vh"
+      :class="{ 'light-bg': theme.current === 'light' }"
+    >
       <slot />
     </v-main>
   </v-app>
@@ -19,7 +23,7 @@
 
 <style scoped>
   .light-bg {
-    background: #00d118;
-    background: radial-gradient(circle, rgba(0, 209, 24, 1) 0%, rgba(43, 143, 30, 1) 100%);
+    background: #00c251;
+    background: radial-gradient(circle, rgba(0, 194, 81, 1) 0%, rgba(128, 245, 2, 1) 100%);
   }
 </style>

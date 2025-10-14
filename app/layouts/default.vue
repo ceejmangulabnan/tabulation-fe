@@ -2,7 +2,7 @@
   <v-app id="inspire" :theme="theme.current">
     <v-app-bar>
       <v-app-bar-nav-icon @click="drawer = !drawer" />
-      <v-app-bar-title>Tabulation System</v-app-bar-title>
+      <v-app-bar-title class="font-weight-bold">SNC Tabulation</v-app-bar-title>
 
       <template #append>
         <div class="px-4">
