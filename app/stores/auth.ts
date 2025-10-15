@@ -103,7 +103,7 @@ export const useAuthStore = defineStore('auth', {
       this.isLoading = true
       try {
         const api = useStrapiApi()
-        const response = await api.get<StrapiUser>('/users/me')
+        const response = await api.get<StrapiUser>('/users/me?populate=*')
         this.user = response.data
       } catch (error) {
         // If token is invalid/expired

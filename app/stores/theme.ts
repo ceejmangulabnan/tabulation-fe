@@ -15,7 +15,7 @@ export const useThemeStore = defineStore('theme', {
 
       const { $vuetify } = useNuxtApp()
       if ($vuetify?.theme?.global?.name) {
-        $vuetify.theme.global.name.value = theme
+        $vuetify.theme.change(theme)
       }
     },
 
