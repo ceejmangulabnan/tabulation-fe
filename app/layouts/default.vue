@@ -16,6 +16,15 @@
 
     <v-navigation-drawer v-model="drawer">
       <v-list>
+        <v-list-item
+          :subtitle="authStore.user?.email"
+          :title="authStore.user?.username"
+        ></v-list-item>
+      </v-list>
+
+      <v-divider></v-divider>
+
+      <v-list>
         <v-list-item to="/">
           <v-list-item-title>Home</v-list-item-title>
         </v-list-item>
