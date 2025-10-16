@@ -55,7 +55,8 @@
       await authStore.login(username.value, password.value)
       emit('success')
     } catch (error) {
-      errorMsg.value = error.response?.data?.message || 'Login failed'
+      const err = error as { response?: { data?: { message?: string } } }
+      errorMsg.value = err.response?.data?.message || 'Login failed'
     }
   }
 </script>

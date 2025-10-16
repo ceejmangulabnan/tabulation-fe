@@ -27,4 +27,5 @@ export interface AuthState {
   user: StrapiUser | null
   jwt: string | null
   isLoading: boolean
+  view?: 'admin' | 'judge' | null
 }

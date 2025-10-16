@@ -10,6 +10,7 @@ export const useAuthStore = defineStore('auth', {
     user: null,
     jwt: null,
     isLoading: false,
+    view: null,
   }),
 
   getters: {
@@ -105,6 +106,8 @@ export const useAuthStore = defineStore('auth', {
         const api = useStrapiApi()
         const response = await api.get<StrapiUser>('/users/me?populate=*')
         this.user = response.data
+
+        // Check role, assign view.
       } catch (error) {
         // If token is invalid/expired
         console.error('User token is invalid, refresh failed', error)

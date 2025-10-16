@@ -1,7 +1,7 @@
 <script setup lang="ts">
   definePageMeta({
     middleware: ['auth'],
-    layout: 'default',
+    layout: 'admin',
   })
   const authStore = useAuthStore()
   console.log('User', authStore.user)
@@ -9,6 +9,7 @@
 
 <template>
   <div>
+    Admin View
     <DashboardDataTable />
   </div>
 </template>
