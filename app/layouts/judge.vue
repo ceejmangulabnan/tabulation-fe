@@ -25,16 +25,6 @@
       <v-divider></v-divider>
 
       <v-list>
-        <v-list-item>
-          <v-btn>
-            Switch to {{ authStore.user?.userRole === 'admin' ? 'Judge' : 'Admin' }} View
-          </v-btn>
-        </v-list-item>
-      </v-list>
-
-      <v-divider></v-divider>
-
-      <v-list>
         <v-list-item to="/">
           <v-list-item-title>Home</v-list-item-title>
         </v-list-item>

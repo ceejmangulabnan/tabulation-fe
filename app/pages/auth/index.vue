@@ -45,7 +45,6 @@
     layout: 'landing',
     middleware: 'guest',
   })
-
   type Tab = 'Sign In' | 'Sign Up'
   const tabs: Tab[] = ['Sign In', 'Sign Up']
   const activeTab = ref<Tab>('Sign In')
@@ -58,7 +57,6 @@
   const underlineColor = computed(() => (theme.current === 'dark' ? 'white' : 'black'))
 
   function onAuthSuccess() {
-    navigateTo('/dashboard')
+    navigateTo('/admin/dashboard')
   }
 </script>
-
