@@ -7,8 +7,6 @@
 <script setup lang="ts">
   type EventsResponse = StrapiListResponse<EventData>
   const events = ref<EventData[]>([])
-  // const config = useRuntimeConfig()
-  // const baseApiUrl = config.public.strapiUrl
   const tableHeaders = [
     {
       title: 'Name',

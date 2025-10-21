@@ -38,7 +38,7 @@
         <v-list-item to="/">
           <v-list-item-title>Home</v-list-item-title>
         </v-list-item>
-        <v-list-item to="/dashboard">
+        <v-list-item to="/admin/dashboard">
           <v-list-item-title>Dashboard</v-list-item-title>
         </v-list-item>
       </v-list>

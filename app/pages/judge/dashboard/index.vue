@@ -5,7 +5,6 @@
   })
   const authStore = useAuthStore()
 
-  console.log('Event', events.data)
   console.log('User', authStore.user)
 </script>
 
