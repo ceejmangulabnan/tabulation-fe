@@ -11,7 +11,6 @@
 <template>
   <div>
     <div class="bg-yellow text-black text-center">Judge View</div>
-    <!-- <DashboardDataTable /> -->
     <EventList />
   </div>
 </template>

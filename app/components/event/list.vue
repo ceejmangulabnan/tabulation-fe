@@ -1,22 +1,16 @@
 <template>
   <div>
-    <v-data-table :headers="tableHeaders" :items="events"></v-data-table>
+    <v-row no-gutters>
+      <v-col v-for="(event, i) in events" :key="i" cols="12" sm="6" md="4">
+        <EventCard :event="event" />
+      </v-col>
+    </v-row>
   </div>
 </template>
 
 <script setup lang="ts">
   type EventsResponse = StrapiListResponse<EventData>
   const events = ref<EventData[]>([])
-  const tableHeaders = [
-    {
-      title: 'Name',
-      key: 'name',
-    },
-    {
-      title: 'Description',
-      key: 'description',
-    },
-  ]
 
   try {
     const api = useStrapiApi()
