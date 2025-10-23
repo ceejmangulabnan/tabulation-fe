@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-row no-gutters>
-      <v-col v-for="(event, i) in events" :key="i" cols="12" sm="6" md="4">
+      <v-col v-for="(event, i) in events" :key="i" cols="12" sm="6" md="4" class="d-flex">
         <EventCard :event="event" />
       </v-col>
     </v-row>
