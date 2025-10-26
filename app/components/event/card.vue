@@ -8,7 +8,7 @@
     </v-card-text>
     <v-spacer></v-spacer>
     <v-card-actions class="d-flex ml-auto">
-      <v-btn @click="register" variant="tonal">Register</v-btn>
+      <v-btn variant="tonal" @click="register">Register</v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -24,7 +24,7 @@
       const api = useStrapiApi()
       const response = await api.post('/register-requests', {
         data: {
-          approved: false,
+          request_status: 'pending',
           judge: authStore.user?.id,
           event: event.id,
         },

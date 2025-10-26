@@ -61,6 +61,22 @@ export interface HeadshotData extends StrapiPopulatedItem {
   url: string
 }
 
+export interface JudgeData extends StrapiPopulatedItem {
+  name: string
+  event: EventData
+  users_permissions_user: {
+    id: number
+    username: string
+    email: string
+  }
+}
+
+export interface JudgeRequestData extends StrapiPopulatedItem {
+  event: EventData
+  judge: JudgeData
+  request_status: 'approved' | 'pending' | 'rejected'
+}
+
 // --- Participant Types ---
 export interface StrapiMinimalParticipant extends StrapiPopulatedItem {
   name: string

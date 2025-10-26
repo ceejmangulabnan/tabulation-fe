@@ -41,6 +41,9 @@
         <v-list-item to="/admin/dashboard">
           <v-list-item-title>Dashboard</v-list-item-title>
         </v-list-item>
+        <v-list-item to="/admin/events">
+          <v-list-item-title>Events</v-list-item-title>
+        </v-list-item>
       </v-list>
       <template #append>
         <v-btn block :rounded="false" class="bg-red" @click="authStore.logout()">Logout</v-btn>
