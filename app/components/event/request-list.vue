@@ -4,11 +4,18 @@
       <h2>Judging Requests</h2>
       <span>{{ requests.length || 0 }} requests</span>
     </div>
-    <v-row v-if="requests.length > 0" no-gutters>
-      <v-col v-for="(request, i) in requests" :key="i" cols="12" sm="6" md="4" class="d-flex">
-        <div>
-          {{ request }}
-        </div>
+    <v-row v-if="requests.length > 0" no-gutters class="d-flex ga-4 justify-space-between">
+      <v-col v-for="(request, i) in requests" :key="i" cols="12" sm="6" md="4">
+        <v-card class="d-flex flex-column w-100 pa-1">
+          <v-card-item>
+            <v-card-title>Request ID: {{ request.id }}</v-card-title>
+          </v-card-item>
+          <v-card-text>
+            <p>{{ request.judge?.name ?? 'No Judge' }}</p>
+            <p>{{ request.event?.name ?? 'No Event' }}</p>
+          </v-card-text>
+          <v-spacer></v-spacer>
+        </v-card>
       </v-col>
     </v-row>
     <v-sheet v-else class="d-flex justify-center align-center pa-16 rounded-xl border-sm my-4">
@@ -19,12 +26,13 @@
 
 <script setup lang="ts">
   import type { JudgeRequestData } from '~~/shared/types/strapi-data'
+
   type JudgeRequestResponse = StrapiListResponse<JudgeRequestData>
   const requests = ref<JudgeRequestData[]>([])
 
   try {
     const api = useStrapiApi()
-    const response = await api.get<JudgeRequestResponse>('/judge-requests')
+    const response = await api.get<JudgeRequestResponse>('/judge-requests?populate=*')
     requests.value = response.data.data
     console.log('Judge Requests', response.data)
   } catch (error) {

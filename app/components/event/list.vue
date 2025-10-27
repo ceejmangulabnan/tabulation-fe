@@ -1,10 +1,10 @@
 <template>
   <div>
-    <div class="d-flex justify-space-between align-center w-100">
+    <div class="d-flex justify-space-between align-center w-100 mb-4">
       <h2>My Active Events</h2>
       <span>{{ events.length || 0 }} events</span>
     </div>
-    <v-row v-if="events.length > 0" no-gutters>
+    <v-row v-if="events.length > 0" no-gutters class="ga-6">
       <v-col v-for="(event, i) in events" :key="i" cols="12" sm="6" md="4" class="d-flex">
         <EventCard :event="event" />
       </v-col>

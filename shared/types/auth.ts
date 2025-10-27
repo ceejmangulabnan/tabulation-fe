@@ -1,6 +1,7 @@
 // shared/auth.d.ts
 export interface StrapiUser {
   id: number
+  documentId: string
   username: string
   email: string
   provider: string
