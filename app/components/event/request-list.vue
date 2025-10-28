@@ -1,12 +1,12 @@
 <template>
   <div>
-    <div class="d-flex justify-space-between align-center w-100">
+    <div class="d-flex justify-space-between align-center w-100 mb-4">
       <h2>Judging Requests</h2>
       <span>{{ requests.length || 0 }} requests</span>
     </div>
-    <v-row v-if="requests.length > 0" no-gutters class="d-flex ga-4 justify-space-between">
-      <v-col v-for="(request, i) in requests" :key="i" cols="12" sm="6" md="4">
-        <v-card class="d-flex flex-column w-100 pa-1">
+    <v-row v-if="requests.length > 0" no-gutters>
+      <v-col v-for="(request, i) in requests" :key="i" cols="12" sm="6" md="4" class="d-flex">
+        <v-card class="d-flex flex-column w-100 pa-1 ma-2">
           <v-card-item>
             <v-card-title>Request ID: {{ request.id }}</v-card-title>
           </v-card-item>

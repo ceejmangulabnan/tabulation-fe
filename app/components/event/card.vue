@@ -1,5 +1,5 @@
 <template>
-  <v-card class="d-flex flex-column w-100 pa-1">
+  <v-card hover class="d-flex flex-column w-100 ma-2">
     <v-card-item>
       <v-card-title>{{ event?.name }}</v-card-title>
     </v-card-item>
@@ -19,6 +19,7 @@
   }>()
 
   const authStore = useAuthStore()
+  const emit = defineEmits(['registered'])
   console.log('User', authStore.user)
   async function register() {
     try {
@@ -48,6 +49,7 @@
       const response = await api.post('/judge-requests', payload)
       console.log('Payload', payload)
       console.log('Register Request Response ', response)
+      emit('registered')
     } catch (error) {
       console.error('Error registering for event', error)
     }
