@@ -16,5 +16,6 @@
     </div>
     <EventList />
     <EventRequestList />
+    <EventQuickActions />
   </div>
 </template>
