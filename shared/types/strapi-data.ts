@@ -28,10 +28,18 @@ export interface StrapiListResponse<T> {
 }
 
 // --- Specific Types for Relationships ---
+export interface CriterionData extends StrapiPopulatedItem {
+  label: string
+  weight: number
+}
 
 export interface EventData extends StrapiPopulatedItem {
   name: string
   description: string | null
+  active: boolean
+  // Relationships
+  judges: JudgeData[]
+  criteria: CriterionData[]
 }
 
 export interface DepartmentData extends StrapiPopulatedItem {

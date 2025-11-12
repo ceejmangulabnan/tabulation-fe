@@ -1,4 +1,6 @@
 // shared/auth.d.ts
+import type { JudgeData } from './strapi-data'
+
 export interface StrapiUser {
   id: number
   documentId: string
@@ -17,6 +19,7 @@ export interface StrapiUser {
     type: string
   }
   userRole: 'admin' | 'judge'
+  judge?: JudgeData
 }
 
 export interface AuthResponse {

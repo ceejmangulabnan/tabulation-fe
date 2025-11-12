@@ -5,10 +5,8 @@
     </div>
     <v-row no-gutters>
       <v-col cols="12" sm="6" class="d-flex">
-        <v-card
-          elevation="0"
-          class="custom-hover-card d-flex flex-column w-100 pa-3 ma-2 border-md border-dashed rounded-xl"
-        >
+        <v-card elevation="0"
+          class="custom-hover-card d-flex flex-column w-100 pa-3 ma-2 border-md border-dashed rounded-xl">
           <v-card-item>
             <v-card-title class="d-flex flex-column ga-4">
               <v-icon icon="mdi-plus"></v-icon>
@@ -21,10 +19,8 @@
       </v-col>
 
       <v-col cols="12" sm="6" class="d-flex">
-        <v-card
-          elevation="0"
-          class="custom-hover-card d-flex flex-column w-100 pa-3 ma-2 border-md border-dashed rounded-xl"
-        >
+        <v-card elevation="0"
+          class="custom-hover-card d-flex flex-column w-100 pa-3 ma-2 border-md border-dashed rounded-xl">
           <v-card-item>
             <v-card-title class="d-flex flex-column ga-4">
               <v-icon icon="mdi-eye"></v-icon>
@@ -42,13 +38,12 @@
 <script setup lang="ts"></script>
 
 <style scoped>
-  .custom-hover-card {
-    transition: all 0.25s ease;
-  }
+.custom-hover-card {
+  transition: all 0.25s ease;
+}
 
-  .custom-hover-card:hover {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08) !important;
-    transform: translateY(-3px);
-  }
+.custom-hover-card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08) !important;
+  transform: translateY(-3px);
+}
 </style>
-
