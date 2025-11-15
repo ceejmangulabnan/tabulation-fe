@@ -1,7 +1,7 @@
 <template>
   <v-card
     hover
-    class="d-flex flex-column w-100 ma-2"
+    class="d-flex flex-column w-100 ma-2 pa-2 rounded-xl"
     @click="router.push(`/judge/event/${event.id}`)"
   >
     <v-card-item>

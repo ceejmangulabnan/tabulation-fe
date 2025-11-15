@@ -12,7 +12,7 @@ definePageMeta({
       <p class="text-subtitle">Manage your scoring assignments and view your active events</p>
     </div>
     <EventList />
-    <EventRequestList />
+    <EventRequestListTable />
     <EventQuickActions />
   </div>
 </template>
