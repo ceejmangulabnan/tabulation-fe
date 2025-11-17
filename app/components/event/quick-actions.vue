@@ -38,15 +38,13 @@
                 <v-form>
                   <v-select
                     label="Select an event"
-                    :items="events.map((e) => e.name)"
+                    :items="eventsStore.events.map((e) => e.name)"
+                    v-model="selectedEventName"
                   ></v-select>
-                  <!-- Form - Select Event to judge and Apply button to confirm -->
                 </v-form>
               </v-card-text>
-
               <v-card-actions>
                 <v-spacer></v-spacer>
-
                 <v-btn
                   text="Cancel"
                   @click="isActive.value = false"
@@ -88,25 +86,27 @@
 
 <script setup lang="ts">
 const router = useRouter()
-
-type EventsResponse = StrapiListResponse<EventData>
-const events = ref<EventData[]>([])
-const isSubmitting = ref(false)
 const api = useStrapiApi()
-
-async function fetchEvents() {
-  try {
-    const response = await api.get<EventsResponse>('/events')
-    events.value = response.data.data
-    console.log('Events', response.data)
-  } catch (error) {
-    console.error('Failed to fetch events', error)
-  }
-}
+const eventsStore = useEventsStore()
+const authStore = useAuthStore()
+const selectedEventName = ref('')
 
 async function register() {
   try {
-    const api = useStrapiApi()
+    if (!selectedEventName.value) {
+      console.error('No event selected')
+      return
+    }
+    console.log('Selected Event Name:', selectedEventName)
+
+    const selectedEvent = eventsStore.events.find((e) => e.name === selectedEventName.value)
+
+    if (!selectedEvent) {
+      console.error('Selected event not found')
+      return
+    }
+
+    console.log('Selected Event:', selectedEvent)
     const { data: judgeRes } = await api.get(
       `/judges?populate=*&filters[users_permissions_user][id][$eq]=${authStore.user?.id}`
     )
@@ -124,21 +124,17 @@ async function register() {
           connect: [judge.documentId],
         },
         event: {
-          connect: [event.documentId],
+          connect: [selectedEvent.documentId],
         },
       },
     }
 
     const response = await api.post('/judge-requests', payload)
-    console.log('Payload', payload)
-    console.log('Register Request Response ', response)
-    emit('registered')
+    console.log('Judge Register', response)
   } catch (error) {
     console.error('Error registering for event', error)
   }
 }
-
-onMounted(fetchEvents)
 </script>
 
 <style scoped>
