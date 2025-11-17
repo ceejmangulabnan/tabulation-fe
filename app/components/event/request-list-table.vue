@@ -10,7 +10,7 @@
     >
       <thead>
         <tr>
-          <th class="font-weight-bold text-subtitle-1 text-left">Name</th>
+          <th class="font-weight-bold text-subtitle-1 text-left">Event Name</th>
           <th class="font-weight-bold text-subtitle-1 text-left">Judge</th>
           <th class="font-weight-bold text-subtitle-1 text-left">Request Status</th>
           <th class="font-weight-bold text-subtitle-1 text-left">Actions</th>
@@ -21,7 +21,7 @@
           v-for="item in judgeRequests"
           :key="item.id"
         >
-          <td>{{ item.name || 'No Event' }}</td>
+          <td>{{ item.event.name || 'No Event' }}</td>
           <td>{{ item.judge.name }}</td>
           <td>{{ item.request_status }}</td>
         </tr>
