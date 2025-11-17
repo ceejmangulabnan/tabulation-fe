@@ -37,7 +37,8 @@ export const useAuthStore = defineStore('auth', {
         const tokenCookie = useCookie<string | null>(JWT_COOKIE_NAME, { maxAge: 60 * 60 * 24 * 7 })
         tokenCookie.value = jwt
 
-        return user
+        await this.fetchUser()
+        return this.user
       } catch (error) {
         this.user = null
         this.jwt = null

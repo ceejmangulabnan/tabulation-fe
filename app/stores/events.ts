@@ -4,7 +4,7 @@ interface EventsError {
 }
 
 interface EventsState {
-  events: EventData[] | null
+  events: EventData[] | []
   isLoading: boolean
   isError: boolean
   error: EventsError | null
@@ -12,12 +12,24 @@ interface EventsState {
 
 export const useEventsStore = defineStore('events', {
   state: (): EventsState => ({
-    events: null,
+    events: [],
     isLoading: false,
     isError: false,
     error: null,
   }),
+  getters: {
+    judgeEvents: (state) => {
+      const authStore = useAuthStore()
+      const judgeId = authStore.user?.judge?.id
+      if (!judgeId) return []
 
+      return (
+        state.events?.filter((event) =>
+          event.judges?.some((judge: JudgeData) => judge.id === judgeId)
+        ) || []
+      )
+    },
+  },
   actions: {
     async fetchEvents(): Promise<void> {
       this.isLoading = true
@@ -28,7 +40,7 @@ export const useEventsStore = defineStore('events', {
         const api = useStrapiApi()
         const { data } = await api.get('/events?populate=*')
 
-        this.events = data?.data || null
+        this.events = data?.data || []
       } catch (err: any) {
         console.error('Failed to fetch events:', err)
 

@@ -1,6 +1,12 @@
-import { useEventsStore } from '#imports'
-
 export default defineNuxtPlugin(async () => {
+  const authStore = useAuthStore()
   const eventsStore = useEventsStore()
-  await eventsStore.fetchEvents()
+
+  watch(
+    () => authStore.user,
+    (user) => {
+      if (user) eventsStore.fetchEvents()
+    },
+    { immediate: true }
+  )
 })
