@@ -47,5 +47,6 @@
 </template>
 
 <script setup lang="ts">
-const { judgeEvents, isLoading } = useEventsStore()
+const { judgeEvents, isLoading, fetchEvents } = useEventsStore()
+await fetchEvents()
 </script>
