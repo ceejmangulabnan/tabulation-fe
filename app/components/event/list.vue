@@ -2,7 +2,11 @@
   <div>
     <div class="d-flex justify-space-between align-center w-100 mb-4">
       <h2>Your Events</h2>
-      <span>{{ judgeEvents.length || 0 }} events</span>
+      <span>
+        {{
+          judgeEvents.length == 1 ? `${judgeEvents.length} event` : `${judgeEvents.length} events`
+        }}
+      </span>
     </div>
 
     <v-row
