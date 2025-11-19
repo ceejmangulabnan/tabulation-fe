@@ -82,7 +82,6 @@
       </v-col>
     </v-row>
 
-    <!-- Snackbar for notifications -->
     <v-snackbar
       v-model="snackbar.show"
       :color="snackbar.color"
@@ -110,7 +109,6 @@ const authStore = useAuthStore()
 const judgeRequestsStore = useJudgeRequestsStore()
 const selectedEventName = ref('')
 
-// Snackbar state
 const snackbar = reactive({
   show: false,
   message: '',
@@ -168,11 +166,18 @@ async function register(isActive: { value: boolean }) {
     selectedEventName.value = ''
   } catch (error: any) {
     console.error('Error registering for event', error)
-    if (error.statusCode === 409) {
-      showSnackbar('You have already requested to judge this event.', 'warning')
-      isActive.value = false // Close dialog on conflict
+
+    if (error.status === 409) {
+      if (error.response.data.error.details.type == 'isJudging') {
+        showSnackbar('You are already judging this event.', 'warning')
+      } else if (error.response.data.error.details.type == 'hasExistingRequest')
+        showSnackbar('You have already requested to judge this event.', 'warning')
+      isActive.value = false
     } else {
-      showSnackbar(error.data?.error?.message || 'An error occurred while submitting your request.', 'error')
+      showSnackbar(
+        error.response.data?.error?.message || 'An error occurred while submitting your request.',
+        'error'
+      )
     }
   }
 }
