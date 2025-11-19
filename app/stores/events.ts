@@ -18,16 +18,11 @@ export const useEventsStore = defineStore('events', {
     error: null,
   }),
   getters: {
-    judgeEvents: (state) => {
-      const authStore = useAuthStore()
-      const judgeId = authStore.user?.judge?.id
-      if (!judgeId) return []
-
-      return (
+    getJudgeEvents: (state) => {
+      return (judgeId: number) =>
         state.events?.filter((event) =>
           event.judges?.some((judge: JudgeData) => judge.id === judgeId)
         ) || []
-      )
     },
   },
   actions: {

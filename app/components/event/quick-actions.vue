@@ -52,7 +52,7 @@
                 <v-btn
                   variant="tonal"
                   text="Submit"
-                  @click="register"
+                  @click="register(isActive)"
                 ></v-btn>
               </v-card-actions>
             </v-card>
@@ -81,6 +81,24 @@
         </v-card>
       </v-col>
     </v-row>
+
+    <!-- Snackbar for notifications -->
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="snackbar.timeout"
+      location="top right"
+    >
+      {{ snackbar.message }}
+      <template #actions>
+        <v-btn
+          variant="text"
+          @click="snackbar.show = false"
+        >
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -89,31 +107,45 @@ const router = useRouter()
 const api = useStrapiApi()
 const eventsStore = useEventsStore()
 const authStore = useAuthStore()
+const judgeRequestsStore = useJudgeRequestsStore()
 const selectedEventName = ref('')
 
-async function register() {
+// Snackbar state
+const snackbar = reactive({
+  show: false,
+  message: '',
+  color: '',
+  timeout: 3000,
+})
+
+function showSnackbar(message: string, color: string = 'info', timeout: number = 3000) {
+  snackbar.show = true
+  snackbar.message = message
+  snackbar.color = color
+  snackbar.timeout = timeout
+}
+
+async function register(isActive: { value: boolean }) {
   try {
     if (!selectedEventName.value) {
-      console.error('No event selected')
+      showSnackbar('Please select an event.', 'error')
       return
     }
-    console.log('Selected Event Name:', selectedEventName)
 
     const selectedEvent = eventsStore.events.find((e) => e.name === selectedEventName.value)
 
     if (!selectedEvent) {
-      console.error('Selected event not found')
+      showSnackbar('Selected event not found.', 'error')
       return
     }
 
-    console.log('Selected Event:', selectedEvent)
     const { data: judgeRes } = await api.get(
       `/judges?populate=*&filters[users_permissions_user][id][$eq]=${authStore.user?.id}`
     )
 
     const judge = judgeRes?.data?.[0]
     if (!judge) {
-      console.error('No Judge entry found for this user.')
+      showSnackbar('No Judge entry found for this user.', 'error')
       return
     }
 
@@ -129,10 +161,19 @@ async function register() {
       },
     }
 
-    const response = await api.post('/judge-requests', payload)
-    console.log('Judge Register', response)
-  } catch (error) {
+    await api.post('/judge-requests', payload)
+    showSnackbar('Request submitted successfully!', 'success')
+    await judgeRequestsStore.fetchJudgeRequests()
+    isActive.value = false
+    selectedEventName.value = ''
+  } catch (error: any) {
     console.error('Error registering for event', error)
+    if (error.statusCode === 409) {
+      showSnackbar('You have already requested to judge this event.', 'warning')
+      isActive.value = false // Close dialog on conflict
+    } else {
+      showSnackbar(error.data?.error?.message || 'An error occurred while submitting your request.', 'error')
+    }
   }
 }
 </script>

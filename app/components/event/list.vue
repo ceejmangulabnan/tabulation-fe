@@ -47,6 +47,25 @@
 </template>
 
 <script setup lang="ts">
-const { judgeEvents, isLoading, fetchEvents } = useEventsStore()
-await fetchEvents()
+const eventsStore = useEventsStore()
+const authStore = useAuthStore()
+
+const judgeId = computed(() => authStore.user?.judge?.id)
+
+const judgeEvents = computed(() => {
+  if (!judgeId.value) return []
+  return eventsStore.getJudgeEvents(judgeId.value)
+})
+
+const isLoading = computed(() => eventsStore.isLoading)
+
+watch(
+  judgeId,
+  (id) => {
+    if (id) {
+      eventsStore.fetchEvents()
+    }
+  },
+  { immediate: true }
+)
 </script>
