@@ -5,7 +5,7 @@
       <span>{{ judgeRequests.length || 0 }} requests</span>
     </header>
     <v-table
-      class="border-md"
+      class="border-sm rounded-lg"
       striped="even"
     >
       <thead>
@@ -24,6 +24,7 @@
           <td>{{ item.event.name || 'No Event' }}</td>
           <td>{{ item.judge.name }}</td>
           <td>{{ item.request_status }}</td>
+          <td><v-btn>Cancel</v-btn></td>
         </tr>
       </tbody>
     </v-table>
@@ -31,21 +32,6 @@
 </template>
 
 <script setup lang="ts">
-import type { JudgeRequestData } from '~~/shared/types/strapi-data'
-
-type JudgeRequestResponse = StrapiListResponse<JudgeRequestData>
-const judgeRequests = ref<JudgeRequestData[]>([])
-const eventsStore = useEventsStore()
-const api = useStrapiApi()
-async function fetchJudgeRequests() {
-  try {
-    const response = await api.get<JudgeRequestResponse>('/judge-requests?populate=*')
-    judgeRequests.value = response.data.data
-    console.log(judgeRequests.value)
-  } catch (error) {
-    console.error('Failed to fetch judge requests')
-  }
-}
-
-onMounted(fetchJudgeRequests)
+const { judgeRequests, fetchJudgeRequests } = useJudgeRequestsStore()
+await fetchJudgeRequests()
 </script>
