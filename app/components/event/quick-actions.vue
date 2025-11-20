@@ -20,7 +20,7 @@
               <v-card-item>
                 <v-card-title class="d-flex flex-column ga-4">
                   <v-icon icon="mdi-plus"></v-icon>
-                  <span class="">Create a request to judge an event</span>
+                  <span class="text-wrap">Create a request to judge an event</span>
                 </v-card-title>
               </v-card-item>
               <v-spacer></v-spacer>
@@ -73,7 +73,7 @@
           <v-card-item>
             <v-card-title class="d-flex flex-column ga-4">
               <v-icon icon="mdi-eye"></v-icon>
-              <span class="">View my scores</span>
+              <span class="text-wrap">View my scores</span>
             </v-card-title>
           </v-card-item>
           <v-spacer></v-spacer>
@@ -138,8 +138,12 @@ async function register(isActive: { value: boolean }) {
     selectedEventName.value = ''
   } catch (error: any) {
     console.error('Error registering for event', error)
-    if (error.statusCode === 409) {
-      snackbar.showSnackbar('You have already requested to judge this event.', 'warning')
+    if (error.status === 409) {
+      if (error.response.data.error.details.type === 'isJudging') {
+        snackbar.showSnackbar('You are already judging this event.', 'warning')
+      } else if (error.response.data.error.details.type === 'hasExistingRequest') {
+        snackbar.showSnackbar('You have already requested to judge this event.', 'warning')
+      }
       isActive.value = false // Close dialog on conflict
     } else {
       snackbar.showSnackbar(
