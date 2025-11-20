@@ -82,22 +82,7 @@
       </v-col>
     </v-row>
 
-    <v-snackbar
-      v-model="snackbar.show"
-      :color="snackbar.color"
-      :timeout="snackbar.timeout"
-      location="top right"
-    >
-      {{ snackbar.message }}
-      <template #actions>
-        <v-btn
-          variant="text"
-          @click="snackbar.show = false"
-        >
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
+    <Snackbar />
   </div>
 </template>
 
@@ -108,32 +93,19 @@ const eventsStore = useEventsStore()
 const authStore = useAuthStore()
 const judgeRequestsStore = useJudgeRequestsStore()
 const selectedEventName = ref('')
-
-const snackbar = reactive({
-  show: false,
-  message: '',
-  color: '',
-  timeout: 3000,
-})
-
-function showSnackbar(message: string, color: string = 'info', timeout: number = 3000) {
-  snackbar.show = true
-  snackbar.message = message
-  snackbar.color = color
-  snackbar.timeout = timeout
-}
+const snackbar = useSnackbar()
 
 async function register(isActive: { value: boolean }) {
   try {
     if (!selectedEventName.value) {
-      showSnackbar('Please select an event.', 'error')
+      snackbar.showSnackbar('Please select an event.', 'error')
       return
     }
 
     const selectedEvent = eventsStore.events.find((e) => e.name === selectedEventName.value)
 
     if (!selectedEvent) {
-      showSnackbar('Selected event not found.', 'error')
+      snackbar.showSnackbar('Selected event not found.', 'error')
       return
     }
 
@@ -143,7 +115,7 @@ async function register(isActive: { value: boolean }) {
 
     const judge = judgeRes?.data?.[0]
     if (!judge) {
-      showSnackbar('No Judge entry found for this user.', 'error')
+      snackbar.showSnackbar('No Judge entry found for this user.', 'error')
       return
     }
 
@@ -160,22 +132,18 @@ async function register(isActive: { value: boolean }) {
     }
 
     await api.post('/judge-requests', payload)
-    showSnackbar('Request submitted successfully!', 'success')
+    snackbar.showSnackbar('Request submitted successfully!', 'success')
     await judgeRequestsStore.fetchJudgeRequests()
     isActive.value = false
     selectedEventName.value = ''
   } catch (error: any) {
     console.error('Error registering for event', error)
-
-    if (error.status === 409) {
-      if (error.response.data.error.details.type == 'isJudging') {
-        showSnackbar('You are already judging this event.', 'warning')
-      } else if (error.response.data.error.details.type == 'hasExistingRequest')
-        showSnackbar('You have already requested to judge this event.', 'warning')
-      isActive.value = false
+    if (error.statusCode === 409) {
+      snackbar.showSnackbar('You have already requested to judge this event.', 'warning')
+      isActive.value = false // Close dialog on conflict
     } else {
-      showSnackbar(
-        error.response.data?.error?.message || 'An error occurred while submitting your request.',
+      snackbar.showSnackbar(
+        error.data?.error?.message || 'An error occurred while submitting your request.',
         'error'
       )
     }

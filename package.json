@@ -9,7 +9,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "sync:copytypes": "node copyTypes.js"
+    "sync:copytypes": "node copyTypes.js",
+    "prettier": "pnpm exec prettier --write ."
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
