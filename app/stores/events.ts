@@ -5,6 +5,7 @@ interface EventsError {
 
 interface EventsState {
   events: EventData[] | []
+  event: EventData | null
   isLoading: boolean
   isError: boolean
   error: EventsError | null
@@ -13,6 +14,7 @@ interface EventsState {
 export const useEventsStore = defineStore('events', {
   state: (): EventsState => ({
     events: [],
+    event: null,
     isLoading: false,
     isError: false,
     error: null,
@@ -34,6 +36,34 @@ export const useEventsStore = defineStore('events', {
       try {
         const api = useStrapiApi()
         const { data } = await api.get('/events?populate=*')
+
+        this.events = data?.data || []
+      } catch (err: any) {
+        console.error('Failed to fetch events:', err)
+
+        this.isError = true
+
+        this.error = {
+          message: err?.response?.data?.error?.message || err?.message || 'Unknown error',
+          status: err?.response?.status,
+        }
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    // Fetch event by id
+    async fetchEvent(eventId: number): Promise<void> {
+      this.isLoading = true
+      this.isError = false
+      this.error = null
+      if (!eventId || typeof eventId != 'number') {
+        throw Error('Invalid Event ID')
+      }
+
+      try {
+        const api = useStrapiApi()
+        const { data } = await api.get(`/events?populate=*&filters[id][$eq]=${eventId}`)
 
         this.events = data?.data || []
       } catch (err: any) {

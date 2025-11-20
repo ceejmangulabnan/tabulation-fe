@@ -1,5 +1,8 @@
 <template>
-  <v-app id="inspire" :theme="theme.current">
+  <v-app
+    id="inspire"
+    :theme="theme.current"
+  >
     <v-app-bar>
       <v-app-bar-nav-icon @click="drawer = !drawer" />
       <v-app-bar-title class="font-weight-bold">SNC Tabulation</v-app-bar-title>
@@ -46,7 +49,14 @@
         </v-list-item>
       </v-list>
       <template #append>
-        <v-btn block :rounded="false" class="bg-red" @click="authStore.logout()">Logout</v-btn>
+        <v-btn
+          block
+          :rounded="false"
+          class="bg-red"
+          @click="authStore.logout()"
+        >
+          Logout
+        </v-btn>
       </template>
     </v-navigation-drawer>
 
@@ -59,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-  const drawer = ref(false)
-  const authStore = useAuthStore()
-  const theme = useThemeStore()
+const drawer = ref(false)
+const authStore = useAuthStore()
+const theme = useThemeStore()
 </script>

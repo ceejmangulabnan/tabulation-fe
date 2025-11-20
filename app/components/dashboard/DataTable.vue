@@ -1,6 +1,9 @@
 <template>
   <div>
-    <v-data-table :headers="tableHeaders" :items="participants">
+    <v-data-table
+      :headers="tableHeaders"
+      :items="participants"
+    >
       <template #[`item.headshot.url`]="{ value }">
         <div @click="openDialog(value)">
           <v-img
@@ -14,10 +17,17 @@
       </template>
     </v-data-table>
 
-    <v-dialog v-model="dialog" max-width="600">
+    <v-dialog
+      v-model="dialog"
+      max-width="600"
+    >
       <template #default="{ isActive }">
         <v-card>
-          <v-img :src="currentImgUrl" contain max-height="80vh"></v-img>
+          <v-img
+            :src="currentImgUrl"
+            contain
+            max-height="80vh"
+          ></v-img>
 
           <v-card-actions class="justify-end">
             <v-btn
@@ -34,42 +44,42 @@
 </template>
 
 <script setup lang="ts">
-  type FullParticipantsResponse = StrapiListResponse<StrapiFullParticipant>
-  const participants = ref<StrapiFullParticipant[]>([])
-  const config = useRuntimeConfig()
-  const baseApiUrl = config.public.strapiUrl
-  const dialog = ref(false)
-  const currentImgUrl = ref('')
-  function openDialog(url: string) {
-    currentImgUrl.value = `${baseApiUrl}${url}`
-    dialog.value = true
-  }
+type FullParticipantsResponse = StrapiListResponse<StrapiFullParticipant>
+const participants = ref<StrapiFullParticipant[]>([])
+const config = useRuntimeConfig()
+const baseApiUrl = config.public.strapiUrl
+const dialog = ref(false)
+const currentImgUrl = ref('')
+function openDialog(url: string) {
+  currentImgUrl.value = `${baseApiUrl}${url}`
+  dialog.value = true
+}
 
-  try {
-    const api = useStrapiApi()
-    const response = await api.get<FullParticipantsResponse>('/participants?populate=*')
+try {
+  const api = useStrapiApi()
+  const response = await api.get<FullParticipantsResponse>('/participants?populate=*')
 
-    participants.value = response.data.data
+  participants.value = response.data.data
 
-    console.log('participants', participants.value)
-  } catch (error) {
-    console.error('Failed to fetch populated participants:', error)
-  }
+  console.log('participants', participants.value)
+} catch (error) {
+  console.error('Failed to fetch populated participants:', error)
+}
 
-  const tableHeaders = [
-    {
-      title: 'Name',
-      key: 'name',
-    },
-    {
-      title: 'Department',
-      key: 'department.name',
-    },
-    {
-      title: 'Headshot',
-      key: `headshot.url`,
-    },
-  ]
+const tableHeaders = [
+  {
+    title: 'Name',
+    key: 'name',
+  },
+  {
+    title: 'Department',
+    key: 'department.name',
+  },
+  {
+    title: 'Headshot',
+    key: `headshot.url`,
+  },
+]
 </script>
 
 <styles scoped>

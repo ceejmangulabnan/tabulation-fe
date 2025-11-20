@@ -5,7 +5,7 @@
 <script setup lang="ts">
 type EventsResponse = StrapiListResponse<EventData>
 const route = useRoute()
-const eventId = route.params.id as string 
+const eventId = route.params.id as string
 const event = ref<EventData[]>([])
 
 async function fetchEvent() {

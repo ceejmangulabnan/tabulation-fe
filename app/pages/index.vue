@@ -8,25 +8,31 @@
       </p>
     </div>
     <div>
-      <v-btn to="/auth" size="large" class="ma-2 font-weight-bold">Get Started</v-btn>
+      <v-btn
+        to="/auth"
+        size="large"
+        class="ma-2 font-weight-bold"
+      >
+        Get Started
+      </v-btn>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  definePageMeta({
-    layout: 'landing',
-  })
+definePageMeta({
+  layout: 'landing',
+})
 </script>
 
 <style scoped>
-  h1 {
-    text-shadow: 0px 5px 5px rgba(0, 0, 0, 0.5);
-  }
+h1 {
+  text-shadow: 0px 5px 5px rgba(0, 0, 0, 0.5);
+}
 
-  p {
-    line-height: 1.2;
-    font-weight: 200;
-    max-width: 700px;
-  }
+p {
+  line-height: 1.2;
+  font-weight: 200;
+  max-width: 700px;
+}
 </style>
