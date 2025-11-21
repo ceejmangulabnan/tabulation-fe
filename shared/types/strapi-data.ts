@@ -28,7 +28,6 @@ export interface StrapiListResponse<T> {
 }
 
 // --- Specific Types for Relationships ---
-
 export interface EventData extends StrapiPopulatedItem {
   name: string
   description: string | null
@@ -36,6 +35,9 @@ export interface EventData extends StrapiPopulatedItem {
   // Relationships
   judges: JudgeData[]
   categories: CategoryData[]
+  participants: ParticipantData[]
+  scores: ScoreData[]
+  judgeRequests: JudgeRequestData[]
 }
 
 export interface DepartmentData extends StrapiPopulatedItem {
@@ -45,6 +47,17 @@ export interface DepartmentData extends StrapiPopulatedItem {
 export interface CategoryData extends StrapiPopulatedItem {
   name: string
   event: EventData
+  scores: ScoreData[]
+  weight: number
+  active: boolean
+}
+
+export interface ScoreData extends StrapiPopulatedItem {
+  value: number
+  event: EventData
+  category: CategoryData
+  participant: ParticipantData
+  judge: JudgeData
 }
 
 export interface HeadshotFormat {
@@ -91,7 +104,7 @@ export interface StrapiMinimalParticipant extends StrapiPopulatedItem {
   name: string
 }
 
-export interface StrapiFullParticipant extends StrapiPopulatedItem {
+export interface ParticipantData extends StrapiPopulatedItem {
   name: string
   event: EventData
   department: DepartmentData
