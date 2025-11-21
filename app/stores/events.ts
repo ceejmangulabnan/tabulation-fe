@@ -53,11 +53,13 @@ export const useEventsStore = defineStore('events', {
     },
 
     // Fetch event by id
-    async fetchEvent(eventId: number): Promise<void> {
+    async fetchEvent(eventId: string): Promise<void> {
       this.isLoading = true
       this.isError = false
       this.error = null
-      if (!eventId || typeof eventId != 'number') {
+      console.log('event id in event store', eventId)
+
+      if (!eventId) {
         throw Error('Invalid Event ID')
       }
 
@@ -65,7 +67,8 @@ export const useEventsStore = defineStore('events', {
         const api = useStrapiApi()
         const { data } = await api.get(`/events?populate=*&filters[id][$eq]=${eventId}`)
 
-        this.events = data?.data || []
+        console.log('event data in store', data)
+        this.event = data?.data[0] || {}
       } catch (err: any) {
         console.error('Failed to fetch events:', err)
 
