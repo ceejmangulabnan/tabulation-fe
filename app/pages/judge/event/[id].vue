@@ -1,5 +1,22 @@
 <template>
   <div class="my-4 d-flex flex-column ga-10">
+    <v-alert
+      v-if="activeCategories && activeCategories.length"
+      type="info"
+      variant="tonal"
+      title="Scoring Active"
+      closable
+    >
+      <p>Scoring is currently active for the following categories:</p>
+      <div class="d-flex ga-2 mt-2">
+        <v-chip
+          v-for="category in activeCategories"
+          :key="category.name"
+        >
+          {{ category.name }}
+        </v-chip>
+      </div>
+    </v-alert>
     <header class="d-flex ga-4">
       <v-btn
         icon="mdi-arrow-left"
@@ -13,14 +30,10 @@
           class="d-flex ga-4 font-weight-light text-body-2 mt-3"
           :class="theme.current === 'light' ? 'text-grey' : 'text-grey-darken-2'"
         >
-          <!-- TODO: Show number of active categories -->
-          <span>2 Active Categories</span>
-          <!-- TODO: Show number of participants -->
-          <span>3 Participants</span>
+          <span>{{ activeCategories?.length }} Active Categories</span>
+          <span>{{ eventsStore.event?.participants.length }} Participants</span>
         </div>
       </div>
-      <!-- v-chip indicating currently active categories for scoring  -->
-      <v-chip v-for="category in activeCategories">{{ category.name }}</v-chip>
     </header>
   </div>
 </template>
