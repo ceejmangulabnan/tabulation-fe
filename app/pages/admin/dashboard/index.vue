@@ -8,8 +8,14 @@ console.log('User', authStore.user)
 </script>
 
 <template>
-  <div>
-    Admin View
-    <DashboardDataTable />
+  <div class="my-2 mx-6 d-flex flex-column ga-10">
+    <div class="mb-6">
+      <h1>Admin Dashboard</h1>
+      <p class="text-subtitle">Overview of your pageant system and pending actions</p>
+    </div>
+    <AdminEventList />
+    <AdminEventRequestTable />
+    <!-- <EventRequestListTable /> -->
+    <!-- <EventQuickActions /> -->
   </div>
 </template>

@@ -39,6 +39,9 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  middleware: ['judge'],
+})
 const route = useRoute()
 const theme = useThemeStore()
 const router = useRouter()

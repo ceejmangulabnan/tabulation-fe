@@ -4,9 +4,9 @@
       <h2>Judging Requests</h2>
       <span>
         {{
-          judgeRequestsStore.judgeRequests.length == 1
-            ? `${judgeRequestsStore.judgeRequests.length} event`
-            : `${judgeRequestsStore.judgeRequests.length} events`
+          judgeRequestsStore.allJudgeRequests.length == 1
+            ? `${judgeRequestsStore.allJudgeRequests.length} event`
+            : `${judgeRequestsStore.allJudgeRequests.length} events`
         }}
       </span>
     </header>
@@ -23,7 +23,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-if="judgeRequestsStore.judgeRequests.length == 0">
+        <tr v-if="judgeRequestsStore.allJudgeRequests.length == 0">
           <td
             colspan="4"
             class="text-center text-grey-darken-2"
@@ -32,7 +32,7 @@
           </td>
         </tr>
         <tr
-          v-for="item in judgeRequestsStore.judgeRequests"
+          v-for="item in judgeRequestsStore.allJudgeRequests"
           :key="item.id"
         >
           <td>{{ item.event.name || 'No Event' }}</td>
@@ -61,9 +61,8 @@
 </template>
 
 <script setup lang="ts">
-const authStore = useAuthStore()
 const judgeRequestsStore = useJudgeRequestsStore()
-await judgeRequestsStore.fetchJudgeRequests(authStore.user?.judge?.id as number)
+await judgeRequestsStore.fetchAllJudgeRequests()
 
 const theme = useThemeStore()
 

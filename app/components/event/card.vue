@@ -2,7 +2,7 @@
   <v-card
     hover
     class="d-flex flex-column w-100 ma-2 pa-3 rounded-xl"
-    @click="router.push(`/judge/event/${event.id}`)"
+    @click="router.push(`/${userRole}/event/${event.id}`)"
   >
     <v-card-item>
       <v-card-title>{{ event?.name }}</v-card-title>
@@ -12,7 +12,7 @@
     </v-card-text>
     <v-spacer></v-spacer>
     <v-card-actions>
-      <v-btn variant="tonal">View Details</v-btn>
+      <v-btn variant="tonal">{{ userRole === 'admin' ? 'Edit Event' : 'View Details' }}</v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -22,6 +22,6 @@ const { event } = defineProps<{
   event: EventData
 }>()
 const router = useRouter()
+const authStore = useAuthStore()
+const userRole = computed(() => authStore.user?.userRole)
 </script>
-
-<style scoped></style>
