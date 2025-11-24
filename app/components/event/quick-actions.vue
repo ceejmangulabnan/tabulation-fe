@@ -15,7 +15,6 @@
               v-bind="activatorProps"
               elevation="0"
               class="cursor-pointer custom-hover-card d-flex flex-column w-100 pa-3 ma-2 border-md border-dashed rounded-xl"
-              @click="console.log('open dialog')"
             >
               <v-card-item>
                 <v-card-title class="d-flex flex-column ga-4">

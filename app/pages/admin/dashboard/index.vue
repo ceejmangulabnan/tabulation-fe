@@ -15,7 +15,6 @@ console.log('User', authStore.user)
     </div>
     <AdminEventList />
     <AdminEventRequestTable />
-    <!-- <EventRequestListTable /> -->
-    <!-- <EventQuickActions /> -->
+    <AdminQuickActions />
   </div>
 </template>
