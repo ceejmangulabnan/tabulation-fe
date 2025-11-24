@@ -10,7 +10,7 @@
     </div>
 
     <v-row
-      v-if="isLoading"
+      v-if="eventsStore.isLoading"
       no-gutters
     >
       <v-col
@@ -60,8 +60,6 @@ const judgeEvents = computed(() => {
   if (!judgeId.value) return []
   return eventsStore.getJudgeEvents(judgeId.value)
 })
-
-const isLoading = computed(() => eventsStore.isLoading)
 
 watch(
   judgeId,

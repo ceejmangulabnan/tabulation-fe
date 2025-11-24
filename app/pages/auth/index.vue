@@ -56,11 +56,10 @@ const tabs: Tab[] = ['Sign In', 'Sign Up']
 const activeTab = ref<Tab>('Sign In')
 
 const theme = useThemeStore()
-const activeColor = computed(() => (theme.current === 'dark' ? 'white' : 'black'))
-const inactiveColor = computed(() =>
-  theme.current === 'dark' ? 'grey-lighten-1' : 'grey-darken-1'
-)
-const underlineColor = computed(() => (theme.current === 'dark' ? 'white' : 'black'))
+const isDark = computed(() => theme.current === 'dark')
+const activeColor = computed(() => (isDark ? 'white' : 'black'))
+const inactiveColor = computed(() => (isDark ? 'grey-lighten-1' : 'grey-darken-1'))
+const underlineColor = computed(() => (isDark ? 'white' : 'black'))
 
 function onAuthSuccess() {
   navigateTo('/admin/dashboard')

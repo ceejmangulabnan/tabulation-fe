@@ -3,12 +3,16 @@
     <div class="d-flex justify-space-between align-center w-100 mb-4">
       <h2>All Events</h2>
       <span>
-        {{ events.length == 1 ? `${events.length} event` : `${events.length} events` }}
+        {{
+          eventsStore.events.length == 1
+            ? `${eventsStore.events.length} event`
+            : `${eventsStore.events.length} events`
+        }}
       </span>
     </div>
 
     <v-row
-      v-if="isLoading"
+      v-if="eventsStore.isLoading"
       no-gutters
     >
       <v-col
@@ -24,11 +28,11 @@
     </v-row>
 
     <v-row
-      v-else-if="events.length > 0"
+      v-else-if="eventsStore.events.length > 0"
       no-gutters
     >
       <v-col
-        v-for="(event, i) in events"
+        v-for="(event, i) in eventsStore.events"
         :key="i"
         cols="12"
         sm="6"
@@ -50,7 +54,5 @@
 
 <script setup lang="ts">
 const eventsStore = useEventsStore()
-const events = computed(() => eventsStore.events)
-const isLoading = computed(() => eventsStore.isLoading)
 await eventsStore.fetchEvents()
 </script>
