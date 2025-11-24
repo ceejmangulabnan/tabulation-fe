@@ -42,5 +42,20 @@ export const useJudgeRequestsStore = defineStore('judge-requests', {
         this.isLoading = false
       }
     },
+    async updateJudgeRequest(id: string, payload: Partial<JudgeRequestData>): Promise<boolean> {
+      this.isLoading = true
+      this.isError = false
+      try {
+        const api = useStrapiApi()
+        await api.put(`judge-requests/${id}`, { data: payload })
+        return true
+      } catch (error) {
+        console.log('Failed to update judge request', error)
+        this.isError = true
+        return false
+      } finally {
+        this.isLoading = false
+      }
+    },
   },
 })

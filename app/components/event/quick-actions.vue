@@ -133,7 +133,9 @@ async function register(isActive: { value: boolean }) {
 
     await api.post('/judge-requests', payload)
     snackbar.showSnackbar('Request submitted successfully!', 'success')
-    await judgeRequestsStore.fetchJudgeRequests()
+    if (authStore.user?.judge?.id) {
+      await judgeRequestsStore.fetchJudgeRequests(authStore.user.judge.id)
+    }
     isActive.value = false
     selectedEventName.value = ''
   } catch (error: any) {
