@@ -1,5 +1,10 @@
 <template>
-  <div class="text-center">
+  <div class="text-center pb-10">
+    <v-img
+      src="/logo.png"
+      max-width="200px"
+      class="mx-auto"
+    ></v-img>
     <h1
       :class="[
         'text-h4',
