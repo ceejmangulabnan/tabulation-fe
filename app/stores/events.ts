@@ -7,6 +7,7 @@ interface EventsState {
   events: EventData[] | []
   event: EventData | null
   isLoading: boolean
+  isSubmitting: boolean
   isError: boolean
   error: EventsError | null
 }
@@ -17,6 +18,7 @@ export const useEventsStore = defineStore('events', {
     event: null,
     isLoading: false,
     isError: false,
+    isSubmitting: false,
     error: null,
   }),
   getters: {
@@ -78,6 +80,35 @@ export const useEventsStore = defineStore('events', {
         }
       } finally {
         this.isLoading = false
+      }
+    },
+
+    // Admin Create Event Basic
+    async createEvent(createEventData: Ref<{ name: string; description: string }>) {
+      const api = useStrapiApi()
+      try {
+        this.isLoading = true
+        this.isSubmitting = true
+        const payload = {
+          data: {
+            name: createEventData.value.name,
+            description: createEventData.value.description,
+          },
+        }
+        const response = await api.post(`/events`, payload)
+        console.log('Admin Create Event Response', response)
+        return response
+      } catch (error: any) {
+        console.error('Failed to create event', error)
+
+        this.isError = true
+        this.error = {
+          message: error?.response?.data?.error?.message || error?.message || 'Unknown error',
+          status: error?.response?.status,
+        }
+      } finally {
+        this.isLoading = false
+        this.isSubmitting = false
       }
     },
   },
