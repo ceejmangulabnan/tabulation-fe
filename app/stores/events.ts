@@ -6,6 +6,7 @@ interface EventsError {
 interface EventsState {
   events: EventData[] | []
   event: EventData | null
+  newEvent: EventData | null
   isLoading: boolean
   isSubmitting: boolean
   isError: boolean
@@ -16,6 +17,7 @@ export const useEventsStore = defineStore('events', {
   state: (): EventsState => ({
     events: [],
     event: null,
+    newEvent: null,
     isLoading: false,
     isError: false,
     isSubmitting: false,
@@ -97,6 +99,7 @@ export const useEventsStore = defineStore('events', {
         }
         const response = await api.post(`/events`, payload)
         console.log('Admin Create Event Response', response)
+        this.newEvent = response.data.data
         return response
       } catch (error: any) {
         console.error('Failed to create event', error)
@@ -110,6 +113,9 @@ export const useEventsStore = defineStore('events', {
         this.isLoading = false
         this.isSubmitting = false
       }
+    },
+    clearNewEvent() {
+      this.newEvent = null
     },
   },
 })

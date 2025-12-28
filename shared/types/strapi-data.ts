@@ -31,13 +31,13 @@ export interface StrapiListResponse<T> {
 export interface EventData extends StrapiPopulatedItem {
   name: string
   description: string | null
-  active: boolean
+  event_status: 'draft' | 'active' | 'inactive' | 'finished'
   // Relationships
   judges: JudgeData[]
   categories: CategoryData[]
   participants: ParticipantData[]
   scores: ScoreData[]
-  judgeRequests: JudgeRequestData[]
+  judge_requests: JudgeRequestData[]
 }
 
 export interface DepartmentData extends StrapiPopulatedItem {
