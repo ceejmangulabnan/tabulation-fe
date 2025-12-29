@@ -230,7 +230,7 @@ const selectedJudge = ref<number | null>(null)
 const newJudge = ref({ username: '', email: '', password: '' })
 const judgeRoleId = ref<number | null>(null)
 
-// --- Headers ---
+// --- Tab Headers ---
 const categoryHeaders = [
   { title: 'Name', key: 'name' },
   { title: 'Weight', key: 'weight' },
@@ -245,26 +245,8 @@ const eventId = route.params.id as string
 console.log('Event ID from params:', eventId)
 console.log('New Event data:', eventsStore.newEvent)
 
-// // --- Data Fetching ---
-// const fetchEvent = async () => {
-//   try {
-//     const response = await api.get(`events?populate=*&filters[id][$eq]=${eventId}`)
-//     const eventData = response.data.data
-//     event.value = {
-//       id: eventData.id,
-//       ...eventData.attributes,
-//     }
-//     dataLoaded.value = true
-//   } catch (error) {
-//     console.error('Error fetching event:', error)
-//   }
-// }
-
 const fetchAvailableJudges = async () => {
   try {
-    // Assumes the role is 'Authenticated' for judges for now,
-    // as per default Strapi public registration.
-    // This can be changed to a specific 'Judge' role if it exists.
     const res = await api.get('/users?filters[userRole][name]=judge')
     availableJudges.value = res.data
   } catch (e) {
@@ -275,7 +257,9 @@ const fetchAvailableJudges = async () => {
 const fetchJudgeRole = async () => {
   try {
     const res = await api.get('/users-permissions/roles')
-    const judgeRole = res.data.roles.find((r: any) => r.type === 'judge' || r.name === 'Judge')
+    const judgeRole = res.data.roles.find(
+      (r: any) => r.type === 'authenticated' || r.name === 'Authenticated'
+    )
     if (judgeRole) {
       judgeRoleId.value = judgeRole.id
     } else {
@@ -322,13 +306,18 @@ onMounted(async () => {
   }
   await fetchAvailableJudges()
   await fetchJudgeRole()
+  await fetchCategories()
 })
 
 // --- Event Info Tab ---
 const handleSave = async () => {
   try {
-    await api.put(`/events/${eventId}`, {
-      data: { name: event.value.name, description: event.value.description },
+    console.log('Current Event', event.value)
+    await api.put(`/events/${eventsStore.event?.documentId}`, {
+      data: {
+        name: event.value.name,
+        description: event.value.description,
+      },
     })
   } catch (error) {
     console.error('Error updating event:', error)
@@ -337,19 +326,37 @@ const handleSave = async () => {
 
 // --- Categories Tab ---
 const totalWeight = computed(() =>
-  (event.value.categories || []).reduce((sum, c) => sum + (Number(c.weight) || 0), 0)
+  (event.value.categories || []).reduce((sum, c) => sum + (Number(c.weight * 100) || 0), 0)
 )
+
 const showCategoryDialog = (item: CategoryData | null = null) => {
   editedCategory.value = item ? { ...item } : { id: 0, name: '', weight: 0 }
   categoryDialog.value = true
 }
+
+const fetchCategories = async () => {
+  try {
+    const res = await api.get(`/categories?populate=event&filters[event][id][$eq]=${eventId}`)
+    console.log('Event Categories response:', res)
+    if (event) event.value.categories?.push(...res.data.data)
+  } catch (error) {
+    console.error(`Failed to fetch categories for event ID ${eventId}`, error)
+  }
+}
+
+// TODO: 400 on save
 const saveCategory = async () => {
   try {
-    const data = { ...editedCategory.value, event: eventId }
-    if (editedCategory.value.id) {
-      await api.put(`/categories/${editedCategory.value.id}`, { data })
+    // const data = { ...editedCategory.value }
+    const data = {
+      name: editedCategory.value.name,
+      weight: editedCategory.value.weight,
+    }
+    console.log('Save Category Data:', data)
+    if (editedCategory.value.documentId) {
+      await api.put(`/categories/${editedCategory.value.documentId}`, { data })
     } else {
-      await api.post('/categories', { data })
+      await api.post('/categories', { ...data, event })
     }
     await eventsStore.fetchEvent(eventId)
   } catch (error) {
