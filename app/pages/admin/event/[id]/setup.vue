@@ -309,6 +309,16 @@ onMounted(async () => {
     eventsStore.clearNewEvent()
   } else {
     await eventsStore.fetchEvent(eventId)
+    if (eventsStore.event) {
+      event.value = {
+        id: eventsStore.event.id,
+        name: eventsStore.event.name,
+        description: eventsStore.event.description,
+        event_status: eventsStore.event.event_status || 'draft',
+        categories: [],
+        judges: [],
+      }
+    }
   }
   await fetchAvailableJudges()
   await fetchJudgeRole()
