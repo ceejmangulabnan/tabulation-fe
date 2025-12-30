@@ -211,14 +211,18 @@ const route = useRoute()
 const api = useStrapiApi()
 const eventsStore = useEventsStore()
 const dataLoaded = ref(false)
-const event = ref<Partial<EventData>>({
-  id: 0,
-  name: '',
-  description: '',
-  event_status: 'draft',
-  categories: [],
-  judges: [],
-})
+const event = computed<Partial<EventData>>(
+  () =>
+    eventsStore.event || {
+      documentId: '',
+      id: 0,
+      name: '',
+      description: '',
+      event_status: 'draft',
+      categories: [],
+      judges: [],
+    }
+)
 const categoryDialog = ref(false)
 const editedCategory = ref<Partial<CategoryData>>({
   id: 0,
@@ -280,30 +284,14 @@ const onTabChange = (value: string) => {
 
 onMounted(async () => {
   const eventIdNum = Number(eventId)
-  if (eventsStore.newEvent && eventsStore.newEvent.id === eventIdNum) {
-    const newEventData = eventsStore.newEvent
-    event.value = {
-      id: newEventData.id,
-      name: newEventData.name,
-      description: newEventData.description,
-      event_status: newEventData.event_status || 'draft',
-      categories: [],
-      judges: [],
-    }
+
+  if (eventsStore.newEvent?.id === eventIdNum) {
+    eventsStore.event = eventsStore.newEvent
     eventsStore.clearNewEvent()
   } else {
     await eventsStore.fetchEvent(eventId)
-    if (eventsStore.event) {
-      event.value = {
-        id: eventsStore.event.id,
-        name: eventsStore.event.name,
-        description: eventsStore.event.description,
-        event_status: eventsStore.event.event_status || 'draft',
-        categories: [],
-        judges: [],
-      }
-    }
   }
+
   await fetchAvailableJudges()
   await fetchJudgeRole()
   await fetchCategories()
@@ -338,7 +326,7 @@ const fetchCategories = async () => {
   try {
     const res = await api.get(`/categories?populate=event&filters[event][id][$eq]=${eventId}`)
     console.log('Event Categories response:', res)
-    if (event) event.value.categories?.push(...res.data.data)
+    if (event) event.value.categories = res.data.data
   } catch (error) {
     console.error(`Failed to fetch categories for event ID ${eventId}`, error)
   }
@@ -348,15 +336,28 @@ const fetchCategories = async () => {
 const saveCategory = async () => {
   try {
     // const data = { ...editedCategory.value }
-    const data = {
-      name: editedCategory.value.name,
-      weight: editedCategory.value.weight,
+    const updateCategoryPayload = {
+      data: {
+        name: editedCategory.value.name,
+        weight: editedCategory.value.weight,
+      },
     }
-    console.log('Save Category Data:', data)
+    console.log('Update Category Data:', updateCategoryPayload)
     if (editedCategory.value.documentId) {
-      await api.put(`/categories/${editedCategory.value.documentId}`, { data })
+      await api.put(`/categories/${editedCategory.value.documentId}`, updateCategoryPayload)
     } else {
-      await api.post('/categories', { ...data, event })
+      const createCategoryPayload = {
+        data: {
+          name: editedCategory.value.name,
+          weight: editedCategory.value.weight,
+          event: {
+            connect: [event.value.documentId],
+          },
+        },
+      }
+
+      const createCategoryResponse = await api.post('/categories', createCategoryPayload)
+      console.log('Create Category Response', createCategoryResponse)
     }
     await eventsStore.fetchEvent(eventId)
   } catch (error) {
@@ -442,7 +443,7 @@ const canActivate = computed(
 const activateEvent = async () => {
   if (!canActivate.value) return
   try {
-    await api.put(`/events/${eventId}`, { data: { event_status: 'active' } })
+    await api.put(`/events/${event.value.documentId}`, { data: { event_status: 'active' } })
     if (event.value) {
       event.value.event_status = 'active'
     }
