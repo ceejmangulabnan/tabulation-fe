@@ -414,26 +414,19 @@ const deleteCategory = async (item: CategoryData) => {
   }
 }
 
-// TODO: GET USER
 // --- Judges Tab ---
 const assignJudge = async () => {
   console.log('selectedJudge:', selectedJudge.value)
   const selectedJudgeUserData = availableJudges.value.find((j) => j.id === selectedJudge.value)
   if (!selectedJudgeUserData) return
-  console.log('Selected Judge Data from Users:', selectedJudgeUserData)
-  const res = await api.get(
-    `/judges?populate=*&filters[users_permissions_user][documentId][$eq]=${selectedJudgeUserData.documentId}`
-  )
-  const selectedJudgeData = res.data.data
-  console.log('Selected Judge Data from Judge', selectedJudgeData)
+  console.log('Selected Judge Data:', selectedJudgeUserData)
   try {
-    await api.put(`/judges/${selectedJudgeData.documentId}`, {
+    await api.put(`/judges/${selectedJudgeUserData.documentId}`, {
       data: {
         events: {
           connect: [event.value.documentId],
         },
-        // users_permissions_user: selectedJudgeData,
-        name: selectedJudgeData.username,
+        name: selectedJudgeUserData.username,
       },
     })
 
