@@ -113,6 +113,8 @@ async function register(isActive: { value: boolean }) {
     )
 
     const judge = judgeRes?.data?.[0]
+    console.log('Current Judge:', judge)
+    console.log('Current User:', authStore)
     if (!judge) {
       snackbar.showSnackbar('No Judge entry found for this user.', 'error')
       return
@@ -129,6 +131,7 @@ async function register(isActive: { value: boolean }) {
         },
       },
     }
+    console.log('Judge Request Payload:', payload)
 
     await api.post('/judge-requests', payload)
     snackbar.showSnackbar('Request submitted successfully!', 'success')

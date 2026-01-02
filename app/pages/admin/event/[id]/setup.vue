@@ -107,12 +107,12 @@
                   <v-autocomplete
                     v-model="selectedJudge"
                     :items="availableJudges"
-                    item-title="username"
+                    item-title="name"
                     item-value="id"
                     label="Search for a judge"
                   />
                   <v-btn
-                    color="nrimary"
+                    color="primary"
                     @click="assignJudge"
                     :disabled="!selectedJudge"
                   >
@@ -133,8 +133,39 @@
                   <v-text-field
                     v-model="newJudge.password"
                     label="Password"
-                    type="password"
-                  />
+                    :type="showPassword ? 'text' : 'password'"
+                  >
+                    <template #append-inner>
+                      <v-btn
+                        tabindex="-1"
+                        icon
+                        variant="text"
+                        @click="toggleShowPassword"
+                      >
+                        <v-icon size="small">
+                          {{ showPassword ? 'mdi-eye-outline' : 'mdi-eye-off' }}
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                  </v-text-field>
+                  <v-text-field
+                    v-model="newJudge.confirmPassword"
+                    label="Confirm Password"
+                    :type="showConfirmPassword ? 'text' : 'password'"
+                  >
+                    <template #append-inner>
+                      <v-btn
+                        tabindex="-1"
+                        icon
+                        variant="text"
+                        @click="toggleShowConfirmPassword"
+                      >
+                        <v-icon size="small">
+                          {{ showPassword ? 'mdi-eye-outline' : 'mdi-eye-off' }}
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                  </v-text-field>
                   <v-btn
                     color="green"
                     @click="createJudge"
@@ -199,18 +230,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { useStrapiApi } from '~/composables/useStrapiApi'
-import { useEventsStore } from '~/stores/events'
-
 // --- State ---
 const tab = ref('one')
 const judgeTab = ref('assign')
 const route = useRoute()
 const api = useStrapiApi()
 const eventsStore = useEventsStore()
+const authStore = useAuthStore()
+const snackbar = useSnackbar()
 const dataLoaded = ref(false)
+const errorMsg = ref<string | null>(null)
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
 const event = computed<Partial<EventData>>(
   () =>
     eventsStore.event || {
@@ -229,9 +260,9 @@ const editedCategory = ref<Partial<CategoryData>>({
   name: '',
   weight: 0,
 })
-const availableJudges = ref<StrapiUser[]>([])
+const availableJudges = ref<JudgeData[]>([])
 const selectedJudge = ref<number | null>(null)
-const newJudge = ref({ username: '', email: '', password: '' })
+const newJudge = ref({ username: '', email: '', password: '', confirmPassword: '' })
 const judgeRoleId = ref<number | null>(null)
 
 // --- Tab Headers ---
@@ -241,7 +272,7 @@ const categoryHeaders = [
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 const judgeHeaders = [
-  { title: 'Username', key: 'users_permissions_user.username' },
+  { title: 'Name', key: 'users_permissions_user.username' },
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 
@@ -251,8 +282,9 @@ console.log('New Event data:', eventsStore.newEvent)
 
 const fetchAvailableJudges = async () => {
   try {
-    const res = await api.get('/users?filters[userRole][name]=judge')
-    availableJudges.value = res.data
+    const res = await api.get('/judges')
+    availableJudges.value = res.data.data
+    console.log(availableJudges.value)
   } catch (e) {
     console.error('Could not fetch judges', e)
   }
@@ -295,6 +327,8 @@ onMounted(async () => {
   await fetchAvailableJudges()
   await fetchJudgeRole()
   await fetchCategories()
+  console.log('Event:', event.value)
+  console.log('Available Judges', availableJudges.value)
 })
 
 // --- Event Info Tab ---
@@ -358,9 +392,13 @@ const saveCategory = async () => {
 
       const createCategoryResponse = await api.post('/categories', createCategoryPayload)
       console.log('Create Category Response', createCategoryResponse)
+      if (createCategoryResponse.status === 201) {
+        snackbar.showSnackbar('Category created successfully!', 'success')
+      }
     }
     await eventsStore.fetchEvent(eventId)
   } catch (error) {
+    snackbar.showSnackbar('Failed to save changes', 'error')
     console.error('Error saving category:', error)
   } finally {
     categoryDialog.value = false
@@ -376,19 +414,34 @@ const deleteCategory = async (item: CategoryData) => {
   }
 }
 
+// TODO: GET USER
 // --- Judges Tab ---
 const assignJudge = async () => {
-  if (!selectedJudge.value) return
+  console.log('selectedJudge:', selectedJudge.value)
+  const selectedJudgeUserData = availableJudges.value.find((j) => j.id === selectedJudge.value)
+  if (!selectedJudgeUserData) return
+  console.log('Selected Judge Data from Users:', selectedJudgeUserData)
+  const res = await api.get(
+    `/judges?populate=*&filters[users_permissions_user][documentId][$eq]=${selectedJudgeUserData.documentId}`
+  )
+  const selectedJudgeData = res.data.data
+  console.log('Selected Judge Data from Judge', selectedJudgeData)
   try {
-    await api.post('/judges', {
+    await api.put(`/judges/${selectedJudgeData.documentId}`, {
       data: {
-        event: eventId,
-        users_permissions_user: selectedJudge.value,
+        events: {
+          connect: [event.value.documentId],
+        },
+        // users_permissions_user: selectedJudgeData,
+        name: selectedJudgeData.username,
       },
     })
+
+    snackbar.showSnackbar('Judge assigned successfully', 'success')
     await eventsStore.fetchEvent(eventId)
     selectedJudge.value = null
   } catch (e) {
+    snackbar.showSnackbar('Failed to assign judge', 'error')
     console.error('Could not assign judge', e)
   }
 }
@@ -403,32 +456,30 @@ const removeJudge = async (judge: JudgeData) => {
   }
 }
 
+const toggleShowPassword = () => {
+  showPassword.value = !showPassword.value
+}
+
+const toggleShowConfirmPassword = () => {
+  showConfirmPassword.value = !showConfirmPassword.value
+}
+
 const createJudge = async () => {
   if (!judgeRoleId.value) {
     console.error('Judge role ID not found')
     return
   }
   try {
-    // Create user
-    const userRes = await api.post('/users', {
-      ...newJudge.value,
-      role: judgeRoleId.value,
-      confirmed: true,
-      provider: 'local',
-    })
+    if (newJudge.value.password !== newJudge.value.confirmPassword) {
+      return (errorMsg.value = 'Passwords do not match!')
+    }
 
-    // Assign user as judge to event
-    await api.post('/judges', {
-      data: {
-        event: eventId,
-        users_permissions_user: userRes.data.id,
-      },
-    })
+    await authStore.register(newJudge.value.username, newJudge.value.email, newJudge.value.password)
 
-    await eventsStore.fetchEvent(eventId)
+    snackbar.showSnackbar('Judge created successfully!', 'success')
     await fetchAvailableJudges()
-    newJudge.value = { username: '', email: '', password: '' }
   } catch (e) {
+    snackbar.showSnackbar('Failed to create judge', 'error')
     console.error('Could not create or assign judge', e)
   }
 }
@@ -440,6 +491,7 @@ const canActivate = computed(
     (event.value.categories || []).length > 0 &&
     event.value.event_status !== 'active'
 )
+
 const activateEvent = async () => {
   if (!canActivate.value) return
   try {
@@ -447,7 +499,10 @@ const activateEvent = async () => {
     if (event.value) {
       event.value.event_status = 'active'
     }
+
+    snackbar.showSnackbar(`${event.value.name} is now active`, 'success')
   } catch (error) {
+    snackbar.showSnackbar(`Failed to activate ${event.value.name}`, 'error')
     console.error('Error activating event:', error)
   }
 }
