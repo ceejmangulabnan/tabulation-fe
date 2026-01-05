@@ -272,7 +272,7 @@ const categoryHeaders = [
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 const judgeHeaders = [
-  { title: 'Name', key: 'users_permissions_user.username' },
+  { title: 'Name', key: 'name' },
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 
@@ -369,7 +369,6 @@ const fetchCategories = async () => {
 // TODO: 400 on save
 const saveCategory = async () => {
   try {
-    // const data = { ...editedCategory.value }
     const updateCategoryPayload = {
       data: {
         name: editedCategory.value.name,
