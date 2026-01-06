@@ -335,14 +335,18 @@ onMounted(async () => {
 const handleSave = async () => {
   try {
     console.log('Current Event', event.value)
-    await api.put(`/events/${eventsStore.event?.documentId}`, {
+    const res = await api.put(`/events/${eventsStore.event?.documentId}`, {
       data: {
         name: event.value.name,
         description: event.value.description,
       },
     })
+    if (res.status === 200) {
+      snackbar.showSnackbar('Event updated successfully.', 'success')
+    }
   } catch (error) {
     console.error('Error updating event:', error)
+    snackbar.showSnackbar('Failed to udpate event.', 'error')
   }
 }
 
@@ -366,7 +370,6 @@ const fetchCategories = async () => {
   }
 }
 
-// TODO: 400 on save
 const saveCategory = async () => {
   try {
     const updateCategoryPayload = {
@@ -377,7 +380,13 @@ const saveCategory = async () => {
     }
     console.log('Update Category Data:', updateCategoryPayload)
     if (editedCategory.value.documentId) {
-      await api.put(`/categories/${editedCategory.value.documentId}`, updateCategoryPayload)
+      const res = await api.put(
+        `/categories/${editedCategory.value.documentId}`,
+        updateCategoryPayload
+      )
+      if (res.status === 200) {
+        snackbar.showSnackbar('Category updated successfully', 'success')
+      }
     } else {
       const createCategoryPayload = {
         data: {
@@ -420,7 +429,7 @@ const assignJudge = async () => {
   if (!selectedJudgeUserData) return
   console.log('Selected Judge Data:', selectedJudgeUserData)
   try {
-    await api.put(`/judges/${selectedJudgeUserData.documentId}`, {
+    const res = await api.put(`/judges/${selectedJudgeUserData.documentId}`, {
       data: {
         events: {
           connect: [event.value.documentId],
@@ -429,11 +438,14 @@ const assignJudge = async () => {
       },
     })
 
-    snackbar.showSnackbar('Judge assigned successfully', 'success')
+    if (res.status === 200) {
+      snackbar.showSnackbar('Judge assigned successfully', 'success')
+    }
+
     await eventsStore.fetchEvent(eventId)
     selectedJudge.value = null
   } catch (e) {
-    snackbar.showSnackbar('Failed to assign judge', 'error')
+    snackbar.showSnackbar('Failed to assign judge.', 'error')
     console.error('Could not assign judge', e)
   }
 }
@@ -487,12 +499,17 @@ const canActivate = computed(
 const activateEvent = async () => {
   if (!canActivate.value) return
   try {
-    await api.put(`/events/${event.value.documentId}`, { data: { event_status: 'active' } })
+    const res = await api.put(`/events/${event.value.documentId}`, {
+      data: { event_status: 'active' },
+    })
+
     if (event.value) {
       event.value.event_status = 'active'
     }
 
-    snackbar.showSnackbar(`${event.value.name} is now active`, 'success')
+    if (res.status === 200) {
+      snackbar.showSnackbar(`${event.value.name} is now active`, 'success')
+    }
   } catch (error) {
     snackbar.showSnackbar(`Failed to activate ${event.value.name}`, 'error')
     console.error('Error activating event:', error)
