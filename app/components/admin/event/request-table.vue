@@ -5,8 +5,8 @@
       <span>
         {{
           judgeRequestsStore.allJudgeRequests.length == 1
-            ? `${judgeRequestsStore.allJudgeRequests.length} event`
-            : `${judgeRequestsStore.allJudgeRequests.length} events`
+            ? `${judgeRequestsStore.allJudgeRequests.length} request`
+            : `${judgeRequestsStore.allJudgeRequests.length} requests`
         }}
       </span>
     </header>
@@ -151,7 +151,7 @@ const confirmAction = async () => {
   closeConfirmationDialog()
 }
 
-onMounted(() => {
+onMounted(async () => {
   judgeRequestsStore.fetchAllJudgeRequests()
 })
 </script>

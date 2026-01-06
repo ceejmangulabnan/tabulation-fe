@@ -61,6 +61,7 @@
     </v-navigation-drawer>
 
     <v-main>
+      <Snackbar />
       <v-container fluid>
         <slot />
       </v-container>

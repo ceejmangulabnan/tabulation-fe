@@ -75,8 +75,6 @@
         </v-card>
       </v-col>
     </v-row>
-
-    <Snackbar />
   </div>
 </template>
 
