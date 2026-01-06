@@ -5,8 +5,8 @@
       <span>
         {{
           judgeRequestsStore.judgeRequests.length == 1
-            ? `${judgeRequestsStore.judgeRequests.length} event`
-            : `${judgeRequestsStore.judgeRequests.length} events`
+            ? `${judgeRequestsStore.judgeRequests.length} request`
+            : `${judgeRequestsStore.judgeRequests.length} requests`
         }}
       </span>
     </header>
@@ -46,7 +46,11 @@
               {{ item.request_status }}
             </v-chip>
           </td>
-          <td align="center">
+
+          <td
+            align="center"
+            v-if="item.request_status !== 'approved'"
+          >
             <v-btn
               variant="tonal"
               color="error"

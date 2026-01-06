@@ -35,6 +35,7 @@ export const useJudgeRequestsStore = defineStore('judge-requests', {
         const api = useStrapiApi()
         const { data } = await api.get(`judge-requests?populate=*`)
         this.allJudgeRequests = data?.data || []
+        console.log('All judge requests:', data)
       } catch (error) {
         console.log('Failed to fetch judge requests', error)
         this.isError = true
@@ -42,12 +43,32 @@ export const useJudgeRequestsStore = defineStore('judge-requests', {
         this.isLoading = false
       }
     },
-    async updateJudgeRequest(id: string, payload: Partial<JudgeRequestData>): Promise<boolean> {
+    async updateJudgeRequest(
+      documentId: string,
+      payload: Partial<JudgeRequestData>
+    ): Promise<boolean> {
       this.isLoading = true
       this.isError = false
       try {
         const api = useStrapiApi()
-        await api.put(`judge-requests/${id}`, { data: payload })
+        await api.put(`judge-requests/${documentId}`, { data: payload })
+
+        if (payload.request_status === 'approved') {
+          const judgeRequest = this.allJudgeRequests.find((req) => req.documentId === documentId)
+
+          if (judgeRequest && judgeRequest.judge && judgeRequest.event) {
+            const judgeId = judgeRequest.judge.documentId
+            const eventId = judgeRequest.event.documentId
+
+            await api.put(`/judges/${judgeId}`, {
+              data: {
+                events: { connect: [eventId] },
+              },
+            })
+          }
+        }
+
+        await this.fetchAllJudgeRequests()
         return true
       } catch (error) {
         console.log('Failed to update judge request', error)
