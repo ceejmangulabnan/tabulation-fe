@@ -9,6 +9,7 @@
         <v-tab value="one">Event Info</v-tab>
         <v-tab value="two">Categories</v-tab>
         <v-tab value="three">Judges</v-tab>
+        <v-tab value="four">Participants</v-tab>
       </v-tabs>
 
       <v-card-text>
@@ -176,6 +177,41 @@
               </v-window-item>
             </v-window>
           </v-window-item>
+
+          <v-window-item value="four">
+            <v-card-title class="d-flex align-center">
+              Participants
+              <v-spacer />
+              <v-btn
+                color="green"
+                @click="showParticipantDialog()"
+              >
+                Add Participant
+              </v-btn>
+            </v-card-title>
+            <v-card-text>
+              <v-data-table
+                :headers="participantHeaders"
+                :items="event.participants"
+              >
+                <template #item.actions="{ item }">
+                  <v-icon
+                    small
+                    class="mr-2"
+                    @click="showParticipantDialog(item)"
+                  >
+                    mdi-pencil
+                  </v-icon>
+                  <v-icon
+                    small
+                    @click="deleteParticipant(item)"
+                  >
+                    mdi-delete
+                  </v-icon>
+                </template>
+              </v-data-table>
+            </v-card-text>
+          </v-window-item>
         </v-window>
       </v-card-text>
       <v-card-actions>
@@ -226,6 +262,44 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog
+      v-model="participantDialog"
+      max-width="500px"
+    >
+      <v-card>
+        <v-card-title>
+          <span class="headline">{{ editedParticipant.id ? 'Edit' : 'Add' }} Participant</span>
+        </v-card-title>
+        <v-card-text>
+          <v-text-field
+            v-model="editedParticipant.name"
+            label="Name"
+          />
+          <v-autocomplete
+            v-model="editedParticipant.department"
+            :items="departments"
+            item-title="name"
+            item-value="id"
+            label="Department"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="blue darken-1"
+            @click="participantDialog = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="blue darken-1"
+            @click="saveParticipant"
+          >
+            Save
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -242,17 +316,22 @@ const dataLoaded = ref(false)
 const errorMsg = ref<string | null>(null)
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
-const event = computed<Partial<EventData>>(
-  () =>
-    eventsStore.event || {
-      documentId: '',
-      id: 0,
-      name: '',
-      description: '',
-      event_status: 'draft',
-      categories: [],
-      judges: [],
-    }
+const event = computed<Partial<EventData>>(() =>
+  eventsStore.event
+    ? {
+        ...eventsStore.event,
+        participants: eventsStore.event.participants || [],
+      }
+    : {
+        documentId: '',
+        id: 0,
+        name: '',
+        description: '',
+        event_status: 'draft',
+        categories: [],
+        judges: [],
+        participants: [],
+      }
 )
 const categoryDialog = ref(false)
 const editedCategory = ref<Partial<CategoryData>>({
@@ -264,6 +343,18 @@ const availableJudges = ref<JudgeData[]>([])
 const selectedJudge = ref<number | null>(null)
 const newJudge = ref({ username: '', email: '', password: '', confirmPassword: '' })
 const judgeRoleId = ref<number | null>(null)
+
+// --- Participant State & Headers ---
+const participantHeaders = [
+  { title: 'Name', key: 'name' },
+  { title: 'Department', key: 'department.name' },
+  { title: 'Actions', key: 'actions', sortable: false },
+]
+const participantDialog = ref(false)
+const editedParticipant = ref<Partial<ParticipantData>>({
+  name: '',
+})
+const departments = ref<any[]>([])
 
 // --- Tab Headers ---
 const categoryHeaders = [
@@ -308,8 +399,21 @@ const fetchJudgeRole = async () => {
   }
 }
 
+const fetchDepartments = async () => {
+  try {
+    const res = await api.get('/departments')
+    // Assuming raw strapi response
+    departments.value = res.data.data.map((d: any) => ({
+      id: d.id,
+      name: d.attributes.name,
+    }))
+  } catch (e) {
+    console.error('Could not fetch departments', e)
+  }
+}
+
 const onTabChange = (value: string) => {
-  if ((value === 'two' || value === 'three') && !dataLoaded.value) {
+  if ((value === 'two' || value === 'three' || value === 'four') && !dataLoaded.value) {
     eventsStore.fetchEvent(eventId)
   }
 }
@@ -327,6 +431,7 @@ onMounted(async () => {
   await fetchAvailableJudges()
   await fetchJudgeRole()
   await fetchCategories()
+  await fetchDepartments()
   console.log('Event:', event.value)
   console.log('Available Judges', availableJudges.value)
 })
@@ -485,6 +590,57 @@ const createJudge = async () => {
   } catch (e) {
     snackbar.showSnackbar('Failed to create judge', 'error')
     console.error('Could not create or assign judge', e)
+  }
+}
+
+// --- Participants Tab ---
+const showParticipantDialog = (item: ParticipantData | null = null) => {
+  editedParticipant.value = item
+    ? { ...item, department: item.department?.id }
+    : { name: '' }
+  participantDialog.value = true
+}
+
+const saveParticipant = async () => {
+  try {
+    const participantData: {
+      name: string
+      department?: number | string
+      event: number | string
+    } = {
+      name: editedParticipant.value.name!,
+      department: editedParticipant.value.department,
+      event: event.value.id!,
+    }
+
+    if (editedParticipant.value.id) {
+      // is editing
+      await api.put(`/participants/${editedParticipant.value.id}`, {
+        data: participantData,
+      })
+      snackbar.showSnackbar('Participant updated successfully', 'success')
+    } else {
+      await api.post('/participants', { data: participantData })
+      snackbar.showSnackbar('Participant created successfully', 'success')
+    }
+    await eventsStore.fetchEvent(eventId)
+  } catch (error) {
+    snackbar.showSnackbar('Failed to save participant', 'error')
+    console.error('Error saving participant:', error)
+  } finally {
+    participantDialog.value = false
+  }
+}
+
+const deleteParticipant = async (item: ParticipantData) => {
+  if (!confirm('Are you sure?')) return
+  try {
+    await api.delete(`/participants/${item.id}`)
+    await eventsStore.fetchEvent(eventId)
+    snackbar.showSnackbar('Participant deleted successfully', 'success')
+  } catch (error) {
+    snackbar.showSnackbar('Failed to delete participant', 'error')
+    console.error('Error deleting participant:', error)
   }
 }
 
