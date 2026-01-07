@@ -62,13 +62,13 @@
                   <v-icon
                     small
                     class="mr-2"
-                    @click="showCategoryDialog(item)"
+                    @click="showCategoryDialog(item as CategoryData)"
                   >
                     mdi-pencil
                   </v-icon>
                   <v-icon
                     small
-                    @click="deleteCategory(item)"
+                    @click="deleteCategory(item as CategoryData)"
                   >
                     mdi-delete
                   </v-icon>
@@ -198,13 +198,13 @@
                   <v-icon
                     small
                     class="mr-2"
-                    @click="showParticipantDialog(item)"
+                    @click="showParticipantDialog(item as ParticipantData)"
                   >
                     mdi-pencil
                   </v-icon>
                   <v-icon
                     small
-                    @click="deleteParticipant(item)"
+                    @click="deleteParticipant(item as ParticipantData)"
                   >
                     mdi-delete
                   </v-icon>
@@ -271,9 +271,36 @@
           <span class="headline">{{ editedParticipant.id ? 'Edit' : 'Add' }} Participant</span>
         </v-card-title>
         <v-card-text>
+          <v-img
+            v-if="editedParticipant.headshot?.data"
+            :src="getStrapiUrl(editedParticipant.headshot.data.attributes.url)"
+            max-height="150"
+            class="mb-2"
+          />
+          <v-file-input
+            v-model="headshotFile"
+            label="Headshot"
+            accept="image/*"
+            prepend-icon="mdi-camera"
+            clearable
+            @click:clear="headshotCleared = true"
+          />
           <v-text-field
             v-model="editedParticipant.name"
             label="Name"
+            required
+          />
+          <v-text-field
+            v-model.number="editedParticipant.number"
+            label="Number"
+            type="number"
+            required
+          />
+          <v-select
+            v-model="editedParticipant.gender"
+            :items="['male', 'female']"
+            label="Gender"
+            required
           />
           <v-autocomplete
             v-model="editedParticipant.department"
@@ -281,6 +308,10 @@
             item-title="name"
             item-value="id"
             label="Department"
+          />
+          <v-textarea
+            v-model="editedParticipant.notes"
+            label="Notes"
           />
         </v-card-text>
         <v-card-actions>
@@ -347,14 +378,29 @@ const judgeRoleId = ref<number | null>(null)
 // --- Participant State & Headers ---
 const participantHeaders = [
   { title: 'Name', key: 'name' },
+  { title: 'Number', key: 'number' },
+  { title: 'Gender', key: 'gender' },
   { title: 'Department', key: 'department.name' },
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 const participantDialog = ref(false)
-const editedParticipant = ref<Partial<ParticipantData>>({
+const editedParticipant = ref<
+  Omit<Partial<ParticipantData>, 'department'> & { department?: number }
+>({
   name: '',
+  number: undefined,
+  gender: undefined,
+  notes: '',
+  department: undefined,
 })
+const headshotFile = ref<File[] | null>(null)
+const headshotCleared = ref(false)
 const departments = ref<any[]>([])
+
+function getStrapiUrl(url: string) {
+  const config = useRuntimeConfig()
+  return `${config.public.strapiUrl}${url}`
+}
 
 // --- Tab Headers ---
 const categoryHeaders = [
@@ -457,7 +503,10 @@ const handleSave = async () => {
 
 // --- Categories Tab ---
 const totalWeight = computed(() =>
-  (event.value.categories || []).reduce((sum, c) => sum + (Number(c.weight * 100) || 0), 0)
+  (event.value.categories || []).reduce(
+    (sum: number, c: CategoryData) => sum + (Number(c.weight * 100) || 0),
+    0
+  )
 )
 
 const showCategoryDialog = (item: CategoryData | null = null) => {
@@ -595,34 +644,76 @@ const createJudge = async () => {
 
 // --- Participants Tab ---
 const showParticipantDialog = (item: ParticipantData | null = null) => {
+  headshotFile.value = null
+  headshotCleared.value = false
   editedParticipant.value = item
     ? { ...item, department: item.department?.id }
-    : { name: '' }
+    : {
+        name: '',
+        number: undefined,
+        gender: undefined,
+        notes: '',
+        department: undefined,
+        participant_status: 'active',
+      }
   participantDialog.value = true
 }
 
 const saveParticipant = async () => {
   try {
-    const participantData: {
-      name: string
-      department?: number | string
-      event: number | string
-    } = {
-      name: editedParticipant.value.name!,
+    const participantData: any = {
+      name: editedParticipant.value.name,
+      number: editedParticipant.value.number,
+      gender: editedParticipant.value.gender,
       department: editedParticipant.value.department,
-      event: event.value.id!,
+      notes: editedParticipant.value.notes,
+      participant_status: 'active',
+      event: event.value.id,
     }
 
-    if (editedParticipant.value.id) {
-      // is editing
-      await api.put(`/participants/${editedParticipant.value.id}`, {
+    if (!participantData.name || !participantData.number || !participantData.gender) {
+      snackbar.showSnackbar(
+        'Name, number, and gender (maybe department too idk) are required.',
+        'error'
+      )
+      return
+    }
+
+    const isEditing = !!editedParticipant.value.documentId
+
+    if (isEditing) {
+      // For updates, we can upload and link the file in one go if a file is provided.
+      if (headshotFile.value && headshotFile.value.length > 0 && headshotFile.value[0]) {
+        const file = headshotFile.value[0]
+        const formData = new FormData()
+        formData.append('files', file)
+        formData.append('ref', 'api::participant.participant')
+        formData.append('refId', editedParticipant.value.id!)
+        formData.append('field', 'headshot')
+        await api.post('/upload', formData)
+      } else if (headshotCleared.value) {
+        participantData.headshot = null
+      }
+
+      await api.put(`/participants/${editedParticipant.value.documentId}`, {
         data: participantData,
       })
       snackbar.showSnackbar('Participant updated successfully', 'success')
     } else {
+      // For creation, we must first upload the file to get an ID, then create the participant.
+      if (headshotFile.value && headshotFile.value.length > 0 && headshotFile.value[0]) {
+        const file = headshotFile.value[0]
+        const formData = new FormData()
+        formData.append('files', file)
+        const uploadResponse = await api.post('/upload', formData)
+        if (uploadResponse.data && uploadResponse.data.length > 0) {
+          participantData.headshot = uploadResponse.data[0].id
+        }
+      }
       await api.post('/participants', { data: participantData })
       snackbar.showSnackbar('Participant created successfully', 'success')
     }
+
     await eventsStore.fetchEvent(eventId)
   } catch (error) {
     snackbar.showSnackbar('Failed to save participant', 'error')
@@ -635,7 +726,7 @@ const saveParticipant = async () => {
 const deleteParticipant = async (item: ParticipantData) => {
   if (!confirm('Are you sure?')) return
   try {
-    await api.delete(`/participants/${item.id}`)
+    await api.delete(`/participants/${item.documentId}`)
     await eventsStore.fetchEvent(eventId)
     snackbar.showSnackbar('Participant deleted successfully', 'success')
   } catch (error) {
