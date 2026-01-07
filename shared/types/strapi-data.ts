@@ -34,7 +34,7 @@ export interface EventData extends StrapiPopulatedItem {
   event_status: 'draft' | 'active' | 'inactive' | 'finished'
   // Relationships
   judges: JudgeData[]
-  categories: CategoryData[]
+  segments: SegmentData[]
   participants: ParticipantData[]
   scores: ScoreData[]
   judge_requests: JudgeRequestData[]
@@ -50,6 +50,7 @@ export interface CategoryData extends StrapiPopulatedItem {
   scores: ScoreData[]
   weight: number
   active: boolean
+  segment: SegmentData
 }
 
 export interface ScoreData extends StrapiPopulatedItem {
@@ -58,6 +59,7 @@ export interface ScoreData extends StrapiPopulatedItem {
   category: CategoryData
   participant: ParticipantData
   judge: JudgeData
+  segment: SegmentData
 }
 
 export interface HeadshotFormat {
@@ -106,7 +108,24 @@ export interface StrapiMinimalParticipant extends StrapiPopulatedItem {
 
 export interface ParticipantData extends StrapiPopulatedItem {
   name: string
+  number: number
+  participant_status: 'active' | 'eliminated'
+  gender: 'male' | 'female'
   event: EventData
   department: DepartmentData
   headshot: HeadshotData
+  scores: ScoreData[]
+  eliminated_at_segment: SegmentData
+  notes: string
+}
+
+export interface SegmentData extends StrapiPopulatedItem {
+  name: string
+  order: number
+  weight: number
+  segment_status: 'draft' | 'active' | 'closed'
+  event: EventData
+  categories: CategoryData[]
+  scores: ScoreData[]
+  eliminated_participants: ParticipantData[]
 }
