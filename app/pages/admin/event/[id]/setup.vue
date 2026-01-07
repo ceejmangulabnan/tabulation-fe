@@ -394,6 +394,9 @@ const editedParticipant = ref<
   department: undefined,
 })
 const headshotFile = ref<File[] | null>(null)
+watch(headshotFile, (newValue) => {
+  console.log('headshotFile changed:', newValue)
+})
 const headshotCleared = ref(false)
 const departments = ref<any[]>([])
 
@@ -448,7 +451,6 @@ const fetchJudgeRole = async () => {
 const fetchDepartments = async () => {
   try {
     const res = await api.get('/departments')
-    // Assuming raw strapi response
     departments.value = res.data.data.map((d: any) => ({
       id: d.id,
       name: d.attributes.name,
@@ -660,6 +662,7 @@ const showParticipantDialog = (item: ParticipantData | null = null) => {
 }
 
 const saveParticipant = async () => {
+  console.log('Value of headshotFile at start of save:', headshotFile.value)
   try {
     const participantData: any = {
       name: editedParticipant.value.name,
@@ -679,44 +682,64 @@ const saveParticipant = async () => {
       return
     }
 
-    const isEditing = !!editedParticipant.value.documentId
+    if (headshotFile.value && headshotFile.value.length > 0 && headshotFile.value[0]) {
+      const file = headshotFile.value[0]
+      const formData = new FormData()
+      formData.append('files', file)
+      console.log('Uploading headshot file:', file.name)
+      const uploadResponse = await api.post('/upload', formData)
+      console.log('Upload response:', JSON.stringify(uploadResponse, null, 2))
 
-    if (isEditing) {
-      // For updates, we can upload and link the file in one go if a file is provided.
-      if (headshotFile.value && headshotFile.value.length > 0 && headshotFile.value[0]) {
-        const file = headshotFile.value[0]
-        const formData = new FormData()
-        formData.append('files', file)
-        formData.append('ref', 'api::participant.participant')
-        formData.append('refId', editedParticipant.value.id!)
-        formData.append('field', 'headshot')
-        await api.post('/upload', formData)
-      } else if (headshotCleared.value) {
-        participantData.headshot = null
+      if (uploadResponse.data && uploadResponse.data.length > 0) {
+        const uploadedFile = uploadResponse.data[0]
+        console.log('Uploaded file object:', JSON.stringify(uploadedFile, null, 2))
+
+        if (uploadedFile.id) {
+          // using ID as it is the standard, assuming documentId was a red herring
+          participantData.headshot = uploadedFile.id
+        } else {
+          console.error("Uploaded file is missing 'id'", uploadedFile)
+          snackbar.showSnackbar(
+            'Failed to link headshot: uploaded file has no id.',
+            'error'
+          )
+        }
       }
+    } else if (headshotCleared.value) {
+      participantData.headshot = null
+    }
 
+    if (editedParticipant.value.documentId) {
+      console.log(
+        'Updating participant with data payload:',
+        JSON.stringify({ data: participantData }, null, 2)
+      )
       await api.put(`/participants/${editedParticipant.value.documentId}`, {
         data: participantData,
       })
       snackbar.showSnackbar('Participant updated successfully', 'success')
     } else {
-      // For creation, we must first upload the file to get an ID, then create the participant.
-      if (headshotFile.value && headshotFile.value.length > 0 && headshotFile.value[0]) {
-        const file = headshotFile.value[0]
-        const formData = new FormData()
-        formData.append('files', file)
-        const uploadResponse = await api.post('/upload', formData)
-        if (uploadResponse.data && uploadResponse.data.length > 0) {
-          participantData.headshot = uploadResponse.data[0].id
-        }
-      }
+      console.log(
+        'Creating participant with data:',
+        JSON.stringify({ data: participantData }, null, 2)
+      )
       await api.post('/participants', { data: participantData })
       snackbar.showSnackbar('Participant created successfully', 'success')
     }
 
     await eventsStore.fetchEvent(eventId)
-  } catch (error) {
-    snackbar.showSnackbar('Failed to save participant', 'error')
+    if (editedParticipant.value.id) {
+      const updatedParticipant = eventsStore.event?.participants?.find(
+        (p) => p.id === editedParticipant.value.id
+      )
+      if (updatedParticipant) {
+        editedParticipant.value = {
+          ...updatedParticipant,
+          department: updatedParticipant.department?.id,
+        }
+      }
+    }
+
     console.error('Error saving participant:', error)
   } finally {
     participantDialog.value = false
