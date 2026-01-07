@@ -272,7 +272,13 @@
         </v-card-title>
         <v-card-text>
           <v-img
-            v-if="editedParticipant.headshot?.data"
+            v-if="headshotPreviewUrl"
+            :src="headshotPreviewUrl"
+            max-height="150"
+            class="mb-2"
+          />
+          <v-img
+            v-else-if="editedParticipant.headshot?.data"
             :src="getStrapiUrl(editedParticipant.headshot.data.attributes.url)"
             max-height="150"
             class="mb-2"
@@ -283,7 +289,6 @@
             accept="image/*"
             prepend-icon="mdi-camera"
             clearable
-            @click:clear="headshotCleared = true"
           />
           <v-text-field
             v-model="editedParticipant.name"
@@ -393,12 +398,38 @@ const editedParticipant = ref<
   notes: '',
   department: undefined,
 })
-const headshotFile = ref<File[] | null>(null)
-watch(headshotFile, (newValue) => {
-  console.log('headshotFile changed:', newValue)
-})
+const headshotFile = ref<File | null>(null)
+const headshotPreviewUrl = ref<string | null>(null)
 const headshotCleared = ref(false)
+
+watch(headshotFile, (newValue, oldValue) => {
+  console.log('headshotFile changed:', newValue)
+  // Revoke old URL if it exists
+  if (headshotPreviewUrl.value) {
+    URL.revokeObjectURL(headshotPreviewUrl.value)
+    headshotPreviewUrl.value = null
+  }
+  // Create new URL if a file is selected
+  if (newValue) {
+    headshotPreviewUrl.value = URL.createObjectURL(newValue)
+    headshotCleared.value = false
+  } else if (oldValue) {
+    // If the new value is empty and there was an old value, it means the field was cleared
+    headshotCleared.value = true
+  }
+})
+
+watch(participantDialog, (isOpen) => {
+  if (!isOpen) {
+    if (headshotPreviewUrl.value) {
+      URL.revokeObjectURL(headshotPreviewUrl.value)
+      headshotPreviewUrl.value = null
+    }
+  }
+})
+
 const departments = ref<any[]>([])
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
 
 function getStrapiUrl(url: string) {
   const config = useRuntimeConfig()
@@ -682,8 +713,8 @@ const saveParticipant = async () => {
       return
     }
 
-    if (headshotFile.value && headshotFile.value.length > 0 && headshotFile.value[0]) {
-      const file = headshotFile.value[0]
+    if (headshotFile.value) {
+      const file: File = headshotFile.value
       const formData = new FormData()
       formData.append('files', file)
       console.log('Uploading headshot file:', file.name)
@@ -699,10 +730,7 @@ const saveParticipant = async () => {
           participantData.headshot = uploadedFile.id
         } else {
           console.error("Uploaded file is missing 'id'", uploadedFile)
-          snackbar.showSnackbar(
-            'Failed to link headshot: uploaded file has no id.',
-            'error'
-          )
+          snackbar.showSnackbar('Failed to link headshot: uploaded file has no id.', 'error')
         }
       }
     } else if (headshotCleared.value) {
@@ -739,7 +767,7 @@ const saveParticipant = async () => {
         }
       }
     }
-
+  } catch (error) {
     console.error('Error saving participant:', error)
   } finally {
     participantDialog.value = false
