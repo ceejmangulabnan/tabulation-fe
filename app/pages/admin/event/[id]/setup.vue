@@ -48,33 +48,83 @@
               <v-spacer />
               <v-btn
                 color="green"
-                @click="showCategoryDialog()"
+                @click="showSegmentDialog()"
               >
-                Add Category
+                Add Segment
               </v-btn>
             </v-card-title>
             <v-card-text>
               <v-data-table
-                :headers="categoryHeaders"
-                :items="event.categories"
+                :headers="segmentHeaders"
+                :items="event.segments"
+                show-expand
+                class="mb-4"
               >
-                <template v-slot:item.actions="{ item }">
+                <template #item.actions="{ item }">
                   <v-icon
                     small
                     class="mr-2"
-                    @click="showCategoryDialog(item as CategoryData)"
+                    @click="showSegmentDialog(item as SegmentData)"
                   >
                     mdi-pencil
                   </v-icon>
                   <v-icon
                     small
-                    @click="deleteCategory(item as CategoryData)"
+                    @click="deleteSegment(item as SegmentData)"
                   >
                     mdi-delete
                   </v-icon>
                 </template>
+
+                <template #expanded-row="{ columns, item }">
+                  <td :colspan="columns.length">
+                    <v-card
+                      variant="tonal"
+                      class="my-4"
+                    >
+                      <v-card-title class="d-flex align-center">
+                        Categories for {{ item.name }}
+                        <v-spacer />
+                        <v-btn
+                          small
+                          color="primary"
+                          @click="showCategoryDialog(null, item.documentId)"
+                        >
+                          Add Category
+                        </v-btn>
+                      </v-card-title>
+                      <v-data-table
+                        :headers="categoryHeaders"
+                        :items="item.categories"
+                        density="compact"
+                      >
+                        <template #item.actions="{ item: categoryItem }">
+                          <v-icon
+                            small
+                            class="mr-2"
+                            @click="
+                              showCategoryDialog(categoryItem as CategoryData, item.documentId)
+                            "
+                          >
+                            mdi-pencil
+                          </v-icon>
+                          <v-icon
+                            small
+                            @click="deleteCategory(categoryItem as CategoryData)"
+                          >
+                            mdi-delete
+                          </v-icon>
+                        </template>
+                      </v-data-table>
+                      <v-card-text class="text-right">
+                        Total Category Weight:
+                        {{ calculateTotalCategoryWeight(item as SegmentData) }} / 100
+                      </v-card-text>
+                    </v-card>
+                  </td>
+                </template>
               </v-data-table>
-              <p class="mt-4">Total Weight: {{ totalWeight }} / 100</p>
+              <p class="mt-4 text-right">Total Segment Weight: {{ totalSegmentWeight }} / 100</p>
             </v-card-text>
           </v-window-item>
 
@@ -235,6 +285,50 @@
     </v-card>
 
     <v-dialog
+      v-model="segmentDialog"
+      max-width="500px"
+    >
+      <v-card>
+        <v-card-title>
+          <span class="headline">{{ editedSegment.id ? 'Edit' : 'Add' }} Segment</span>
+        </v-card-title>
+        <v-card-text>
+          <v-text-field
+            v-model="editedSegment.name"
+            label="Name"
+          />
+          <v-text-field
+            v-model.number="editedSegment.order"
+            label="Order in Event"
+            type="number"
+            step="1"
+          />
+          <v-text-field
+            v-model.number="editedSegment.weight"
+            label="Weight (0.0 to 1.0)"
+            type="number"
+            step="0.01"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="blue darken-1"
+            @click="segmentDialog = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="blue darken-1"
+            @click="saveSegment"
+          >
+            Save
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog
       v-model="categoryDialog"
       max-width="500px"
     >
@@ -249,8 +343,9 @@
           />
           <v-text-field
             v-model.number="editedCategory.weight"
-            label="Weight"
+            label="Weight (0.0 to 1.0)"
             type="number"
+            step="0.01"
           />
         </v-card-text>
         <v-card-actions>
@@ -377,6 +472,7 @@ const event = computed<Partial<EventData>>(() =>
     ? {
         ...eventsStore.event,
         participants: eventsStore.event.participants || [],
+        segments: eventsStore.event.segments || [],
       }
     : {
         documentId: '',
@@ -384,17 +480,12 @@ const event = computed<Partial<EventData>>(() =>
         name: '',
         description: '',
         event_status: 'draft',
-        categories: [],
+        segments: [],
         judges: [],
         participants: [],
       }
 )
-const categoryDialog = ref(false)
-const editedCategory = ref<Partial<CategoryData>>({
-  id: 0,
-  name: '',
-  weight: 0,
-})
+
 const availableJudges = ref<JudgeData[]>([])
 const selectedJudge = ref<number | null>(null)
 const newJudge = ref({ username: '', email: '', password: '', confirmPassword: '' })
@@ -464,26 +555,43 @@ function getStrapiUrl(url: string) {
   return `${config.public.strapiUrl}${url}`
 }
 
-// --- Tab Headers ---
-const categoryHeaders = [
+// --- Scoring Segments State & Headers ---
+const segmentHeaders = [
   { title: 'Name', key: 'name' },
-  { title: 'Weight', key: 'weight' },
+  { title: 'Weight', value: 'weight' },
   { title: 'Actions', key: 'actions', sortable: false },
 ]
+const categoryHeaders = [
+  { title: 'Name', key: 'name' },
+  { title: 'Weight', value: 'weight' },
+  { title: 'Actions', key: 'actions', sortable: false },
+]
+const segmentDialog = ref(false)
+const editedSegment = ref<Partial<SegmentData>>({
+  id: 0,
+  name: '',
+  weight: 0,
+})
+const categoryDialog = ref(false)
+const editedCategory = ref<Partial<CategoryData>>({
+  id: 0,
+  name: '',
+  weight: 0,
+})
+const currentSegmentIdForCategory = ref<string | null>(null)
+
+// --- Judges Tab ---
 const judgeHeaders = [
   { title: 'Name', key: 'name' },
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 
 const eventId = route.params.id as string
-console.log('Event ID from params:', eventId)
-console.log('New Event data:', eventsStore.newEvent)
 
 const fetchAvailableJudges = async () => {
   try {
     const res = await api.get('/judges')
     availableJudges.value = res.data.data
-    console.log(availableJudges.value)
   } catch (e) {
     console.error('Could not fetch judges', e)
   }
@@ -498,7 +606,6 @@ const fetchJudgeRole = async () => {
     if (judgeRole) {
       judgeRoleId.value = judgeRole.id
     } else {
-      // fallback to authenticated if no judge role is found
       const authRole = res.data.roles.find((r: any) => r.type === 'authenticated')
       judgeRoleId.value = authRole.id
     }
@@ -537,103 +644,135 @@ onMounted(async () => {
 
   await fetchAvailableJudges()
   await fetchJudgeRole()
-  await fetchCategories()
+  await fetchSegments()
   await fetchDepartments()
-  console.log('Event:', event.value)
-  console.log('Available Judges', availableJudges.value)
 })
 
 // --- Event Info Tab ---
 const handleSave = async () => {
   try {
-    console.log('Current Event', event.value)
-    const res = await api.put(`/events/${eventsStore.event?.documentId}`, {
+    await api.put(`/events/${eventsStore.event?.documentId}`, {
       data: {
         name: event.value.name,
         description: event.value.description,
       },
     })
-    if (res.status === 200) {
-      snackbar.showSnackbar('Event updated successfully.', 'success')
-    }
+    snackbar.showSnackbar('Event updated successfully.', 'success')
   } catch (error) {
     console.error('Error updating event:', error)
     snackbar.showSnackbar('Failed to udpate event.', 'error')
   }
 }
 
-// --- Categories Tab ---
-const totalWeight = computed(() =>
-  (event.value.categories || []).reduce(
-    (sum: number, c: CategoryData) => sum + (Number(c.weight * 100) || 0),
+// --- Segments & Categories Tab ---
+const totalSegmentWeight = computed(() =>
+  (event.value.segments || []).reduce(
+    (sum: number, s: SegmentData) => sum + (Number(s.weight) * 100 || 0),
     0
   )
 )
 
-const showCategoryDialog = (item: CategoryData | null = null) => {
-  editedCategory.value = item ? { ...item } : { id: 0, name: '', weight: 0 }
-  categoryDialog.value = true
+const calculateTotalCategoryWeight = (segment: SegmentData) => {
+  return (segment.categories || []).reduce((sum, c) => sum + (Number(c.weight) * 100 || 0), 0)
 }
 
-const fetchCategories = async () => {
+const fetchSegments = async () => {
   try {
-    const res = await api.get(`/categories?populate=event&filters[event][id][$eq]=${eventId}`)
-    console.log('Event Categories response:', res)
-    if (event) event.value.categories = res.data.data
+    const res = await api.get(`/segments?filters[event][id][$eq]=${eventId}&populate[categories]=*`)
+    if (event.value) {
+      event.value.segments = res.data.data
+    }
   } catch (error) {
-    console.error(`Failed to fetch categories for event ID ${eventId}`, error)
+    console.error(`Failed to fetch segments for event ID ${eventId}`, error)
   }
 }
 
-const saveCategory = async () => {
+// Segment Dialog
+const showSegmentDialog = (item: SegmentData | null = null) => {
+  editedSegment.value = item ? { ...item } : { name: '', weight: 0 }
+  segmentDialog.value = true
+}
+
+const saveSegment = async () => {
   try {
-    const updateCategoryPayload = {
+    const payload = {
       data: {
-        name: editedCategory.value.name,
-        weight: editedCategory.value.weight,
+        name: editedSegment.value.name,
+        order: editedSegment.value.order,
+        weight: editedSegment.value.weight,
+        event: event.value.id,
       },
     }
-    console.log('Update Category Data:', updateCategoryPayload)
-    if (editedCategory.value.documentId) {
-      const res = await api.put(
-        `/categories/${editedCategory.value.documentId}`,
-        updateCategoryPayload
-      )
-      if (res.status === 200) {
-        snackbar.showSnackbar('Category updated successfully', 'success')
-      }
+    if (editedSegment.value.documentId) {
+      await api.put(`/segments/${editedSegment.value.documentId}`, payload)
+      snackbar.showSnackbar('Segment updated successfully', 'success')
     } else {
-      const createCategoryPayload = {
-        data: {
-          name: editedCategory.value.name,
-          weight: editedCategory.value.weight,
-          event: {
-            connect: [event.value.documentId],
-          },
-        },
-      }
-
-      const createCategoryResponse = await api.post('/categories', createCategoryPayload)
-      console.log('Create Category Response', createCategoryResponse)
-      if (createCategoryResponse.status === 201) {
-        snackbar.showSnackbar('Category created successfully!', 'success')
-      }
+      await api.post('/segments', payload)
+      snackbar.showSnackbar('Segment created successfully!', 'success')
     }
     await eventsStore.fetchEvent(eventId)
   } catch (error) {
-    snackbar.showSnackbar('Failed to save changes', 'error')
+    snackbar.showSnackbar('Failed to save segment', 'error')
+    console.error('Error saving segment:', error)
+  } finally {
+    segmentDialog.value = false
+  }
+}
+
+const deleteSegment = async (item: SegmentData) => {
+  if (!confirm('Are you sure? This will delete all categories within it.')) return
+  try {
+    await api.delete(`/segments/${item.documentId}`)
+    await eventsStore.fetchEvent(eventId)
+    snackbar.showSnackbar('Segment deleted successfully', 'success')
+  } catch (error) {
+    console.error('Error deleting segment:', error)
+    snackbar.showSnackbar('Failed to delete segment', 'error')
+  }
+}
+
+// Category Dialog
+const showCategoryDialog = (item: CategoryData | null = null, segmentId: string) => {
+  editedCategory.value = item ? { ...item } : { name: '', weight: 0 }
+  currentSegmentIdForCategory.value = segmentId
+  categoryDialog.value = true
+}
+
+const saveCategory = async () => {
+  if (!currentSegmentIdForCategory.value) return
+  try {
+    const payload = {
+      data: {
+        name: editedCategory.value.name,
+        weight: editedCategory.value.weight,
+        segment: currentSegmentIdForCategory.value,
+      },
+    }
+    if (editedCategory.value.documentId) {
+      await api.put(`/categories/${editedCategory.value.documentId}`, payload)
+      snackbar.showSnackbar('Category updated successfully', 'success')
+    } else {
+      await api.post('/categories', payload)
+      snackbar.showSnackbar('Category created successfully!', 'success')
+    }
+    await eventsStore.fetchEvent(eventId)
+  } catch (error) {
+    snackbar.showSnackbar('Failed to save category', 'error')
     console.error('Error saving category:', error)
   } finally {
     categoryDialog.value = false
   }
 }
+
 const deleteCategory = async (item: CategoryData) => {
   if (!confirm('Are you sure?')) return
   try {
-    await api.delete(`/categories/${item.id}`)
+    await api.delete(`/categories/${item.documentId}`)
     await eventsStore.fetchEvent(eventId)
+    snackbar.showSnackbar('Category deleted successfully', 'success')
   } catch (error) {
     console.error('Error deleting category:', error)
+    snackbar.showSnackbar('Failed to delete category', 'error')
   }
 }
 
@@ -825,12 +964,13 @@ const deleteParticipant = async (item: ParticipantData) => {
 }
 
 // --- Activation ---
-const canActivate = computed(
-  () =>
-    totalWeight.value === 100 &&
-    (event.value.categories || []).length > 0 &&
-    event.value.event_status !== 'active'
-)
+const canActivate = computed(() => {
+  const segmentsValid = totalSegmentWeight.value === 100 && (event.value.segments || []).length > 0
+  const categoriesValid = (event.value.segments || []).every(
+    (s: SegmentData) => calculateTotalCategoryWeight(s) === 100 && s.categories.length > 0
+  )
+  return segmentsValid && categoriesValid && event.value.event_status !== 'active'
+})
 
 const activateEvent = async () => {
   if (!canActivate.value) return
