@@ -668,9 +668,14 @@ const assignJudge = async () => {
 const removeJudge = async (judge: JudgeData) => {
   if (!confirm('Are you sure?')) return
   try {
-    await api.delete(`/judges/${judge.id}`)
+    const res = await api.delete(`/judges/${judge.documentId}`)
     await eventsStore.fetchEvent(eventId)
+
+    if (res.status === 204) {
+      snackbar.showSnackbar('Judge assigned successfully', 'success')
+    }
   } catch (e) {
+    snackbar.showSnackbar('Failed to delete judge', 'error')
     console.error('Could not remove judge', e)
   }
 }
