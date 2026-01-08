@@ -194,6 +194,14 @@
                 :headers="participantHeaders"
                 :items="event.participants"
               >
+                <template #item.headshot="{ item }">
+                  <v-avatar
+                    v-if="item.headshot"
+                    @click="showImagePreview(item.headshot.url)"
+                  >
+                    <v-img :src="getStrapiUrl(item.headshot.formats.thumbnail.url)" />
+                  </v-avatar>
+                </template>
                 <template #item.actions="{ item }">
                   <v-icon
                     small
@@ -263,6 +271,14 @@
       </v-card>
     </v-dialog>
     <v-dialog
+      v-model="imagePreviewDialog"
+      max-width="500px"
+    >
+      <v-card>
+        <v-img :src="imagePreviewUrl" />
+      </v-card>
+    </v-dialog>
+    <v-dialog
       v-model="participantDialog"
       max-width="500px"
     >
@@ -278,14 +294,18 @@
             class="mb-2"
           />
           <v-img
-            v-else-if="editedParticipant.headshot?.data"
-            :src="getStrapiUrl(editedParticipant.headshot.data.attributes.url)"
+            v-else-if="editedParticipant.headshot"
+            :src="getStrapiUrl(editedParticipant.headshot.url)"
             max-height="150"
             class="mb-2"
+            style="cursor: pointer"
+            @click="showImagePreview(editedParticipant.headshot.url)"
           />
           <v-file-input
             v-model="headshotFile"
-            label="Headshot"
+            :label="
+              editedParticipant.headshot?.url ? 'Replace Headshot Image' : 'Upload Headshot Image'
+            "
             accept="image/*"
             prepend-icon="mdi-camera"
             clearable
@@ -382,6 +402,7 @@ const judgeRoleId = ref<number | null>(null)
 
 // --- Participant State & Headers ---
 const participantHeaders = [
+  { title: 'Headshot', key: 'headshot', sortable: false },
   { title: 'Name', key: 'name' },
   { title: 'Number', key: 'number' },
   { title: 'Gender', key: 'gender' },
@@ -401,6 +422,13 @@ const editedParticipant = ref<
 const headshotFile = ref<File | null>(null)
 const headshotPreviewUrl = ref<string | null>(null)
 const headshotCleared = ref(false)
+const imagePreviewDialog = ref(false)
+const imagePreviewUrl = ref<string | undefined>('')
+
+const showImagePreview = (url: string) => {
+  imagePreviewUrl.value = getStrapiUrl(url)
+  imagePreviewDialog.value = true
+}
 
 watch(headshotFile, (newValue, oldValue) => {
   console.log('headshotFile changed:', newValue)
@@ -484,7 +512,7 @@ const fetchDepartments = async () => {
     const res = await api.get('/departments')
     departments.value = res.data.data.map((d: any) => ({
       id: d.id,
-      name: d.attributes.name,
+      name: d.name,
     }))
   } catch (e) {
     console.error('Could not fetch departments', e)
@@ -715,6 +743,12 @@ const saveParticipant = async () => {
 
     if (headshotFile.value) {
       const file: File = headshotFile.value
+
+      if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+        snackbar.showSnackbar('Only JPEG, JPG, PNG, and WebP images are accepted.', 'error')
+        return // Prevent upload
+      }
+
       const formData = new FormData()
       formData.append('files', file)
       console.log('Uploading headshot file:', file.name)
@@ -726,7 +760,6 @@ const saveParticipant = async () => {
         console.log('Uploaded file object:', JSON.stringify(uploadedFile, null, 2))
 
         if (uploadedFile.id) {
-          // using ID as it is the standard, assuming documentId was a red herring
           participantData.headshot = uploadedFile.id
         } else {
           console.error("Uploaded file is missing 'id'", uploadedFile)

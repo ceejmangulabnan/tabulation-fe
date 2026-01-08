@@ -1,7 +1,7 @@
 <template>
   <div class="my-4 d-flex flex-column ga-10">
     <v-alert
-      v-if="activeCategories && activeCategories.length"
+      v-if="activeSegments && activeSegments.length"
       type="info"
       variant="tonal"
       title="Scoring Active"
@@ -10,10 +10,10 @@
       <p>Scoring is currently active for the following categories:</p>
       <div class="d-flex ga-2 mt-2">
         <v-chip
-          v-for="category in activeCategories"
-          :key="category.name"
+          v-for="seg in activeSegments"
+          :key="seg.name"
         >
-          {{ category.name }}
+          {{ seg.name }}
         </v-chip>
       </div>
     </v-alert>
@@ -30,7 +30,7 @@
           class="d-flex ga-4 font-weight-light text-body-2 mt-3"
           :class="theme.current === 'light' ? 'text-grey' : 'text-grey-darken-2'"
         >
-          <span>{{ activeCategories?.length }} Active Categories</span>
+          <span>{{ activeSegments?.length }} Active Categories</span>
           <span>{{ eventsStore.event?.participants.length }} Participants</span>
         </div>
       </div>
@@ -47,8 +47,8 @@ const route = useRoute()
 const theme = useThemeStore()
 const router = useRouter()
 const eventsStore = useEventsStore()
-const activeCategories = computed(() =>
-  eventsStore.event?.categories.filter((category) => category.active)
+const activeSegments = computed(() =>
+  eventsStore.event?.segments.filter((seg) => seg.segment_status === 'active')
 )
 
 watch(
