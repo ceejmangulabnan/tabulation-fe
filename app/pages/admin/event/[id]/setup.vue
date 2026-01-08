@@ -501,9 +501,7 @@ const participantHeaders = [
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 const participantDialog = ref(false)
-const editedParticipant = ref<
-  Omit<Partial<ParticipantData>, 'department'> & { department?: number }
->({
+const editedParticipant = ref<Partial<ParticipantData>>({
   name: '',
   number: undefined,
   gender: undefined,
