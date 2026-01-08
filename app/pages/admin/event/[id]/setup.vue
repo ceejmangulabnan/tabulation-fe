@@ -965,11 +965,40 @@ const deleteParticipant = async (item: ParticipantData) => {
 
 // --- Activation ---
 const canActivate = computed(() => {
-  const segmentsValid = totalSegmentWeight.value === 100 && (event.value.segments || []).length > 0
-  const categoriesValid = (event.value.segments || []).every(
-    (s: SegmentData) => calculateTotalCategoryWeight(s) === 100 && s.categories.length > 0
-  )
-  return segmentsValid && categoriesValid && event.value.event_status !== 'active'
+  console.log('--- Checking canActivate ---')
+
+  const totalSegWeight = totalSegmentWeight.value
+  console.log('Total Segment Weight:', totalSegWeight, 'Rounded:', Math.round(totalSegWeight))
+  const hasSegments = (event.value.segments || []).length > 0
+  console.log('Has Segments:', hasSegments)
+
+  const segmentsValid = Math.round(totalSegWeight) === 100 && hasSegments
+  console.log('Are Segments Valid?:', segmentsValid)
+
+  const categoriesValidResults = (event.value.segments || []).map((s: SegmentData) => {
+    const totalCatWeight = calculateTotalCategoryWeight(s)
+    const hasCats = (s.categories || []).length > 0
+    const isCatValid = Math.round(totalCatWeight) === 100 && hasCats
+    console.log(
+      `Segment "${s.name}": Cat Weight: ${totalCatWeight}, Rounded: ${Math.round(
+        totalCatWeight
+      )}, Has Cats: ${hasCats}, Is Valid: ${isCatValid}`
+    )
+    return isCatValid
+  })
+
+  const allCategoriesValid =
+    categoriesValidResults.length > 0 && categoriesValidResults.every((isValid) => isValid)
+  console.log('Are All Categories Valid?:', allCategoriesValid)
+
+  const notActive = event.value.event_status !== 'active'
+  console.log('Is event status not "active"?:', notActive)
+
+  const finalResult = segmentsValid && allCategoriesValid && notActive
+  console.log('Final canActivate result:', finalResult)
+  console.log('--------------------------')
+
+  return finalResult
 })
 
 const activateEvent = async () => {
