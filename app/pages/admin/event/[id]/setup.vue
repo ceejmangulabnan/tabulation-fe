@@ -7,7 +7,7 @@
         @update:model-value="onTabChange"
       >
         <v-tab value="one">Event Info</v-tab>
-        <v-tab value="two">Categories</v-tab>
+        <v-tab value="two">Scoring Segments</v-tab>
         <v-tab value="three">Judges</v-tab>
         <v-tab value="four">Participants</v-tab>
       </v-tabs>
@@ -44,7 +44,7 @@
 
           <v-window-item value="two">
             <v-card-title class="d-flex align-center">
-              Categories
+              Event Scoring Segments
               <v-spacer />
               <v-btn
                 color="green"
