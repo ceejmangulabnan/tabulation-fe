@@ -1,19 +1,25 @@
 <template>
   <div>
-    <v-card-title>Event Information</v-card-title>
+    <v-card-title class="d-flex font-weight-bold mb-2">
+      <v-chip
+        class="mr-4 text-capitalize"
+        :color="statusColor"
+        variant="flat"
+      >
+        {{ props.event.event_status }}
+      </v-chip>
+      Event Information
+    </v-card-title>
+
     <v-card-text>
       <v-text-field
         label="Title"
-        v-model="event.name"
+        v-model="props.event.name"
       />
+
       <v-textarea
         label="Description"
-        v-model="event.description"
-      />
-      <v-text-field
-        label="Status"
-        :model-value="event.event_status"
-        readonly
+        v-model="props.event.description"
       />
     </v-card-text>
     <v-card-actions>
@@ -40,6 +46,20 @@ const api = useStrapiApi()
 const eventsStore = useEventsStore()
 const snackbar = useSnackbar()
 
+const statusColor = computed(() => {
+  switch (props.event.event_status) {
+    case 'draft':
+      return 'grey'
+    case 'active':
+      return 'green'
+    case 'inactive':
+      return 'orange'
+    case 'finished':
+      return 'blue'
+    default:
+      return 'grey'
+  }
+})
 const handleSave = async () => {
   try {
     await api.put(`/events/${eventsStore.event?.documentId}`, {

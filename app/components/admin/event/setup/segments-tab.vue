@@ -1,13 +1,23 @@
 <template>
   <div>
     <v-card-title class="d-flex flex-wrap align-center justify-space-between ga-2">
-      <span>Event Scoring Segments</span>
+      <span class="font-weight-bold">Event Scoring Segments</span>
       <v-btn
-        color="green"
+        v-if="smAndDown"
         icon="mdi-plus"
+        color="green"
         density="compact"
         @click="showSegmentDialog()"
       />
+
+      <v-btn
+        v-else
+        prepend-icon="mdi-plus"
+        color="green"
+        @click="showSegmentDialog()"
+      >
+        Add segment
+      </v-btn>
     </v-card-title>
     <v-card-text>
       <v-data-table
@@ -16,6 +26,7 @@
         :items="event.segments"
         show-expand
         class="mb-4"
+        hide-default-footer
       >
         <template #item.actions="{ item }">
           <v-icon
@@ -40,14 +51,24 @@
               variant="tonal"
               class="my-4"
             >
-              <v-card-title class="d-flex flex-wrap align-center justify-space-between ga-2">
+              <v-card-title class="ma-2 d-flex flex-wrap align-center justify-space-between ga-2">
                 <span>Categories for {{ item.name }}</span>
                 <v-btn
+                  v-if="smAndDown"
                   density="compact"
                   color="primary"
                   icon="mdi-plus"
-                  @click="showCategoryDialog(null, item.documentId)"
+                  @click="showCategoryDialog(null, item.documentid)"
                 />
+
+                <v-btn
+                  v-else
+                  prepend-icon="mdi-plus"
+                  color="primary"
+                  @click="showCategoryDialog(null, item.documentId)"
+                >
+                  Add category
+                </v-btn>
               </v-card-title>
               <v-data-table
                 :headers="categoryHeaders"
@@ -72,7 +93,7 @@
                   </v-icon>
                 </template>
               </v-data-table>
-              <v-card-text class="text-right">
+              <v-card-text class="text-right font-weight-bold">
                 Total Category Weight:
                 {{ calculateTotalCategoryWeight(item as SegmentData) }} / 100
               </v-card-text>
@@ -163,12 +184,14 @@
             </v-card-text>
           </v-card>
         </v-list-group>
-        <v-list-item v-if="event.segments.length === 0">
+        <v-list-item v-if="event.segments?.length === 0">
           <v-list-item-title class="text-center text-grey-darken-2">No Segments</v-list-item-title>
         </v-list-item>
       </v-list>
 
-      <p class="mt-4 text-right">Total Segment Weight: {{ totalSegmentWeight }} / 100</p>
+      <p class="mt-4 text-right font-weight-bold">
+        Total Segment Weight: {{ totalSegmentWeight }} / 100
+      </p>
     </v-card-text>
 
     <v-dialog
@@ -256,11 +279,9 @@
 </template>
 
 <script setup lang="ts">
-import { useDisplay } from 'vuetify'
-
 const props = defineProps({
   event: {
-    type: Object as PropType<Partial<EventData>>,
+    type: Object as PropType<EventData>,
     required: true,
   },
 })
@@ -272,13 +293,13 @@ const { smAndDown } = useDisplay()
 
 // --- Scoring Segments State & Headers ---
 const segmentHeaders = [
-  { title: 'Name', key: 'name' },
-  { title: 'Weight', value: 'weight' },
+  { title: 'Name', key: 'name', sortable: true },
+  { title: 'Weight', value: 'weight', sortable: true },
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 const categoryHeaders = [
-  { title: 'Name', key: 'name' },
-  { title: 'Weight', value: 'weight' },
+  { title: 'Name', key: 'name', sortable: true },
+  { title: 'Weight', value: 'weight', sortable: true },
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 const segmentDialog = ref(false)

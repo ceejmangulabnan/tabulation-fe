@@ -1,13 +1,24 @@
 <template>
   <div>
     <v-card-title class="d-flex flex-wrap align-center justify-space-between ga-2">
-      <span>Participants</span>
+      <span class="font-weight-bold">Participants</span>
+
       <v-btn
+        v-if="smAndDown"
+        density="compact"
         color="green"
         icon="mdi-plus"
-        density="compact"
         @click="showParticipantDialog()"
       />
+
+      <v-btn
+        v-else
+        prepend-icon="mdi-plus"
+        color="green"
+        @click="showParticipantDialog()"
+      >
+        Add participant
+      </v-btn>
     </v-card-title>
     <v-card-text>
       <v-data-table
@@ -176,11 +187,11 @@
 <script setup lang="ts">
 const props = defineProps({
   event: {
-    type: Object as PropType<Partial<EventData>>,
+    type: Object as PropType<EventData>,
     required: true,
   },
   departments: {
-    type: Array as PropType<any[]>,
+    type: Array as PropType<DepartmentData[]>,
     required: true,
   },
 })

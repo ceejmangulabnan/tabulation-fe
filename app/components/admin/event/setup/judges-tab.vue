@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card-title>Judges</v-card-title>
+    <v-card-title class="font-weight-bold">Judges</v-card-title>
     <v-data-table
       v-if="!smAndDown"
       :headers="judgeHeaders"
@@ -17,8 +17,12 @@
         </v-icon>
       </template>
     </v-data-table>
-    <v-list v-else class="mb-4" lines="one">
-       <v-list-item
+    <v-list
+      v-else
+      class="mb-4"
+      lines="one"
+    >
+      <v-list-item
         v-for="judge in event.judges"
         :key="judge.id"
         :title="judge.name"
