@@ -549,7 +549,7 @@ watch(participantDialog, (isOpen) => {
   }
 })
 
-const departments = ref<any[]>([])
+const departments = ref<DepartmentData[]>([])
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
 
 function getStrapiUrl(url: string) {

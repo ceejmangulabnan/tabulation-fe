@@ -1,6 +1,6 @@
 interface JudgeRequestsState {
-  judgeRequests: JudgeRequestData[] | []
-  allJudgeRequests: JudgeRequestData[] | []
+  judgeRequests: JudgeRequestData[]
+  allJudgeRequests: JudgeRequestData[]
   isLoading: boolean
   isError: boolean
 }
@@ -33,11 +33,13 @@ export const useJudgeRequestsStore = defineStore('judge-requests', {
       this.isError = false
       try {
         const api = useStrapiApi()
+        console.log('Fetching all judge requests...')
         const { data } = await api.get(`judge-requests?populate=*`)
+        console.log('Full response from /api/judge-requests:', data)
         this.allJudgeRequests = data?.data || []
-        console.log('All judge requests:', data)
+        console.log('Assigned to allJudgeRequests:', this.allJudgeRequests)
       } catch (error) {
-        console.log('Failed to fetch judge requests', error)
+        console.error('Failed to fetch all judge requests:', error)
         this.isError = true
       } finally {
         this.isLoading = false

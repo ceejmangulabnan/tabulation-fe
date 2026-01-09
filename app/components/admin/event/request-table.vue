@@ -35,8 +35,8 @@
           v-for="item in judgeRequestsStore.allJudgeRequests"
           :key="item.id"
         >
-          <td>{{ item.event.name || 'No Event' }}</td>
-          <td align="center">{{ item.judge.name }}</td>
+          <td>{{ item.event?.name || 'No Event Found' }}</td>
+          <td align="center">{{ item.judge?.name ?? 'No Judge Found' }}</td>
           <td align="center">
             <v-chip
               :color="getStatusColor(item.request_status)"
@@ -152,6 +152,7 @@ const confirmAction = async () => {
 }
 
 onMounted(async () => {
-  judgeRequestsStore.fetchAllJudgeRequests()
+  await judgeRequestsStore.fetchAllJudgeRequests()
+  console.log('All Judge Requests:', judgeRequestsStore.allJudgeRequests)
 })
 </script>
