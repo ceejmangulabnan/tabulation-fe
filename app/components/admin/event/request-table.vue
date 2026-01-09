@@ -36,7 +36,7 @@
           :key="item.id"
         >
           <td>{{ item.event?.name || 'No Event Found' }}</td>
-          <td align="center">{{ item.judge?.name ?? 'No Judge Found' }}</td>
+          <td align="center">{{ item.judge?.name ?? 'No Name ' }}</td>
           <td align="center">
             <v-chip
               :color="getStatusColor(item.request_status)"

@@ -1,0 +1,395 @@
+<template>
+  <div>
+    <v-card-title class="d-flex flex-wrap align-center justify-space-between ga-2">
+      <span>Event Scoring Segments</span>
+      <v-btn
+        color="green"
+        icon="mdi-plus"
+        density="compact"
+        @click="showSegmentDialog()"
+      />
+    </v-card-title>
+    <v-card-text>
+      <v-data-table
+        v-if="!smAndDown"
+        :headers="segmentHeaders"
+        :items="event.segments"
+        show-expand
+        class="mb-4"
+      >
+        <template #item.actions="{ item }">
+          <v-icon
+            small
+            class="mr-2"
+            @click="showSegmentDialog(item as SegmentData)"
+          >
+            mdi-pencil
+          </v-icon>
+          <v-icon
+            small
+            color="error"
+            @click="deleteSegment(item as SegmentData)"
+          >
+            mdi-delete
+          </v-icon>
+        </template>
+
+        <template #expanded-row="{ columns, item }">
+          <td :colspan="columns.length">
+            <v-card
+              variant="tonal"
+              class="my-4"
+            >
+              <v-card-title class="d-flex flex-wrap align-center justify-space-between ga-2">
+                <span>Categories for {{ item.name }}</span>
+                <v-btn
+                  density="compact"
+                  color="primary"
+                  icon="mdi-plus"
+                  @click="showCategoryDialog(null, item.documentId)"
+                />
+              </v-card-title>
+              <v-data-table
+                :headers="categoryHeaders"
+                :items="item.categories"
+                density="compact"
+                hide-default-footer
+              >
+                <template #item.actions="{ item: categoryItem }">
+                  <v-icon
+                    small
+                    class="mr-2"
+                    @click="showCategoryDialog(categoryItem as CategoryData, item.documentId)"
+                  >
+                    mdi-pencil
+                  </v-icon>
+                  <v-icon
+                    small
+                    color="error"
+                    @click="deleteCategory(categoryItem as CategoryData)"
+                  >
+                    mdi-delete
+                  </v-icon>
+                </template>
+              </v-data-table>
+              <v-card-text class="text-right">
+                Total Category Weight:
+                {{ calculateTotalCategoryWeight(item as SegmentData) }} / 100
+              </v-card-text>
+            </v-card>
+          </td>
+        </template>
+      </v-data-table>
+
+      <v-list
+        v-else
+        lines="one"
+        class="mb-4"
+      >
+        <v-list-group
+          v-for="segment in event.segments"
+          :key="segment.id"
+          :value="segment.name"
+        >
+          <template #activator="{ props }">
+            <v-list-item
+              v-bind="props"
+              :title="segment.name"
+              :subtitle="`Weight: ${segment.weight * 100}%`"
+            >
+              <template #append>
+                <v-icon
+                  class="mr-2"
+                  @click.stop="showSegmentDialog(segment as SegmentData)"
+                >
+                  mdi-pencil
+                </v-icon>
+                <v-icon
+                  color="error"
+                  class="mr-2"
+                  @click.stop="deleteSegment(segment as SegmentData)"
+                >
+                  mdi-delete
+                </v-icon>
+                <v-icon :class="{ 'rotate-180': props.isActive }">mdi-chevron-down</v-icon>
+              </template>
+            </v-list-item>
+          </template>
+
+          <v-card
+            variant="tonal"
+            class="mx-2 my-4"
+          >
+            <v-card-title class="d-flex flex-wrap align-center justify-space-between ga-2">
+              <span>Categories for {{ segment.name }}</span>
+              <v-btn
+                density="compact"
+                color="primary"
+                icon="mdi-plus"
+                @click="showCategoryDialog(null, segment.documentId)"
+              />
+            </v-card-title>
+            <v-list lines="two">
+              <v-list-item
+                v-for="categoryItem in segment.categories"
+                :key="categoryItem.id"
+                :title="categoryItem.name"
+                :subtitle="`Weight: ${categoryItem.weight * 100}%`"
+              >
+                <template #append>
+                  <v-icon
+                    class="mr-2"
+                    @click="showCategoryDialog(categoryItem as CategoryData, segment.documentId)"
+                  >
+                    mdi-pencil
+                  </v-icon>
+                  <v-icon
+                    color="error"
+                    @click="deleteCategory(categoryItem as CategoryData)"
+                  >
+                    mdi-delete
+                  </v-icon>
+                </template>
+              </v-list-item>
+              <v-list-item v-if="segment.categories.length === 0">
+                <v-list-item-title class="text-center text-grey-darken-2">
+                  No Categories for this Segment
+                </v-list-item-title>
+              </v-list-item>
+            </v-list>
+            <v-card-text class="text-right">
+              Total Category Weight:
+              {{ calculateTotalCategoryWeight(segment as SegmentData) }} / 100
+            </v-card-text>
+          </v-card>
+        </v-list-group>
+        <v-list-item v-if="event.segments.length === 0">
+          <v-list-item-title class="text-center text-grey-darken-2">No Segments</v-list-item-title>
+        </v-list-item>
+      </v-list>
+
+      <p class="mt-4 text-right">Total Segment Weight: {{ totalSegmentWeight }} / 100</p>
+    </v-card-text>
+
+    <v-dialog
+      v-model="segmentDialog"
+      max-width="500px"
+    >
+      <v-card>
+        <v-card-title>
+          <span class="headline">{{ editedSegment.id ? 'Edit' : 'Add' }} Segment</span>
+        </v-card-title>
+        <v-card-text>
+          <v-text-field
+            v-model="editedSegment.name"
+            label="Name"
+          />
+          <v-text-field
+            v-model.number="editedSegment.order"
+            label="Order in Event"
+            type="number"
+            step="1"
+          />
+          <v-text-field
+            v-model.number="editedSegment.weight"
+            label="Weight (0.0 to 1.0)"
+            type="number"
+            step="0.01"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="blue darken-1"
+            @click="segmentDialog = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="blue darken-1"
+            @click="saveSegment"
+          >
+            Save
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog
+      v-model="categoryDialog"
+      max-width="500px"
+    >
+      <v-card>
+        <v-card-title>
+          <span class="headline">{{ editedCategory.id ? 'Edit' : 'Add' }} Category</span>
+        </v-card-title>
+        <v-card-text>
+          <v-text-field
+            v-model="editedCategory.name"
+            label="Name"
+          />
+          <v-text-field
+            v-model.number="editedCategory.weight"
+            label="Weight (0.0 to 1.0)"
+            type="number"
+            step="0.01"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="blue darken-1"
+            @click="categoryDialog = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="blue darken-1"
+            @click="saveCategory"
+          >
+            Save
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useDisplay } from 'vuetify'
+
+const props = defineProps({
+  event: {
+    type: Object as PropType<Partial<EventData>>,
+    required: true,
+  },
+})
+
+const api = useStrapiApi()
+const eventsStore = useEventsStore()
+const snackbar = useSnackbar()
+const { smAndDown } = useDisplay()
+
+// --- Scoring Segments State & Headers ---
+const segmentHeaders = [
+  { title: 'Name', key: 'name' },
+  { title: 'Weight', value: 'weight' },
+  { title: 'Actions', key: 'actions', sortable: false },
+]
+const categoryHeaders = [
+  { title: 'Name', key: 'name' },
+  { title: 'Weight', value: 'weight' },
+  { title: 'Actions', key: 'actions', sortable: false },
+]
+const segmentDialog = ref(false)
+const editedSegment = ref<Partial<SegmentData>>({
+  id: 0,
+  name: '',
+  weight: 0,
+})
+const categoryDialog = ref(false)
+const editedCategory = ref<Partial<CategoryData>>({
+  id: 0,
+  name: '',
+  weight: 0,
+})
+const currentSegmentIdForCategory = ref<string | null>(null)
+
+// --- Segments & Categories Tab ---
+const totalSegmentWeight = computed(() =>
+  (props.event.segments || []).reduce((sum: number, s: SegmentData) => sum + s.weight * 100, 0)
+)
+
+const calculateTotalCategoryWeight = (segment: SegmentData) => {
+  return (segment.categories || []).reduce((sum, c) => sum + c.weight * 100, 0)
+}
+
+// Segment Dialog
+const showSegmentDialog = (item: SegmentData | null = null) => {
+  editedSegment.value = item ? { ...item } : { name: '', weight: 0 }
+  segmentDialog.value = true
+}
+
+const saveSegment = async () => {
+  try {
+    const payload = {
+      data: {
+        name: editedSegment.value.name,
+        order: editedSegment.value.order,
+        weight: editedSegment.value.weight,
+        event: props.event.id,
+      },
+    }
+    if (editedSegment.value.documentId) {
+      await api.put(`/segments/${editedSegment.value.documentId}`, payload)
+      snackbar.showSnackbar('Segment updated successfully', 'success')
+    } else {
+      await api.post('/segments', payload)
+      snackbar.showSnackbar('Segment created successfully!', 'success')
+    }
+    await eventsStore.fetchEvent(props.event.documentId)
+  } catch (error) {
+    snackbar.showSnackbar('Failed to save segment', 'error')
+    console.error('Error saving segment:', error)
+  } finally {
+    segmentDialog.value = false
+  }
+}
+
+const deleteSegment = async (item: SegmentData) => {
+  if (!confirm('Are you sure? This will delete all categories within it.')) return
+  try {
+    await api.delete(`/segments/${item.documentId}`)
+    await eventsStore.fetchEvent(props.event.documentId)
+    snackbar.showSnackbar('Segment deleted successfully', 'success')
+  } catch (error) {
+    console.error('Error deleting segment:', error)
+    snackbar.showSnackbar('Failed to delete segment', 'error')
+  }
+}
+
+// Category Dialog
+const showCategoryDialog = (item: CategoryData | null = null, segmentId: string) => {
+  editedCategory.value = item ? { ...item } : { name: '', weight: 0 }
+  currentSegmentIdForCategory.value = segmentId
+  categoryDialog.value = true
+}
+
+const saveCategory = async () => {
+  if (!currentSegmentIdForCategory.value) return
+  try {
+    const payload = {
+      data: {
+        name: editedCategory.value.name,
+        weight: editedCategory.value.weight,
+        segment: currentSegmentIdForCategory.value,
+      },
+    }
+    if (editedCategory.value.documentId) {
+      await api.put(`/categories/${editedCategory.value.documentId}`, payload)
+      snackbar.showSnackbar('Category updated successfully', 'success')
+    } else {
+      await api.post('/categories', payload)
+      snackbar.showSnackbar('Category created successfully!', 'success')
+    }
+    await eventsStore.fetchEvent(props.event.documentId)
+  } catch (error) {
+    snackbar.showSnackbar('Failed to save category', 'error')
+    console.error('Error saving category:', error)
+  } finally {
+    categoryDialog.value = false
+  }
+}
+
+const deleteCategory = async (item: CategoryData) => {
+  if (!confirm('Are you sure?')) return
+  try {
+    await api.delete(`/categories/${item.documentId}`)
+    await eventsStore.fetchEvent(props.event.documentId)
+    snackbar.showSnackbar('Category deleted successfully', 'success')
+  } catch (error) {
+    console.error('Error deleting category:', error)
+    snackbar.showSnackbar('Failed to delete category', 'error')
+  }
+}
+</script>
