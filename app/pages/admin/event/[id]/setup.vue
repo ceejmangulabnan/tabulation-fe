@@ -492,6 +492,10 @@ const newJudge = ref({ username: '', email: '', password: '', confirmPassword: '
 const judgeRoleId = ref<number | null>(null)
 
 // --- Participant State & Headers ---
+interface EditedParticipantData extends Omit<Partial<ParticipantData>, 'department'> {
+  department?: number | undefined // Overrides department to be just the ID for editing purposes
+}
+
 const participantHeaders = [
   { title: 'Headshot', key: 'headshot', sortable: false },
   { title: 'Name', key: 'name' },
@@ -501,7 +505,7 @@ const participantHeaders = [
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 const participantDialog = ref(false)
-const editedParticipant = ref<Partial<ParticipantData>>({
+const editedParticipant = ref<EditedParticipantData>({
   name: '',
   number: undefined,
   gender: undefined,
@@ -664,14 +668,11 @@ const handleSave = async () => {
 
 // --- Segments & Categories Tab ---
 const totalSegmentWeight = computed(() =>
-  (event.value.segments || []).reduce(
-    (sum: number, s: SegmentData) => sum + (Number(s.weight) * 100 || 0),
-    0
-  )
+  (event.value.segments || []).reduce((sum: number, s: SegmentData) => sum + s.weight * 100, 0)
 )
 
 const calculateTotalCategoryWeight = (segment: SegmentData) => {
-  return (segment.categories || []).reduce((sum, c) => sum + (Number(c.weight) * 100 || 0), 0)
+  return (segment.categories || []).reduce((sum, c) => sum + c.weight * 100, 0)
 }
 
 const fetchSegments = async () => {
@@ -926,7 +927,7 @@ const saveParticipant = async () => {
         'Creating participant with data:',
         JSON.stringify({ data: participantData }, null, 2)
       )
-      await api.post('/participants', { data: participantData })
+      await api.post('/participants/create', { data: participantData })
       snackbar.showSnackbar('Participant created successfully', 'success')
     }
 
