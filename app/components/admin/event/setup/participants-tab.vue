@@ -21,78 +21,157 @@
       </v-btn>
     </v-card-title>
     <v-card-text>
-      <v-data-table
-        v-if="!smAndDown"
-        :headers="participantHeaders"
-        :items="event.participants"
-      >
-        <template #item.headshot="{ item }">
-          <v-avatar
-            v-if="item.headshot"
-            @click="showImagePreview(item.headshot.url)"
-          >
-            <v-img :src="getStrapiUrl(item.headshot.formats.thumbnail.url)" />
-          </v-avatar>
-        </template>
-        <template #item.actions="{ item }">
-          <v-icon
-            small
-            class="mr-2"
-            @click="showParticipantDialog(item as ParticipantData)"
-          >
-            mdi-pencil
-          </v-icon>
-          <v-icon
-            small
-            color="error"
-            @click="deleteParticipant(item as ParticipantData)"
-          >
-            mdi-delete
-          </v-icon>
-        </template>
-      </v-data-table>
-      <v-list
-        v-else
-        lines="two"
-      >
-        <v-list-item
-          v-for="participant in event.participants"
-          :key="participant.id"
-          :title="participant.name"
-          :subtitle="`#${participant.number}`"
+      <div v-if="!smAndDown">
+        <div class="text-h6">Male Participants</div>
+        <v-data-table
+          :headers="participantHeaders"
+          :items="maleParticipants"
+          no-data-text="No male participants yet"
+          :sort-by="[{ key: 'number', order: 'asc' }]"
+          hide-default-footer
         >
-          <template #prepend>
+          <template #item.headshot="{ item }">
             <v-avatar
-              v-if="participant.headshot"
-              @click="showImagePreview(participant.headshot.url)"
+              v-if="item.headshot"
+              @click="showImagePreview(item.headshot.url)"
             >
-              <v-img :src="getStrapiUrl(participant.headshot.formats.thumbnail.url)" />
-            </v-avatar>
-            <v-avatar v-else>
-              <v-icon>mdi-account</v-icon>
+              <v-img :src="getStrapiUrl(item.headshot.formats.thumbnail.url)" />
             </v-avatar>
           </template>
-          <template #append>
+          <template #item.actions="{ item }">
             <v-icon
+              small
               class="mr-2"
-              @click="showParticipantDialog(participant as ParticipantData)"
+              @click="showParticipantDialog(item as ParticipantData)"
             >
               mdi-pencil
             </v-icon>
             <v-icon
+              small
               color="error"
-              @click="deleteParticipant(participant as ParticipantData)"
+              @click="deleteParticipant(item as ParticipantData)"
             >
               mdi-delete
             </v-icon>
           </template>
-        </v-list-item>
-        <v-list-item v-if="event.participants.length === 0">
-          <v-list-item-title class="text-center text-grey-darken-2">
-            No Participants
-          </v-list-item-title>
-        </v-list-item>
-      </v-list>
+        </v-data-table>
+        <div class="text-h6 mt-4">Female Participants</div>
+        <v-data-table
+          :headers="participantHeaders"
+          :items="femaleParticipants"
+          no-data-text="No female participants yet"
+          :sort-by="[{ key: 'number', order: 'asc' }]"
+          hide-default-footer
+        >
+          <template #item.headshot="{ item }">
+            <v-avatar
+              v-if="item.headshot"
+              @click="showImagePreview(item.headshot.url)"
+            >
+              <v-img :src="getStrapiUrl(item.headshot.formats.thumbnail.url)" />
+            </v-avatar>
+          </template>
+          <template #item.actions="{ item }">
+            <v-icon
+              small
+              class="mr-2"
+              @click="showParticipantDialog(item as ParticipantData)"
+            >
+              mdi-pencil
+            </v-icon>
+            <v-icon
+              small
+              color="error"
+              @click="deleteParticipant(item as ParticipantData)"
+            >
+              mdi-delete
+            </v-icon>
+          </template>
+        </v-data-table>
+      </div>
+      <div v-else>
+        <div class="text-h6">Male Participants</div>
+        <v-list lines="two">
+          <v-list-item
+            v-for="participant in maleParticipants"
+            :key="participant.id"
+            :title="participant.name"
+            :subtitle="`#${participant.number}`"
+          >
+            <template #prepend>
+              <v-avatar
+                v-if="participant.headshot"
+                @click="showImagePreview(participant.headshot.url)"
+              >
+                <v-img :src="getStrapiUrl(participant.headshot.formats.thumbnail.url)" />
+              </v-avatar>
+              <v-avatar v-else>
+                <v-icon>mdi-account</v-icon>
+              </v-avatar>
+            </template>
+            <template #append>
+              <v-icon
+                class="mr-2"
+                @click="showParticipantDialog(participant as ParticipantData)"
+              >
+                mdi-pencil
+              </v-icon>
+              <v-icon
+                color="error"
+                @click="deleteParticipant(participant as ParticipantData)"
+              >
+                mdi-delete
+              </v-icon>
+            </template>
+          </v-list-item>
+          <v-list-item v-if="maleParticipants.length === 0">
+            <v-list-item-title class="text-center text-grey-darken-2">
+              No Male Participants
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
+
+        <div class="text-h6 mt-4">Female Participants</div>
+        <v-list lines="two">
+          <v-list-item
+            v-for="participant in femaleParticipants"
+            :key="participant.id"
+            :title="participant.name"
+            :subtitle="`#${participant.number}`"
+          >
+            <template #prepend>
+              <v-avatar
+                v-if="participant.headshot"
+                @click="showImagePreview(participant.headshot.url)"
+              >
+                <v-img :src="getStrapiUrl(participant.headshot.formats.thumbnail.url)" />
+              </v-avatar>
+              <v-avatar v-else>
+                <v-icon>mdi-account</v-icon>
+              </v-avatar>
+            </template>
+            <template #append>
+              <v-icon
+                class="mr-2"
+                @click="showParticipantDialog(participant as ParticipantData)"
+              >
+                mdi-pencil
+              </v-icon>
+              <v-icon
+                color="error"
+                @click="deleteParticipant(participant as ParticipantData)"
+              >
+                mdi-delete
+              </v-icon>
+            </template>
+          </v-list-item>
+          <v-list-item v-if="femaleParticipants.length === 0">
+            <v-list-item-title class="text-center text-grey-darken-2">
+              No Female Participants
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </div>
     </v-card-text>
 
     <v-dialog
@@ -200,6 +279,13 @@ const api = useStrapiApi()
 const eventsStore = useEventsStore()
 const snackbar = useSnackbar()
 const { smAndDown } = useDisplay()
+
+const maleParticipants = computed(
+  () => props.event.participants?.filter((p) => p.gender === 'male') || []
+)
+const femaleParticipants = computed(
+  () => props.event.participants?.filter((p) => p.gender === 'female') || []
+)
 
 interface EditedParticipantData extends Omit<Partial<ParticipantData>, 'department'> {
   department?: number | undefined
@@ -319,7 +405,7 @@ const saveParticipant = async () => {
       snackbar.showSnackbar('Participant created successfully', 'success')
     }
 
-    await eventsStore.fetchEvent(props.event.documentId)
+    await eventsStore.fetchEvent(props.event.id.toString())
     if (editedParticipant.value.id) {
       const updatedParticipant = eventsStore.event?.participants?.find(
         (p) => p.id === editedParticipant.value.id
@@ -332,6 +418,7 @@ const saveParticipant = async () => {
       }
     }
   } catch (error) {
+    snackbar.showSnackbar('Error saving participant', 'error')
     console.error('Error saving participant:', error)
   } finally {
     participantDialog.value = false
