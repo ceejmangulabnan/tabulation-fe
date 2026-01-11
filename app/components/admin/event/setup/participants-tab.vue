@@ -418,7 +418,14 @@ const saveParticipant = async () => {
       }
     }
   } catch (error) {
-    snackbar.showSnackbar('Error saving participant', 'error')
+    if (error.status === 409) {
+      snackbar.showSnackbar(
+        'An existing participant already has this number. Please input a different participant number.',
+        'error'
+      )
+    } else {
+      snackbar.showSnackbar('Error saving participant', 'error')
+    }
     console.error('Error saving participant:', error)
   } finally {
     participantDialog.value = false
