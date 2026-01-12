@@ -63,23 +63,13 @@ const eventsStore = useEventsStore()
 const snackbar = useSnackbar()
 const dataLoaded = ref(false)
 
-type EnhancedEventData = EventData & {
-  name: string
-  documentId: string
-  segments: SegmentData[]
-  judges: JudgeData[]
-  participants: ParticipantData[]
-}
-
-const event = computed<EnhancedEventData>(() =>
+const event = computed<Partial<EventData>>(() =>
   eventsStore.event
     ? {
         ...eventsStore.event,
         participants: eventsStore.event.participants || [],
         segments: eventsStore.event.segments || [],
         judges: eventsStore.event.judges || [],
-        // Ensure name and documentId are always strings,
-        // though they should be present if eventsStore.event is present
         name: eventsStore.event.name || '',
         documentId: eventsStore.event.documentId || '',
       }
