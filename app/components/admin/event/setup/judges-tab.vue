@@ -7,6 +7,29 @@
       :items="event.judges"
       class="mb-4"
     >
+      <template #headers="{ columns, getSortIcon, isSorted, toggleSort }">
+        <tr>
+          <template
+            v-for="column in columns"
+            ::key="column.key"
+          >
+            <th @click="toggleSort(column)">
+              <div class="font-weight-bold d-flex cursor-pointer">
+                <span
+                  class="me-2 cursor-pointer"
+                  v-text="column.title"
+                ></span>
+
+                <v-icon
+                  v-if="isSorted(column)"
+                  :icon="getSortIcon(column)"
+                  color="medium-emphasis"
+                ></v-icon>
+              </div>
+            </th>
+          </template>
+        </tr>
+      </template>
       <template v-slot:item.actions="{ item }">
         <v-icon
           small
@@ -36,7 +59,7 @@
           </v-icon>
         </template>
       </v-list-item>
-      <v-list-item v-if="event.judges.length === 0">
+      <v-list-item v-if="event.judges?.length === 0">
         <v-list-item-title class="text-center text-grey-darken-2">
           No Judges Assigned
         </v-list-item-title>
@@ -132,7 +155,7 @@ import { useDisplay } from 'vuetify'
 
 const props = defineProps({
   event: {
-    type: Object as PropType<Partial<EventData>>,
+    type: Object as PropType<EventData>,
     required: true,
   },
   availableJudges: {
@@ -162,8 +185,8 @@ const errorMsg = ref<string | null>(null)
 
 // --- Judges Tab ---
 const judgeHeaders = [
-  { title: 'Name', key: 'name' },
-  { title: 'Actions', key: 'actions', sortable: false },
+  { title: 'Name', key: 'name', class: 'font-weight-bold' },
+  { title: 'Actions', key: 'actions', sortable: false, class: 'font-weight-bold' },
 ]
 
 const assignJudge = async () => {
@@ -184,7 +207,7 @@ const assignJudge = async () => {
       snackbar.showSnackbar('Judge assigned successfully', 'success')
     }
 
-    await eventsStore.fetchEvent(props.event.documentId)
+    await eventsStore.fetchEvent(props.event.id.toString())
     selectedJudge.value = null
   } catch (e) {
     snackbar.showSnackbar('Failed to assign judge.', 'error')
@@ -196,7 +219,7 @@ const removeJudge = async (judge: JudgeData) => {
   if (!confirm('Are you sure?')) return
   try {
     await api.delete(`/judges/${judge.documentId}`)
-    await eventsStore.fetchEvent(props.event.documentId)
+    await eventsStore.fetchEvent(props.event.id?.toString())
     snackbar.showSnackbar('Judge removed successfully', 'success')
   } catch (e) {
     snackbar.showSnackbar('Failed to delete judge', 'error')

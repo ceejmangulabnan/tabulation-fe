@@ -30,6 +30,29 @@
           :sort-by="[{ key: 'number', order: 'asc' }]"
           hide-default-footer
         >
+          <template #headers="{ columns, getSortIcon, isSorted, toggleSort }">
+            <tr>
+              <template
+                v-for="column in columns"
+                ::key="column.key"
+              >
+                <th @click="toggleSort(column)">
+                  <div class="font-weight-bold d-flex cursor-pointer">
+                    <span
+                      class="me-2 cursor-pointer"
+                      v-text="column.title"
+                    ></span>
+
+                    <v-icon
+                      v-if="isSorted(column)"
+                      :icon="getSortIcon(column)"
+                      color="medium-emphasis"
+                    ></v-icon>
+                  </div>
+                </th>
+              </template>
+            </tr>
+          </template>
           <template #item.headshot="{ item }">
             <v-avatar
               v-if="item.headshot"
@@ -63,6 +86,29 @@
           :sort-by="[{ key: 'number', order: 'asc' }]"
           hide-default-footer
         >
+          <template #headers="{ columns, getSortIcon, isSorted, toggleSort }">
+            <tr>
+              <template
+                v-for="column in columns"
+                ::key="column.key"
+              >
+                <th @click="toggleSort(column)">
+                  <div class="font-weight-bold d-flex cursor-pointer">
+                    <span
+                      class="me-2 cursor-pointer"
+                      v-text="column.title"
+                    ></span>
+
+                    <v-icon
+                      v-if="isSorted(column)"
+                      :icon="getSortIcon(column)"
+                      color="medium-emphasis"
+                    ></v-icon>
+                  </div>
+                </th>
+              </template>
+            </tr>
+          </template>
           <template #item.headshot="{ item }">
             <v-avatar
               v-if="item.headshot"
@@ -292,12 +338,17 @@ interface EditedParticipantData extends Omit<Partial<ParticipantData>, 'departme
 }
 
 const participantHeaders = [
-  { title: 'Headshot', key: 'headshot', sortable: false, class: 'd-none d-sm-table-cell' },
-  { title: 'Name', key: 'name' },
-  { title: 'Number', key: 'number' },
-  { title: 'Gender', key: 'gender', class: 'd-none d-md-table-cell' },
-  { title: 'Department', key: 'department.name', class: 'd-none d-md-table-cell' },
-  { title: 'Actions', key: 'actions', sortable: false },
+  {
+    title: 'Headshot',
+    key: 'headshot',
+    sortable: false,
+    class: 'font-weight-bold d-none d-sm-table-cell',
+  },
+  { title: 'Name', key: 'name', class: 'font-weight-bold' },
+  { title: 'Number', key: 'number', class: 'font-weight-bold' },
+  { title: 'Gender', key: 'gender', class: 'font-weight-bold d-none d-md-table-cell' },
+  { title: 'Department', key: 'department.name', class: 'font-weight-bold d-none d-md-table-cell' },
+  { title: 'Actions', key: 'actions', sortable: false, class: 'font-weight-bold' },
 ]
 const participantDialog = ref(false)
 const editedParticipant = ref<EditedParticipantData>({
