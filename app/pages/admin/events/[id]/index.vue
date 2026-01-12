@@ -2,8 +2,24 @@
   <v-container>
     <v-row>
       <v-col cols="12">
-        <div class="d-flex justify-space-between align-center mb-4 flex-wrap">
-          <h1 class="text-h4 mb-2 mb-sm-0">Event Dashboard: {{ event?.name }}</h1>
+        <div class="d-flex justify-space-between align-top mb-4 flex-wrap ga-4">
+          <header class="d-flex flex-column ga-sm-4 align-start ga-1 flex-sm-row">
+            <v-chip
+              :color="statusColor"
+              size="large"
+              class="font-weight-bold flex-shrink-0"
+            >
+              {{ event?.event_status.toUpperCase() }}
+            </v-chip>
+            <div>
+              <h1 class="text-h4 mb-2 mb-sm-0">
+                {{ event?.name }}
+              </h1>
+              <p>
+                {{ event?.description || 'No description provided.' }}
+              </p>
+            </div>
+          </header>
           <div class="d-flex flex-wrap ga-2">
             <NuxtLink
               :to="`/admin/events/${eventId}/manage`"
@@ -20,117 +36,9 @@
     </v-row>
 
     <v-row>
-      <!-- Event Info & Status -->
-      <v-col
-        md="6"
-        cols="12"
-        class="d-flex"
-      >
-        <v-card class="d-flex flex-column w-100 me-1 pa-2">
-          <v-card-title>Event Information</v-card-title>
-          <v-card-text>
-            <p>
-              <strong class="me-2">Status:</strong>
-              <v-chip
-                :color="statusColor"
-                size="small"
-                class="font-weight-bold"
-              >
-                {{ event?.event_status.toUpperCase() }}
-              </v-chip>
-            </p>
-            <p class="mt-2">
-              <strong>Description:</strong>
-              {{ event?.description || 'No description provided.' }}
-            </p>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
-      <!-- Judges -->
-      <v-col
-        md="6"
-        cols="12"
-        class="d-flex"
-      >
-        <v-card class="d-flex flex-column w-100 me-1 pa-2">
-          <v-card-title>Assigned Judges ({{ event?.judges?.length || 0 }})</v-card-title>
-          <v-list lines="one">
-            <v-list-item
-              v-if="!event?.judges?.length"
-              class="text-grey-darken-1"
-            >
-              No judges assigned.
-            </v-list-item>
-            <v-list-item
-              v-for="judge in event?.judges"
-              :key="judge.id"
-              :title="judge.name"
-            ></v-list-item>
-          </v-list>
-        </v-card>
-      </v-col>
-    </v-row>
-
-    <v-row>
-      <!-- Segment Status -->
-      <v-col
-        md="6"
-        cols="12"
-        class="d-flex"
-      >
-        <v-card class="d-flex flex-column w-100 me-1 pa-2">
-          <v-card-title>
-            Segment & Scoring Overview ({{ event?.segments?.length || 0 }})
-          </v-card-title>
-          <v-card-text>
-            <div v-if="!event?.segments || event.segments.length === 0">
-              No segments defined for this event.
-            </div>
-            <div
-              v-for="segment in event?.segments"
-              :key="segment.id"
-              class="mb-3"
-            >
-              <h4 class="font-weight-bold">
-                {{ segment.name }} (Weight: {{ segment.weight * 100 }}%)
-              </h4>
-              <v-list
-                density="compact"
-                class="bg-transparent"
-              >
-                <v-list-item
-                  v-for="category in segment.categories"
-                  :key="category.id"
-                >
-                  <v-list-item-title>{{ category.name }}</v-list-item-title>
-                  <v-list-item-subtitle>
-                    <!-- 
-                      NOTE: The scoring progress is based on an assumed data structure where `event.scores` 
-                      is an array of score objects. Each score is expected to have a 
-                      `judge_id` and a `category_id`.
-                    -->
-                    Scoring Progress:
-                    {{ getScoringProgress(category, event?.judges || [], event?.scores || []) }}
-                  </v-list-item-subtitle>
-                </v-list-item>
-                <v-list-item v-if="!segment.categories || segment.categories.length === 0">
-                  <v-list-item-title class="text-grey">
-                    No categories in this segment.
-                  </v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </div>
-            <p class="font-weight-bold text-right">
-              Total Segment Weight: {{ totalSegmentWeight }}%
-            </p>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
       <!-- Participants -->
       <v-col
-        md="6"
+        md="12"
         cols="12"
         class="d-flex"
       >
@@ -158,6 +66,7 @@
                 :items="maleParticipants"
                 class="flex-grow-1"
                 density="compact"
+                :hide-default-footer="hideFooterOnSmallScreens"
               >
                 <template #item.name="{ item }">
                   <div class="d-flex align-center py-2">
@@ -184,6 +93,7 @@
                 :items="femaleParticipants"
                 class="flex-grow-1"
                 density="compact"
+                :hide-default-footer="hideFooterOnSmallScreens"
               >
                 <template #item.name="{ item }">
                   <div class="d-flex align-center py-2">
@@ -210,6 +120,87 @@
     </v-row>
 
     <v-row>
+      <!-- Judges -->
+      <v-col
+        md="6"
+        cols="12"
+        class="d-flex"
+      >
+        <v-card class="d-flex flex-column w-100 me-1 pa-2">
+          <v-card-title>Assigned Judges ({{ event?.judges?.length || 0 }})</v-card-title>
+          <v-list lines="one">
+            <v-list-item
+              v-if="!event?.judges?.length"
+              class="text-grey-darken-1"
+            >
+              No judges assigned.
+            </v-list-item>
+            <v-list-item
+              v-for="judge in event?.judges"
+              :key="judge.id"
+              :title="judge.name"
+            ></v-list-item>
+          </v-list>
+        </v-card>
+      </v-col>
+      <!-- Segment Status -->
+      <v-col
+        md="6"
+        cols="12"
+      >
+        <v-card class="d-flex flex-column w-100 me-1 pa-2">
+          <v-card-title>
+            Segment & Scoring Overview ({{ event?.segments?.length || 0 }})
+          </v-card-title>
+          <v-card-text>
+            <div v-if="!event?.segments || event.segments.length === 0">
+              No segments defined for this event.
+            </div>
+            <v-list v-else>
+              <v-list-item
+                v-for="segment in event?.segments"
+                :key="segment.id"
+                class="mb-3"
+              >
+                <v-list-item-title class="font-weight-bold">
+                  {{ segment.name }} (Weight: {{ segment.weight * 100 }}%)
+                </v-list-item-title>
+                <v-list
+                  density="compact"
+                  class="bg-transparent"
+                >
+                  <v-list-item
+                    v-for="category in segment.categories"
+                    :key="category.id"
+                  >
+                    <v-list-item-title>{{ category.name }}</v-list-item-title>
+                    <v-list-item-subtitle>
+                      <!--
+                        NOTE: The scoring progress is based on an assumed data structure where `event.scores`
+                        is an array of score objects. Each score is expected to have a
+                        `judge_id` and a `category_id`.
+                      -->
+                      Scoring Progress:
+                      {{ getScoringProgress(category, event?.judges || [], event?.scores || []) }}
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                  <v-list-item v-if="!segment.categories || segment.categories.length === 0">
+                    <v-list-item-title class="text-grey">
+                      No categories in this segment.
+                    </v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-list-item>
+            </v-list>
+            <p class="font-weight-bold text-right mt-6">
+              Total Segment Weight: {{ totalSegmentWeight }}%
+            </p>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <v-row>
       <!-- Judge Requests -->
       <v-col
         class="d-flex"
@@ -226,6 +217,9 @@
 <script setup lang="ts">
 const route = useRoute()
 const eventsStore = useEventsStore()
+
+const { smAndDown } = useDisplay()
+const hideFooterOnSmallScreens = computed(() => smAndDown.value)
 
 const eventId = route.params.id as string
 const event = computed(() => eventsStore.event)
