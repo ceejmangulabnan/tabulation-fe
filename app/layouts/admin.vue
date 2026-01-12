@@ -53,6 +53,14 @@
     <v-main>
       <Snackbar />
       <v-container fluid>
+        <div class="d-flex align-center mb-4">
+          <v-btn
+            icon="mdi-arrow-left"
+            variant="text"
+            @click="router.back()"
+          ></v-btn>
+          <v-breadcrumbs :items="breadcrumbs" class="pa-0"></v-breadcrumbs>
+        </div>
         <slot />
       </v-container>
     </v-main>
@@ -60,7 +68,36 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '~/stores/auth'
+import { useThemeStore } from '~/stores/theme'
+
 const drawer = ref(false)
 const authStore = useAuthStore()
 const theme = useThemeStore()
+const route = useRoute()
+const router = useRouter()
+
+const breadcrumbs = computed(() => {
+  const crumbs = [{ title: 'Dashboard', to: '/admin/dashboard', disabled: false }]
+  const pathArray = route.path.split('/').filter((i) => i)
+
+  // Start from index 1 to skip '/admin'
+  let path = '/admin'
+  for (let i = 1; i < pathArray.length; i++) {
+    const segment = pathArray[i]
+    path += `/${segment}`
+    crumbs.push({
+      title: segment.charAt(0).toUpperCase() + segment.slice(1),
+      to: path,
+      disabled: i === pathArray.length - 1,
+    })
+  }
+
+  // If we are on the dashboard, the single breadcrumb should be disabled.
+  if (crumbs.length === 1 && route.path.includes('dashboard')) {
+    crumbs[0].disabled = true
+  }
+
+  return crumbs
+})
 </script>

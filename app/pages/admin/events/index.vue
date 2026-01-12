@@ -1,12 +1,7 @@
-<script setup lang="ts">
-definePageMeta({
-  middleware: ['admin', 'auth'],
-  layout: 'admin',
-})
-const authStore = useAuthStore()
-console.log('User', authStore.user)
-</script>
-
 <template>
-  <div>Admin View - Events</div>
+  <v-container>
+    <AdminEventList />
+  </v-container>
 </template>
+
+<script setup lang="ts"></script>

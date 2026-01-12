@@ -2,7 +2,7 @@
   <v-card
     hover
     class="d-flex flex-column w-100 ma-2 pa-3 rounded-xl"
-    @click="router.push(`/${userRole}/event/${event.id}`)"
+    @click="router.push(`/${userRole}/events/${event.id}`)"
   >
     <v-card-item>
       <v-card-title>{{ event?.name }}</v-card-title>
