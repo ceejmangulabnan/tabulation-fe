@@ -80,7 +80,9 @@
         class="d-flex"
       >
         <v-card class="d-flex flex-column w-100 me-1 pa-2">
-          <v-card-title>Segment & Scoring Overview ({{ event?.segments?.length || 0 }})</v-card-title>
+          <v-card-title>
+            Segment & Scoring Overview ({{ event?.segments?.length || 0 }})
+          </v-card-title>
           <v-card-text>
             <div v-if="!event?.segments || event.segments.length === 0">
               No segments defined for this event.
@@ -132,37 +134,77 @@
         cols="12"
         class="d-flex"
       >
-        <v-card class="d-flex flex-column w-100 me-1 pa-2">
+        <v-card class="w-100 me-1 pa-2">
           <v-card-title>Participants ({{ event?.participants?.length || 0 }})</v-card-title>
           <v-text-field
             v-model="participantSearch"
             label="Search Participants"
             variant="filled"
-            density="compact"
             hide-details
           ></v-text-field>
-          <v-data-table
-            :headers="participantHeaders"
-            :items="filteredParticipants"
-            class="flex-grow-1"
-            density="compact"
-          >
-            <template #item.name="{ item }">
-              <div class="d-flex align-center py-2">
-                <v-avatar
-                  :image="item.headshot?.formats.thumbnail.url"
-                  icon="mdi-account"
-                  class="mr-3"
-                  size="40"
-                ></v-avatar>
-                <div class="font-weight-bold">{{ item.name }}</div>
-              </div>
-            </template>
 
-            <template #no-data>
-              <div class="text-center pa-4 text-grey-darken-1">No participants registered.</div>
-            </template>
-          </v-data-table>
+          <v-tabs
+            v-model="activeTab"
+            class="mt-4"
+          >
+            <v-tab value="male">Male ({{ maleParticipants.length }})</v-tab>
+            <v-tab value="female">Female ({{ femaleParticipants.length }})</v-tab>
+          </v-tabs>
+
+          <v-window v-model="activeTab">
+            <v-window-item value="male">
+              <v-data-table
+                :headers="participantHeaders"
+                :items="maleParticipants"
+                class="flex-grow-1"
+                density="compact"
+              >
+                <template #item.name="{ item }">
+                  <div class="d-flex align-center py-2">
+                    <v-avatar
+                      :image="item.headshot?.formats.thumbnail.url"
+                      icon="mdi-account"
+                      class="mr-3"
+                      size="40"
+                    ></v-avatar>
+                    <div class="font-weight-bold">{{ item.name }}</div>
+                  </div>
+                </template>
+
+                <template #no-data>
+                  <div class="text-center pa-4 text-grey-darken-1">
+                    No male participants registered.
+                  </div>
+                </template>
+              </v-data-table>
+            </v-window-item>
+            <v-window-item value="female">
+              <v-data-table
+                :headers="participantHeaders"
+                :items="femaleParticipants"
+                class="flex-grow-1"
+                density="compact"
+              >
+                <template #item.name="{ item }">
+                  <div class="d-flex align-center py-2">
+                    <v-avatar
+                      :image="item.headshot?.formats.thumbnail.url"
+                      icon="mdi-account"
+                      class="mr-3"
+                      size="40"
+                    ></v-avatar>
+                    <div class="font-weight-bold">{{ item.name }}</div>
+                  </div>
+                </template>
+
+                <template #no-data>
+                  <div class="text-center pa-4 text-grey-darken-1">
+                    No female participants registered.
+                  </div>
+                </template>
+              </v-data-table>
+            </v-window-item>
+          </v-window>
         </v-card>
       </v-col>
     </v-row>
@@ -228,6 +270,7 @@ function getScoringProgress(category: CategoryData, judges: JudgeData[], eventSc
 
 // Participants Table
 const participantSearch = ref('')
+const activeTab = ref('male')
 const participantHeaders = [
   { title: 'No.', value: 'number', sortable: true, width: '10' },
   { title: 'Name', value: 'name', sortable: true },
@@ -236,13 +279,25 @@ const participantHeaders = [
 
 const filteredParticipants = computed(() => {
   if (!event.value?.participants) return []
-  if (!participantSearch.value) {
-    return event.value.participants
+
+  let participants = event.value.participants
+
+  if (participantSearch.value) {
+    participants = participants.filter((p) => {
+      const searchTerm = participantSearch.value.toLowerCase()
+      const searchableContent = [p.name, p.number, p.notes].join(' ').toLowerCase()
+      return searchableContent.includes(searchTerm)
+    })
   }
-  return event.value.participants.filter((p) => {
-    const searchTerm = participantSearch.value.toLowerCase()
-    const searchableContent = [p.name, p.number, p.notes].join(' ').toLowerCase()
-    return searchableContent.includes(searchTerm)
-  })
+
+  return [...participants].sort((a, b) => a.number - b.number)
+})
+
+const maleParticipants = computed(() => {
+  return filteredParticipants.value.filter((p) => p.gender === 'male')
+})
+
+const femaleParticipants = computed(() => {
+  return filteredParticipants.value.filter((p) => p.gender === 'female')
 })
 </script>
