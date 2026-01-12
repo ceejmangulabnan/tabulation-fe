@@ -54,7 +54,7 @@ const createEvent = async () => {
     if (response.status === 201) {
       snackbar.showSnackbar(`Event "${response.data.data.name}" created successfully.`, 'success')
       emit('close-dialog')
-      router.push(`/admin/event/${response.data.data.id}/setup`)
+      router.push(`/admin/events/${response.data.data.id}/setup`)
       return
     } else {
       snackbar.showSnackbar(
