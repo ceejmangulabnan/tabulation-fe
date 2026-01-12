@@ -312,7 +312,7 @@
 <script setup lang="ts">
 const props = defineProps({
   event: {
-    type: Object as PropType<EventData>,
+    type: Object as PropType<Partial<EventData>>,
     required: true,
   },
   departments: {
@@ -456,7 +456,7 @@ const saveParticipant = async () => {
       snackbar.showSnackbar('Participant created successfully', 'success')
     }
 
-    await eventsStore.fetchEvent(props.event.id.toString())
+    await eventsStore.fetchEvent(props.event.id?.toString() || '')
     if (editedParticipant.value.id) {
       const updatedParticipant = eventsStore.event?.participants?.find(
         (p) => p.id === editedParticipant.value.id
@@ -468,8 +468,10 @@ const saveParticipant = async () => {
         }
       }
     }
-  } catch (error) {
-    if (error.status === 409) {
+  } catch (error: unknown) {
+    const err = error as AxiosError<any>
+
+    if (err.response?.status === 409) {
       snackbar.showSnackbar(
         'An existing participant already has this number. Please input a different participant number.',
         'error'
@@ -477,7 +479,8 @@ const saveParticipant = async () => {
     } else {
       snackbar.showSnackbar('Error saving participant', 'error')
     }
-    console.error('Error saving participant:', error)
+
+    console.error('Error saving participant:', err)
   } finally {
     participantDialog.value = false
   }
@@ -487,7 +490,7 @@ const deleteParticipant = async (item: ParticipantData) => {
   if (!confirm('Are you sure?')) return
   try {
     await api.delete(`/participants/${item.documentId}`)
-    await eventsStore.fetchEvent(props.event.documentId)
+    await eventsStore.fetchEvent(props.event.documentId || '')
     snackbar.showSnackbar('Participant deleted successfully', 'success')
   } catch (error) {
     snackbar.showSnackbar('Failed to delete participant', 'error')

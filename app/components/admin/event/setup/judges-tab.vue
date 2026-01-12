@@ -155,7 +155,7 @@ import { useDisplay } from 'vuetify'
 
 const props = defineProps({
   event: {
-    type: Object as PropType<EventData>,
+    type: Object as PropType<Partial<EventData>>,
     required: true,
   },
   availableJudges: {
@@ -207,7 +207,7 @@ const assignJudge = async () => {
       snackbar.showSnackbar('Judge assigned successfully', 'success')
     }
 
-    await eventsStore.fetchEvent(props.event.id.toString())
+    await eventsStore.fetchEvent(props.event.id?.toString() || '')
     selectedJudge.value = null
   } catch (e) {
     snackbar.showSnackbar('Failed to assign judge.', 'error')
@@ -219,7 +219,7 @@ const removeJudge = async (judge: JudgeData) => {
   if (!confirm('Are you sure?')) return
   try {
     await api.delete(`/judges/${judge.documentId}`)
-    await eventsStore.fetchEvent(props.event.id?.toString())
+    await eventsStore.fetchEvent(props.event.id?.toString() || '')
     snackbar.showSnackbar('Judge removed successfully', 'success')
   } catch (e) {
     snackbar.showSnackbar('Failed to delete judge', 'error')

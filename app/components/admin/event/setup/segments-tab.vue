@@ -347,7 +347,7 @@
 <script setup lang="ts">
 const props = defineProps({
   event: {
-    type: Object as PropType<EventData>,
+    type: Object as PropType<Partial<EventData>>,
     required: true,
   },
 })
@@ -415,7 +415,7 @@ const saveSegment = async () => {
       await api.post('/segments', payload)
       snackbar.showSnackbar('Segment created successfully!', 'success')
     }
-    await eventsStore.fetchEvent(props.event.documentId)
+    await eventsStore.fetchEvent(props.event.documentId || '')
   } catch (error) {
     snackbar.showSnackbar('Failed to save segment', 'error')
     console.error('Error saving segment:', error)
@@ -428,7 +428,7 @@ const deleteSegment = async (item: SegmentData) => {
   if (!confirm('Are you sure? This will delete all categories within it.')) return
   try {
     await api.delete(`/segments/${item.documentId}`)
-    await eventsStore.fetchEvent(props.event.documentId)
+    await eventsStore.fetchEvent(props.event.documentId || '')
     snackbar.showSnackbar('Segment deleted successfully', 'success')
   } catch (error) {
     console.error('Error deleting segment:', error)
@@ -460,7 +460,7 @@ const saveCategory = async () => {
       await api.post('/categories', payload)
       snackbar.showSnackbar('Category created successfully!', 'success')
     }
-    await eventsStore.fetchEvent(props.event.documentId)
+    await eventsStore.fetchEvent(props.event.documentId || '')
   } catch (error) {
     snackbar.showSnackbar('Failed to save category', 'error')
     console.error('Error saving category:', error)
@@ -473,7 +473,7 @@ const deleteCategory = async (item: CategoryData) => {
   if (!confirm('Are you sure?')) return
   try {
     await api.delete(`/categories/${item.documentId}`)
-    await eventsStore.fetchEvent(props.event.documentId)
+    await eventsStore.fetchEvent(props.event.documentId || '')
     snackbar.showSnackbar('Category deleted successfully', 'success')
   } catch (error) {
     console.error('Error deleting category:', error)
