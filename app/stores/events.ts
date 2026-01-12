@@ -13,6 +13,43 @@ interface EventsState {
   error: EventsError | null
 }
 
+type FetchEventsParams = {
+  populate?: {
+    judges?: boolean
+    scores?: boolean
+    judge_requests?: boolean
+    segments?: {
+      populate?: {
+        categories?: boolean
+      }
+    }
+  }
+}
+
+function buildPopulateQuery(populate?: FetchEventsParams['populate']) {
+  if (!populate) return ''
+
+  const params: string[] = []
+
+  if (populate.judges) {
+    params.push('populate[judges]=true')
+  }
+
+  if (populate.scores) {
+    params.push('populate[scores]=true')
+  }
+
+  if (populate.judge_requests) {
+    params.push('populate[judge_requests]=true')
+  }
+
+  if (populate.segments?.populate?.categories) {
+    params.push('populate[segments][populate][categories]=true')
+  }
+
+  return params.join('&')
+}
+
 export const useEventsStore = defineStore('events', {
   state: (): EventsState => ({
     events: [],
@@ -32,14 +69,17 @@ export const useEventsStore = defineStore('events', {
     },
   },
   actions: {
-    async fetchEvents(): Promise<void> {
+    async fetchEvents(params: FetchEventsParams = {}): Promise<void> {
       this.isLoading = true
       this.isError = false
       this.error = null
 
       try {
         const api = useStrapiApi()
-        const { data } = await api.get('/events?populate=*')
+        const query = buildPopulateQuery(params.populate)
+
+        const url = query ? `/events?${query}` : '/events'
+        const { data } = await api.get(url)
 
         this.events = data?.data || []
       } catch (err: any) {
