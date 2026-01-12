@@ -42,12 +42,12 @@
         <v-btn
           icon="mdi-pencil"
           variant="text"
-          :to="`/admin/event/${item.id}/setup`"
+          :to="`/admin/events/${item.id}/setup`"
         ></v-btn>
         <v-btn
           icon="mdi-arrow-right"
           variant="text"
-          :to="`/admin/event/${item.id}`"
+          :to="`/admin/events/${item.id}`"
         ></v-btn>
       </template>
 
@@ -148,4 +148,3 @@ function getScoringProgress(category: CategoryData, judges: JudgeData[], eventSc
   return `${scoredCount} of ${judges.length} judges have scored.`
 }
 </script>
-
