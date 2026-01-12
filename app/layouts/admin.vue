@@ -59,7 +59,10 @@
             variant="text"
             @click="router.back()"
           ></v-btn>
-          <v-breadcrumbs :items="breadcrumbs" class="pa-0"></v-breadcrumbs>
+          <v-breadcrumbs
+            :items="breadcrumbs"
+            class="pa-0 d-flex flex-wrap"
+          ></v-breadcrumbs>
         </div>
         <slot />
       </v-container>
@@ -68,9 +71,6 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '~/stores/auth'
-import { useThemeStore } from '~/stores/theme'
-
 const drawer = ref(false)
 const authStore = useAuthStore()
 const theme = useThemeStore()
@@ -85,17 +85,18 @@ const breadcrumbs = computed(() => {
   let path = '/admin'
   for (let i = 1; i < pathArray.length; i++) {
     const segment = pathArray[i]
+    if (!segment) return
     path += `/${segment}`
     crumbs.push({
-      title: segment.charAt(0).toUpperCase() + segment.slice(1),
+      title: segment?.charAt(0).toUpperCase() + segment?.slice(1),
       to: path,
       disabled: i === pathArray.length - 1,
     })
   }
 
-  // If we are on the dashboard, the single breadcrumb should be disabled.
+  // Handle base path /admin/dashboard
   if (crumbs.length === 1 && route.path.includes('dashboard')) {
-    crumbs[0].disabled = true
+    if (crumbs[0]) crumbs[0].disabled = true
   }
 
   return crumbs
