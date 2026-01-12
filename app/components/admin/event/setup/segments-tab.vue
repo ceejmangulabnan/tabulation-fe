@@ -28,21 +28,65 @@
         class="mb-4"
         hide-default-footer
       >
-        <template #item.actions="{ item }">
-          <v-icon
-            small
-            class="mr-2"
-            @click="showSegmentDialog(item as SegmentData)"
+        <template #headers="{ columns, getSortIcon, isSorted, toggleSort }">
+          <tr>
+            <template
+              v-for="column in columns"
+              ::key="column.key"
+            >
+              <th @click="toggleSort(column)">
+                <div class="font-weight-bold d-flex cursor-pointer">
+                  <span
+                    class="me-2 cursor-pointer"
+                    v-text="column.title"
+                  ></span>
+
+                  <v-icon
+                    v-if="isSorted(column)"
+                    :icon="getSortIcon(column)"
+                    color="medium-emphasis"
+                  ></v-icon>
+                </div>
+              </th>
+            </template>
+          </tr>
+        </template>
+        <template #item="{ item, internalItem, isExpanded, toggleExpand }">
+          <tr
+            style="cursor: pointer"
+            @click="toggleExpand(internalItem)"
           >
-            mdi-pencil
-          </v-icon>
-          <v-icon
-            small
-            color="error"
-            @click="deleteSegment(item as SegmentData)"
-          >
-            mdi-delete
-          </v-icon>
+            <td>{{ item.name }}</td>
+            <td>{{ item.weight }}</td>
+            <td>
+              <v-icon
+                small
+                class="mr-2"
+                @click.stop="showSegmentDialog(item as SegmentData)"
+              >
+                mdi-pencil
+              </v-icon>
+              <v-icon
+                small
+                color="error"
+                @click.stop="deleteSegment(item as SegmentData)"
+              >
+                mdi-delete
+              </v-icon>
+            </td>
+            <td class="text-end">
+              <v-btn
+                :append-icon="isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                :text="isExpanded(internalItem) ? 'Collapse' : 'Show Categories'"
+                class="text-none"
+                color="medium-emphasis"
+                size="small"
+                variant="text"
+                border
+                slim
+              ></v-btn>
+            </td>
+          </tr>
         </template>
 
         <template #expanded-row="{ columns, item }">
@@ -76,6 +120,29 @@
                 density="compact"
                 hide-default-footer
               >
+                <template #headers="{ columns, getSortIcon, isSorted, toggleSort }">
+                  <tr>
+                    <template
+                      v-for="column in columns"
+                      ::key="column.key"
+                    >
+                      <th @click="toggleSort(column)">
+                        <div class="font-weight-bold d-flex cursor-pointer">
+                          <span
+                            class="me-2 cursor-pointer"
+                            v-text="column.title"
+                          ></span>
+
+                          <v-icon
+                            v-if="isSorted(column)"
+                            :icon="getSortIcon(column)"
+                            color="medium-emphasis"
+                          ></v-icon>
+                        </div>
+                      </th>
+                    </template>
+                  </tr>
+                </template>
                 <template #item.actions="{ item: categoryItem }">
                   <v-icon
                     small
@@ -132,7 +199,6 @@
                 >
                   mdi-delete
                 </v-icon>
-                <v-icon :class="{ 'rotate-180': props.isActive }">mdi-chevron-down</v-icon>
               </template>
             </v-list-item>
           </template>
@@ -293,14 +359,15 @@ const { smAndDown } = useDisplay()
 
 // --- Scoring Segments State & Headers ---
 const segmentHeaders = [
-  { title: 'Name', key: 'name', sortable: true },
-  { title: 'Weight', value: 'weight', sortable: true },
-  { title: 'Actions', key: 'actions', sortable: false },
+  { title: 'Name', key: 'name', sortable: true, class: 'font-weight-bold' },
+  { title: 'Weight', value: 'weight', sortable: true, class: 'font-weight-bold' },
+  { title: 'Actions', key: 'actions', sortable: false, class: 'font-weight-bold' },
+  { key: 'data-table-expand', title: '', class: 'font-weight-bold', sortable: false },
 ]
 const categoryHeaders = [
-  { title: 'Name', key: 'name', sortable: true },
-  { title: 'Weight', value: 'weight', sortable: true },
-  { title: 'Actions', key: 'actions', sortable: false },
+  { title: 'Name', key: 'name', sortable: true, class: 'font-weight-bold' },
+  { title: 'Weight', value: 'weight', sortable: true, class: 'font-weight-bold' },
+  { title: 'Actions', key: 'actions', sortable: false, class: 'font-weight-bold' },
 ]
 const segmentDialog = ref(false)
 const editedSegment = ref<Partial<SegmentData>>({
