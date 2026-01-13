@@ -139,7 +139,11 @@
               v-for="judge in event?.judges"
               :key="judge.id"
               :title="judge.name"
-            ></v-list-item>
+            >
+              <v-list-item-subtitle>
+                {{ judge.users_permissions_user.email }}
+              </v-list-item-subtitle>
+            </v-list-item>
           </v-list>
         </v-card>
       </v-col>
