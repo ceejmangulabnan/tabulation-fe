@@ -306,6 +306,7 @@ const participantSearch = ref('')
 const participantHeaders = [
   { title: 'No.', value: 'number', sortable: true, width: '10' },
   { title: 'Name', value: 'name', sortable: true },
+  { title: 'Department', value: 'department.name', sortable: true },
   { title: 'Notes', value: 'notes', sortable: false },
 ]
 
