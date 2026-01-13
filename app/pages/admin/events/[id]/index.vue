@@ -128,7 +128,7 @@
       >
         <v-card class="d-flex flex-column w-100 me-1 pa-2">
           <v-card-title>Assigned Judges ({{ event?.judges?.length || 0 }})</v-card-title>
-          <v-list lines="one">
+          <v-list lines="two">
             <v-list-item
               v-if="!event?.judges?.length"
               class="text-grey-darken-1"
@@ -139,10 +139,11 @@
               v-for="judge in event?.judges"
               :key="judge.id"
               :title="judge.name"
+              :subtitle="judge.users_permissions_user?.email"
             >
-              <v-list-item-subtitle>
-                {{ judge.users_permissions_user.email }}
-              </v-list-item-subtitle>
+              <template #prepend>
+                <v-avatar icon="mdi-account-tie"></v-avatar>
+              </template>
             </v-list-item>
           </v-list>
         </v-card>
@@ -167,15 +168,14 @@
                 class="mb-3"
               >
                 <v-list-item-title class="font-weight-bold d-flex align-center">
-                  {{ segment.name }} (Weight: {{ segment.weight * 100 }}%)
                   <v-chip
-                    v-if="segment.segment_status === 'active'"
-                    color="primary"
+                    :color="getSegmentStatusColor(segment.segment_status)"
                     size="small"
-                    class="ms-2"
+                    class="mr-1 text-capitalize"
                   >
-                    Active
+                    {{ segment.segment_status }}
                   </v-chip>
+                  {{ segment.name }} (Weight: {{ segment.weight * 100 }}%)
                 </v-list-item-title>
                 <v-list
                   density="compact"
@@ -265,6 +265,21 @@ const statusColor = computed(() => {
   }
 })
 
+function getSegmentStatusColor(status: 'draft' | 'inactive' | 'active' | 'closed') {
+  switch (status) {
+    case 'draft':
+      return 'grey'
+    case 'inactive':
+      return 'orange'
+    case 'active':
+      return 'green'
+    case 'closed':
+      return 'blue'
+    default:
+      return 'grey'
+  }
+}
+
 const totalSegmentWeight = computed(() =>
   (event.value?.segments || []).reduce((sum: number, s: SegmentData) => sum + s.weight * 100, 0)
 )
@@ -318,3 +333,4 @@ const femaleParticipants = computed(() => {
   return filteredParticipants.value.filter((p: ParticipantData) => p.gender === 'female')
 })
 </script>
+
