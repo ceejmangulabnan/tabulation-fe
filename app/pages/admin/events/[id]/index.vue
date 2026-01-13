@@ -227,15 +227,6 @@
 </template>
 
 <script setup lang="ts">
-import { useDisplay } from 'vuetify'
-import type {
-  SegmentData,
-  CategoryData,
-  JudgeData,
-  ScoreData,
-  ParticipantData,
-} from '~/shared/types/strapi-data'
-
 const route = useRoute()
 const eventsStore = useEventsStore()
 
@@ -334,4 +325,3 @@ const femaleParticipants = computed(() => {
   return filteredParticipants.value.filter((p: ParticipantData) => p.gender === 'female')
 })
 </script>
-
