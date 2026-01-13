@@ -123,7 +123,7 @@ export interface SegmentData extends StrapiPopulatedItem {
   name: string
   order: number
   weight: number
-  segment_status: 'draft' | 'active' | 'closed'
+  segment_status: 'draft' | 'inactive' | 'active' | 'closed'
   event: EventData
   categories: CategoryData[]
   scores: ScoreData[]

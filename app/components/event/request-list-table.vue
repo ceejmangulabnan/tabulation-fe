@@ -48,8 +48,8 @@
           </td>
 
           <td
-            align="center"
             v-if="item.request_status !== 'approved'"
+            align="center"
           >
             <v-btn
               variant="tonal"

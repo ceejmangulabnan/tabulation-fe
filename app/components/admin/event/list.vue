@@ -4,8 +4,8 @@
       <h2 class="text-h5">All Events</h2>
       <v-btn
         color="primary"
-        @click="showCreateDialog = true"
         prepend-icon="mdi-plus"
+        @click="showCreateDialog = true"
       >
         Create Event
       </v-btn>

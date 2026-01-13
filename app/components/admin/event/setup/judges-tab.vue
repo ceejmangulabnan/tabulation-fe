@@ -30,7 +30,7 @@
           </template>
         </tr>
       </template>
-      <template v-slot:item.actions="{ item }">
+      <template #item.actions="{ item }">
         <v-icon
           small
           color="error"
@@ -85,8 +85,8 @@
           />
           <v-btn
             color="primary"
-            @click="assignJudge"
             :disabled="!selectedJudge"
+            @click="assignJudge"
           >
             Assign
           </v-btn>

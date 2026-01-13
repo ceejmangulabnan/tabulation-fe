@@ -13,13 +13,13 @@
 
     <v-card-text>
       <v-text-field
-        label="Title"
         v-model="props.event.name"
+        label="Title"
       />
 
       <v-textarea
-        label="Description"
         v-model="props.event.description"
+        label="Description"
       />
     </v-card-text>
     <v-card-actions>

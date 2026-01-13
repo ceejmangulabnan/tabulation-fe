@@ -49,6 +49,7 @@
             label="Search Participants"
             variant="filled"
             hide-details
+            class="mb-4"
           ></v-text-field>
 
           <v-tabs
@@ -124,7 +125,6 @@
       <v-col
         md="6"
         cols="12"
-        class="d-flex"
       >
         <v-card class="d-flex flex-column w-100 me-1 pa-2">
           <v-card-title>Assigned Judges ({{ event?.judges?.length || 0 }})</v-card-title>
@@ -162,8 +162,16 @@
                 :key="segment.id"
                 class="mb-3"
               >
-                <v-list-item-title class="font-weight-bold">
+                <v-list-item-title class="font-weight-bold d-flex align-center">
                   {{ segment.name }} (Weight: {{ segment.weight * 100 }}%)
+                  <v-chip
+                    v-if="segment.segment_status === 'active'"
+                    color="primary"
+                    size="small"
+                    class="ms-2"
+                  >
+                    Active
+                  </v-chip>
                 </v-list-item-title>
                 <v-list
                   density="compact"
@@ -215,6 +223,15 @@
 </template>
 
 <script setup lang="ts">
+import { useDisplay } from 'vuetify'
+import type {
+  SegmentData,
+  CategoryData,
+  JudgeData,
+  ScoreData,
+  ParticipantData,
+} from '~/shared/types/strapi-data'
+
 const route = useRoute()
 const eventsStore = useEventsStore()
 
@@ -255,7 +272,9 @@ function getScoringProgress(category: CategoryData, judges: JudgeData[], eventSc
   const categoryScores = (eventScores || []).filter((s) => s.category?.id === category.id)
 
   const assignedJudgeIds = new Set(judges.map((j) => j.id))
-  const judgesWhoScored = new Set(categoryScores.map((s: any) => s.judge?.id).filter((id) => id))
+  const judgesWhoScored = new Set(
+    categoryScores.map((s: ScoreData) => s.judge?.id).filter((id) => id)
+  )
 
   const scoredCount = [...judgesWhoScored].filter((id) => assignedJudgeIds.has(id)).length
 
@@ -263,8 +282,8 @@ function getScoringProgress(category: CategoryData, judges: JudgeData[], eventSc
 }
 
 // Participants Table
-const participantSearch = ref('')
 const activeTab = ref('male')
+const participantSearch = ref('')
 const participantHeaders = [
   { title: 'No.', value: 'number', sortable: true, width: '10' },
   { title: 'Name', value: 'name', sortable: true },
@@ -277,7 +296,7 @@ const filteredParticipants = computed(() => {
   let participants = event.value.participants
 
   if (participantSearch.value) {
-    participants = participants.filter((p) => {
+    participants = participants.filter((p: ParticipantData) => {
       const searchTerm = participantSearch.value.toLowerCase()
       const searchableContent = [p.name, p.number, p.notes].join(' ').toLowerCase()
       return searchableContent.includes(searchTerm)
@@ -288,10 +307,10 @@ const filteredParticipants = computed(() => {
 })
 
 const maleParticipants = computed(() => {
-  return filteredParticipants.value.filter((p) => p.gender === 'male')
+  return filteredParticipants.value.filter((p: ParticipantData) => p.gender === 'male')
 })
 
 const femaleParticipants = computed(() => {
-  return filteredParticipants.value.filter((p) => p.gender === 'female')
+  return filteredParticipants.value.filter((p: ParticipantData) => p.gender === 'female')
 })
 </script>

@@ -4,8 +4,8 @@
       <v-tabs
         v-model="tab"
         bg-color="green"
-        @update:model-value="onTabChange"
         show-arrows
+        @update:model-value="onTabChange"
       >
         <v-tab value="one">Event Info</v-tab>
         <v-tab value="two">Scoring Segments</v-tab>

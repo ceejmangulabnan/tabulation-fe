@@ -36,9 +36,9 @@
                 </div>
                 <v-form>
                   <v-select
+                    v-model="selectedEventName"
                     label="Select an event"
                     :items="eventsStore.events.map((e) => e.name)"
-                    v-model="selectedEventName"
                   ></v-select>
                 </v-form>
               </v-card-text>
