@@ -129,8 +129,24 @@
                   {{ segment.name }}
                 </v-list-item-title>
                 <v-list-item-subtitle>
-                  Order: {{ segment.order }} | Weight: {{ segment.weight * 100 }}%
+                  Order: {{ segment.order }} | Weight: {{ segment.weight * 100 }}% | Total Weight: {{ segmentTotalWeight(segment) * 100 }}%
                 </v-list-item-subtitle>
+
+                <v-list
+                  density="compact"
+                  class="bg-transparent"
+                >
+                  <v-list-item
+                    v-for="category in segment.categories"
+                    :key="category.id"
+                  >
+                    <v-list-item-title>{{ category.name }}</v-list-item-title>
+                    <v-list-item-subtitle>
+                      Weight: {{ category.weight * 100 }}%
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                </v-list>
+
                 <template #append>
                   <v-select
                     :model-value="segment.segment_status"
@@ -282,7 +298,7 @@ const scoreTableHeaders = computed(() => {
   if (selectedSegment.value && selectedSegment.value.categories) {
     selectedSegment.value.categories.forEach((category) => {
       headers.push({
-        title: category.name,
+        title: `${category.name} (${category.weight * 100}%)`,
         value: `category_${category.id}`,
         sortable: false,
       })
