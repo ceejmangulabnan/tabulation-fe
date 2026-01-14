@@ -129,7 +129,8 @@
                   {{ segment.name }}
                 </v-list-item-title>
                 <v-list-item-subtitle>
-                  Order: {{ segment.order }} | Weight: {{ segment.weight * 100 }}% | Total Weight: {{ segmentTotalWeight(segment) * 100 }}%
+                  Order: {{ segment.order }} | Weight: {{ segment.weight * 100 }}% | Total Weight of
+                  Categories: {{ segmentTotalWeight(segment) * 100 }}%
                 </v-list-item-subtitle>
 
                 <v-list
@@ -149,7 +150,7 @@
 
                 <template #append>
                   <v-select
-                    :model-value="segment.segment_status"
+                    :model-value="pendingSegmentChanges[segment.id] || segment.segment_status"
                     :items="['draft', 'inactive', 'active', 'closed']"
                     label="Status"
                     variant="outlined"
@@ -157,7 +158,7 @@
                     hide-details
                     class="ms-4"
                     style="width: 150px"
-                    @update:model-value="updateSegmentStatus(segment.id, $event)"
+                    @update:model-value="handleStatusChange(segment.id, $event)"
                   ></v-select>
                 </template>
               </v-list-item>
@@ -168,6 +169,16 @@
             >
               No segments defined for this event.
             </div>
+
+            <v-card-actions v-if="Object.keys(pendingSegmentChanges).length > 0">
+              <v-spacer></v-spacer>
+              <v-btn
+                color="primary"
+                @click="submitSegmentChanges"
+              >
+                Submit Changes
+              </v-btn>
+            </v-card-actions>
           </v-card-text>
         </v-card>
       </v-window-item>
@@ -228,9 +239,13 @@
 <script setup lang="ts">
 const route = useRoute()
 const eventsStore = useEventsStore()
+const { showSnackbar } = useSnackbar()
 
 const eventId = route.params.id as string
 const event = computed(() => eventsStore.event)
+
+const pendingSegmentChanges = ref<{ [key: number]: SegmentData['segment_status'] }>({})
+
 
 onMounted(async () => {
   await eventsStore.fetchEvent(eventId)
@@ -283,6 +298,7 @@ function getParticipantScoresForSegment(
         s.segment?.id === segment.id &&
         s.category?.id === category.id
     )
+    console.log('Matching Score found for this Event:', score)
     scores[`category_${category.id}`] = score ? score.value : 'N/A'
   })
 
@@ -331,19 +347,38 @@ const femaleParticipantsScores = computed(() => {
   )
 })
 
+function handleStatusChange(segmentId: number, newStatus: SegmentData['segment_status']) {
+  pendingSegmentChanges.value[segmentId] = newStatus
+}
+
 const api = useStrapiApi()
 
-async function updateSegmentStatus(segmentId: number, newStatus: SegmentData['segment_status']) {
+async function submitSegmentChanges() {
+  const changes = Object.entries(pendingSegmentChanges.value)
+  if (changes.length === 0) {
+    return
+  }
+
   try {
-    await api.put(`/segments/${segmentId}`, {
-      data: {
-        segment_status: newStatus,
-      },
-    })
+    await Promise.all(
+      changes.map(([segmentId, status]) => {
+        const segment = event.value?.segments?.find(s => s.id === Number(segmentId));
+        if (segment) {
+          return api.put(`/segments/${segment.documentId}`, {
+            data: { segment_status: status },
+          })
+        } else {
+          return Promise.reject(new Error(`Segment with ID ${segmentId} not found.`));
+        }
+      })
+    )
+
+    showSnackbar('Segment statuses updated successfully!', 'success')
     await eventsStore.fetchEvent(eventId)
-    console.log('Segment status updated successfully!')
+    pendingSegmentChanges.value = {}
   } catch (error) {
-    console.error('Error updating segment status:', error)
+    console.error('Error updating segment statuses:', error)
+    showSnackbar('Failed to update segment statuses.', 'error')
   }
 }
 
