@@ -171,6 +171,9 @@
               >
                 <v-list-item-title class="font-weight-bold">
                   {{ segment.name }}
+                  <span class="text-caption text-grey-darken-1 ms-2">
+                    (Total Weight: {{ segmentTotalWeight(segment) * 100 }}%)
+                  </span>
                 </v-list-item-title>
                 <v-list
                   density="compact"
@@ -180,7 +183,12 @@
                     v-for="category in segment.categories"
                     :key="category.id"
                   >
-                    <v-list-item-title>{{ category.name }}</v-list-item-title>
+                    <v-list-item-title>
+                      {{ category.name }}
+                      <span class="text-caption text-grey-darken-1 ms-2">
+                        ({{ category.weight * 100 }}%)
+                      </span>
+                    </v-list-item-title>
                     <v-list-item-subtitle>
                       Scoring Progress:
                       {{ getScoringProgress(category, event?.judges || [], event?.scores || []) }}
@@ -339,6 +347,13 @@ function getScoringProgress(category: CategoryData, judges: JudgeData[], eventSc
 
   return `${scoredCount} of ${judges.length} judges have scored.`
 }
+
+const segmentTotalWeight = computed(() => (segment: SegmentData) => {
+  if (!segment.categories) {
+    return 0
+  }
+  return segment.categories.reduce((total, category) => total + (category.weight || 0), 0)
+})
 
 // Initialize selectedSegmentId if segments are available
 watch(
