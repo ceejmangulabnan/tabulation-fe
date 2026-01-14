@@ -28,7 +28,6 @@
     >
       <v-tab value="scores">Scores</v-tab>
       <v-tab value="segments">Segment Management</v-tab>
-      <v-tab value="progress">Scoring Progress</v-tab>
     </v-tabs>
 
     <v-window v-model="activeTab">
@@ -145,6 +144,10 @@
                     <v-list-item-subtitle>
                       Weight: {{ category.weight * 100 }}%
                     </v-list-item-subtitle>
+                    <v-list-item-subtitle>
+                      Scoring Progress:
+                      {{ getScoringProgress(category, event?.judges || [], event?.scores || []) }}
+                    </v-list-item-subtitle>
                   </v-list-item>
                 </v-list>
 
@@ -182,56 +185,6 @@
           </v-card-text>
         </v-card>
       </v-window-item>
-
-      <v-window-item value="progress">
-        <v-card>
-          <v-card-title>Scoring Progress</v-card-title>
-          <v-card-text>
-            <div v-if="!event?.segments || event.segments.length === 0">
-              No segments defined for this event.
-            </div>
-            <v-list v-else>
-              <v-list-item
-                v-for="segment in event?.segments"
-                :key="segment.id"
-                class="mb-3"
-              >
-                <v-list-item-title class="font-weight-bold">
-                  {{ segment.name }}
-                  <span class="text-caption text-grey-darken-1 ms-2">
-                    (Total Weight: {{ segmentTotalWeight(segment) * 100 }}%)
-                  </span>
-                </v-list-item-title>
-                <v-list
-                  density="compact"
-                  class="bg-transparent"
-                >
-                  <v-list-item
-                    v-for="category in segment.categories"
-                    :key="category.id"
-                  >
-                    <v-list-item-title>
-                      {{ category.name }}
-                      <span class="text-caption text-grey-darken-1 ms-2">
-                        ({{ category.weight * 100 }}%)
-                      </span>
-                    </v-list-item-title>
-                    <v-list-item-subtitle>
-                      Scoring Progress:
-                      {{ getScoringProgress(category, event?.judges || [], event?.scores || []) }}
-                    </v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item v-if="!segment.categories || segment.categories.length === 0">
-                    <v-list-item-title class="text-grey">
-                      No categories in this segment.
-                    </v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-list-item>
-            </v-list>
-          </v-card-text>
-        </v-card>
-      </v-window-item>
     </v-window>
   </v-container>
 </template>
@@ -245,7 +198,6 @@ const eventId = route.params.id as string
 const event = computed(() => eventsStore.event)
 
 const pendingSegmentChanges = ref<{ [key: number]: SegmentData['segment_status'] }>({})
-
 
 onMounted(async () => {
   await eventsStore.fetchEvent(eventId)
@@ -362,13 +314,13 @@ async function submitSegmentChanges() {
   try {
     await Promise.all(
       changes.map(([segmentId, status]) => {
-        const segment = event.value?.segments?.find(s => s.id === Number(segmentId));
+        const segment = event.value?.segments?.find((s) => s.id === Number(segmentId))
         if (segment) {
           return api.put(`/segments/${segment.documentId}`, {
             data: { segment_status: status },
           })
         } else {
-          return Promise.reject(new Error(`Segment with ID ${segmentId} not found.`));
+          return Promise.reject(new Error(`Segment with ID ${segmentId} not found.`))
         }
       })
     )
