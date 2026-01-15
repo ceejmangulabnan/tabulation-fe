@@ -310,6 +310,7 @@
 </template>
 
 <script setup lang="ts">
+import { AxiosError } from 'axios'
 const props = defineProps({
   event: {
     type: Object as PropType<Partial<EventData>>,

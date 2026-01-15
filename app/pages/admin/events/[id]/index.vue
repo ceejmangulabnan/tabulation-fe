@@ -72,7 +72,7 @@
                 <template #item.name="{ item }">
                   <div class="d-flex align-center py-2">
                     <v-avatar
-                      :image="item.headshot?.formats.thumbnail.url"
+                      :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
                       icon="mdi-account"
                       class="mr-3"
                       size="40"
@@ -99,7 +99,7 @@
                 <template #item.name="{ item }">
                   <div class="d-flex align-center py-2">
                     <v-avatar
-                      :image="item.headshot?.formats.thumbnail.url"
+                      :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
                       icon="mdi-account"
                       class="mr-3"
                       size="40"
@@ -235,6 +235,11 @@ const hideFooterOnSmallScreens = computed(() => smAndDown.value)
 
 const eventId = route.params.id as string
 const event = computed(() => eventsStore.event)
+
+function getStrapiUrl(url: string) {
+  const config = useRuntimeConfig()
+  return `${config.public.strapiUrl}${url}`
+}
 
 onMounted(async () => {
   await eventsStore.fetchEvent(eventId)
