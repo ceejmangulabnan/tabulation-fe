@@ -69,11 +69,19 @@
                       <template #item.name="{ item }">
                         <div class="d-flex align-center py-2">
                           <v-avatar
-                            :image="item.headshot?.formats.thumbnail.url"
+                            v-if="item.headshot?.formats?.thumbnail?.url"
+                            :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
                             icon="mdi-account"
                             class="mr-3"
                             size="40"
-                          ></v-avatar>
+                          />
+
+                          <v-avatar
+                            v-else
+                            icon="mdi-account"
+                            class="mr-3"
+                            size="40"
+                          />
                           <div class="font-weight-bold">{{ item.name }}</div>
                         </div>
                       </template>
@@ -96,11 +104,19 @@
                       <template #item.name="{ item }">
                         <div class="d-flex align-center py-2">
                           <v-avatar
-                            :image="item.headshot?.formats.thumbnail.url"
+                            v-if="item.headshot?.formats?.thumbnail?.url"
+                            :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
                             icon="mdi-account"
                             class="mr-3"
                             size="40"
-                          ></v-avatar>
+                          />
+
+                          <v-avatar
+                            v-else
+                            icon="mdi-account"
+                            class="mr-3"
+                            size="40"
+                          />
                           <div class="font-weight-bold">{{ item.name }}</div>
                         </div>
                       </template>
@@ -199,6 +215,11 @@ const event = computed(() => eventsStore.event)
 
 const pendingSegmentChanges = ref<{ [key: number]: SegmentData['segment_status'] }>({})
 
+function getStrapiUrl(url: string) {
+  const config = useRuntimeConfig()
+  return `${config.public.strapiUrl}${url}`
+}
+
 onMounted(async () => {
   await eventsStore.fetchEvent(eventId)
   console.log('Event:', event.value)
@@ -233,10 +254,11 @@ function getParticipantScoresForSegment(
   segment: SegmentData,
   allScores: ScoreData[]
 ) {
-  const scores: { [key: string]: number | string } = {
+  const scores: { [key: string]: number | string | HeadshotData } = {
     id: participant.id,
     name: participant.name,
     number: participant.number,
+    headshot: participant.headshot as HeadshotData,
   }
 
   if (!segment.categories) {
@@ -279,6 +301,7 @@ const maleParticipantsScores = computed(() => {
   if (!event.value?.participants || !selectedSegment.value || !event.value?.scores) {
     return []
   }
+  console.log('Event Participants', event.value.participants)
   const maleParticipants = event.value.participants
     .filter((p) => p.gender === 'male')
     .sort((a, b) => a.number - b.number)

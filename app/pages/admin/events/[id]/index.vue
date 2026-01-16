@@ -72,11 +72,20 @@
                 <template #item.name="{ item }">
                   <div class="d-flex align-center py-2">
                     <v-avatar
+                      v-if="item.headshot?.formats?.thumbnail?.url"
                       :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
                       icon="mdi-account"
                       class="mr-3"
                       size="40"
-                    ></v-avatar>
+                    />
+
+                    <v-avatar
+                      v-else
+                      icon="mdi-account"
+                      class="mr-3"
+                      size="40"
+                    />
+
                     <div class="font-weight-bold">{{ item.name }}</div>
                   </div>
                 </template>
@@ -99,11 +108,19 @@
                 <template #item.name="{ item }">
                   <div class="d-flex align-center py-2">
                     <v-avatar
+                      v-if="item.headshot?.formats?.thumbnail?.url"
                       :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
                       icon="mdi-account"
                       class="mr-3"
                       size="40"
-                    ></v-avatar>
+                    />
+
+                    <v-avatar
+                      v-else
+                      icon="mdi-account"
+                      class="mr-3"
+                      size="40"
+                    />
                     <div class="font-weight-bold">{{ item.name }}</div>
                   </div>
                 </template>
