@@ -39,16 +39,18 @@
       </template>
 
       <template #item.actions="{ item }">
-        <v-btn
-          icon="mdi-pencil"
-          variant="text"
-          :to="`/admin/events/${item.id}/setup`"
-        ></v-btn>
-        <v-btn
-          icon="mdi-arrow-right"
-          variant="text"
-          :to="`/admin/events/${item.id}`"
-        ></v-btn>
+        <div class="d-flex flex-nowrap">
+          <v-btn
+            icon="mdi-pencil"
+            variant="text"
+            :to="`/admin/events/${item.id}/setup`"
+          ></v-btn>
+          <v-btn
+            icon="mdi-arrow-right"
+            variant="text"
+            :to="`/admin/events/${item.id}`"
+          ></v-btn>
+        </div>
       </template>
 
       <template #expanded-row="{ columns, item }">

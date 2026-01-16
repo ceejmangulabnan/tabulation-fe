@@ -138,7 +138,7 @@
               <v-list-item
                 v-for="segment in event.segments"
                 :key="segment.id"
-                class="mb-4"
+                class="mb-4 d-flex align-start justify-space-between w-100"
               >
                 <v-list-item-title class="font-weight-bold">
                   {{ segment.name }}
@@ -175,7 +175,7 @@
                     variant="outlined"
                     density="compact"
                     hide-details
-                    class="ms-4"
+                    class="ms-4 align-self-auto"
                     style="width: 150px"
                     @update:model-value="handleStatusChange(segment.id, $event)"
                   ></v-select>

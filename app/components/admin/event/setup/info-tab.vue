@@ -69,6 +69,7 @@ const handleSave = async () => {
       },
     })
     snackbar.showSnackbar('Event updated successfully.', 'success')
+    await eventsStore.fetchEvent(props.event.id?.toString() || '')
   } catch (error) {
     console.error('Error updating event:', error)
     snackbar.showSnackbar('Failed to udpate event.', 'error')
