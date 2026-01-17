@@ -3,8 +3,8 @@
     <v-card>
       <v-tabs
         v-model="tab"
-        bg-color="green"
         show-arrows
+        color="green"
         @update:model-value="onTabChange"
       >
         <v-tab value="one">Event Info</v-tab>
