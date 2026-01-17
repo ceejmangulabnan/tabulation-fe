@@ -11,26 +11,31 @@
       Event Information
     </v-card-title>
 
-    <v-card-text>
-      <v-text-field
-        v-model="props.event.name"
-        label="Title"
-      />
+    <v-form
+      @submit.prevent
+      @submit="handleSave"
+    >
+      <v-card-text>
+        <v-text-field
+          v-model="formData.name"
+          label="Title"
+        />
 
-      <v-textarea
-        v-model="props.event.description"
-        label="Description"
-      />
-    </v-card-text>
-    <v-card-actions>
-      <v-spacer />
-      <v-btn
-        color="green"
-        @click="handleSave"
-      >
-        Update
-      </v-btn>
-    </v-card-actions>
+        <v-textarea
+          v-model="formData.description"
+          label="Description"
+        />
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn
+          color="green"
+          type="submit"
+        >
+          Update
+        </v-btn>
+      </v-card-actions>
+    </v-form>
   </div>
 </template>
 
@@ -41,6 +46,16 @@ const props = defineProps({
     required: true,
   },
 })
+
+const formData = ref({ ...props.event })
+
+watch(
+  () => props.event,
+  (newEvent) => {
+    formData.value = { ...newEvent }
+  },
+  { deep: true }
+)
 
 const api = useStrapiApi()
 const eventsStore = useEventsStore()
@@ -64,8 +79,8 @@ const handleSave = async () => {
   try {
     await api.put(`/events/${eventsStore.event?.documentId}`, {
       data: {
-        name: props.event.name,
-        description: props.event.description,
+        name: formData.value.name,
+        description: formData.value.description,
       },
     })
     snackbar.showSnackbar('Event updated successfully.', 'success')
