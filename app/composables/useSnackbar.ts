@@ -6,7 +6,7 @@ const snackbar = reactive({
 })
 
 export function useSnackbar() {
-  function showSnackbar(message: string, color: string = 'info', timeout: number = 3000) {
+  function showSnackbar(message: string, color: string = 'info', timeout: number = 5000) {
     snackbar.show = true
     snackbar.message = message
     snackbar.color = color
