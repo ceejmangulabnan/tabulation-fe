@@ -68,7 +68,7 @@
 
     <v-tabs
       v-model="judgeTab"
-      bg-color="secondary"
+      bg-color="primary"
     >
       <v-tab value="assign">Assign Existing</v-tab>
       <v-tab value="create">Create New</v-tab>
@@ -151,8 +151,6 @@
 </template>
 
 <script setup lang="ts">
-import { useDisplay } from 'vuetify'
-
 const props = defineProps({
   event: {
     type: Object as PropType<Partial<EventData>>,

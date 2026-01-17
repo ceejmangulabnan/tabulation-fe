@@ -232,79 +232,81 @@
       v-model="participantDialog"
       max-width="500px"
     >
-      <v-card>
-        <v-card-title>
-          <span class="headline">{{ editedParticipant.id ? 'Edit' : 'Add' }} Participant</span>
-        </v-card-title>
-        <v-card-text>
-          <v-img
-            v-if="headshotPreviewUrl"
-            :src="headshotPreviewUrl"
-            max-height="150"
-            class="mb-2"
-          />
-          <v-img
-            v-else-if="editedParticipant.headshot"
-            :src="getStrapiUrl(editedParticipant.headshot.url)"
-            max-height="150"
-            class="mb-2"
-            style="cursor: pointer"
-            @click="showImagePreview(editedParticipant.headshot.url)"
-          />
-          <v-file-input
-            v-model="headshotFile"
-            :label="
-              editedParticipant.headshot?.url ? 'Replace Headshot Image' : 'Upload Headshot Image'
-            "
-            accept="image/*"
-            prepend-icon="mdi-camera"
-            clearable
-          />
-          <v-text-field
-            v-model="editedParticipant.name"
-            label="Name"
-            required
-          />
-          <v-text-field
-            v-model.number="editedParticipant.number"
-            label="Number"
-            type="number"
-            required
-          />
-          <v-select
-            v-model="editedParticipant.gender"
-            :items="['male', 'female']"
-            label="Gender"
-            required
-          />
-          <v-autocomplete
-            v-model="editedParticipant.department"
-            :items="departments"
-            item-title="name"
-            item-value="id"
-            label="Department"
-          />
-          <v-textarea
-            v-model="editedParticipant.notes"
-            label="Notes"
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            color="blue darken-1"
-            @click="participantDialog = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="blue darken-1"
-            @click="saveParticipant"
-          >
-            Save
-          </v-btn>
-        </v-card-actions>
-      </v-card>
+      <v-form @submit.prevent="saveParticipant">
+        <v-card>
+          <v-card-title>
+            <span class="headline">{{ editedParticipant.id ? 'Edit' : 'Add' }} Participant</span>
+          </v-card-title>
+          <v-card-text>
+            <v-img
+              v-if="headshotPreviewUrl"
+              :src="headshotPreviewUrl"
+              max-height="150"
+              class="mb-2"
+            />
+            <v-img
+              v-else-if="editedParticipant.headshot"
+              :src="getStrapiUrl(editedParticipant.headshot.url)"
+              max-height="150"
+              class="mb-2"
+              style="cursor: pointer"
+              @click="showImagePreview(editedParticipant.headshot.url)"
+            />
+            <v-file-input
+              v-model="headshotFile"
+              :label="
+                editedParticipant.headshot?.url ? 'Replace Headshot Image' : 'Upload Headshot Image'
+              "
+              accept="image/*"
+              prepend-icon="mdi-camera"
+              clearable
+            />
+            <v-text-field
+              v-model="editedParticipant.name"
+              label="Name"
+              required
+            />
+            <v-text-field
+              v-model.number="editedParticipant.number"
+              label="Number"
+              type="number"
+              required
+            />
+            <v-select
+              v-model="editedParticipant.gender"
+              :items="['male', 'female']"
+              label="Gender"
+              required
+            />
+            <v-autocomplete
+              v-model="editedParticipant.department"
+              :items="departments"
+              item-title="name"
+              item-value="id"
+              label="Department"
+            />
+            <v-textarea
+              v-model="editedParticipant.notes"
+              label="Notes"
+            />
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn
+              color="blue darken-1"
+              @click="participantDialog = false"
+            >
+              Cancel
+            </v-btn>
+            <v-btn
+              color="blue darken-1"
+              type="submit"
+            >
+              Save
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-form>
     </v-dialog>
   </div>
 </template>

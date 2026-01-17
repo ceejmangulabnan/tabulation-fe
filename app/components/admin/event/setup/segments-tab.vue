@@ -93,6 +93,7 @@
           <td :colspan="columns.length">
             <v-card
               :class="`${theme.current === 'light' ? 'bg-grey-lighten-3' : 'bg-gray-darken-1'} mb-4 rounded-0 border-md border-dashed border-opacity mt-n1px`"
+              elevation="0"
             >
               <v-card-title class="ma-2 d-flex flex-wrap align-center justify-space-between ga-2">
                 <span>Categories for {{ item.name }}</span>

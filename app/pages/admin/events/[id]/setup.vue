@@ -46,6 +46,7 @@
           color="green"
           :disabled="!canActivate"
           variant="flat"
+          class="ma-3"
           @click="activateEvent"
         >
           Activate Event
