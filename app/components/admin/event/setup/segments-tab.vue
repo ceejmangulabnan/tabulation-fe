@@ -25,7 +25,7 @@
         :headers="segmentHeaders"
         :items="event.segments"
         show-expand
-        class="mb-4"
+        :class="`${theme.current === 'light' ? 'bg-white' : 'bg-gray-darken-1'} mb-4`"
         hide-default-footer
       >
         <template #headers="{ columns, getSortIcon, isSorted, toggleSort }">
@@ -92,8 +92,7 @@
         <template #expanded-row="{ columns, item }">
           <td :colspan="columns.length">
             <v-card
-              variant="tonal"
-              class="my-4"
+              :class="`${theme.current === 'light' ? 'bg-grey-lighten-3' : 'bg-gray-darken-1'} mb-4 rounded-0 border-md border-dashed border-opacity mt-n1px`"
             >
               <v-card-title class="ma-2 d-flex flex-wrap align-center justify-space-between ga-2">
                 <span>Categories for {{ item.name }}</span>
@@ -119,6 +118,7 @@
                 :items="item.categories"
                 density="compact"
                 hide-default-footer
+                :class="`${theme.current === 'light' ? 'bg-grey-lighten-3' : 'bg-gray-darken-1'} mb-4`"
               >
                 <template #headers="{ columns, getSortIcon, isSorted, toggleSort }">
                   <tr>
@@ -264,82 +264,92 @@
       v-model="segmentDialog"
       max-width="500px"
     >
-      <v-card>
-        <v-card-title>
-          <span class="headline">{{ editedSegment.id ? 'Edit' : 'Add' }} Segment</span>
-        </v-card-title>
-        <v-card-text>
-          <v-text-field
-            v-model="editedSegment.name"
-            label="Name"
-          />
-          <v-text-field
-            v-model.number="editedSegment.order"
-            label="Order in Event"
-            type="number"
-            step="1"
-          />
-          <v-text-field
-            v-model.number="editedSegment.weight"
-            label="Weight (0.0 to 1.0)"
-            type="number"
-            step="0.01"
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            color="blue darken-1"
-            @click="segmentDialog = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="blue darken-1"
-            @click="saveSegment"
-          >
-            Save
-          </v-btn>
-        </v-card-actions>
-      </v-card>
+      <v-form
+        @submit="saveSegment"
+        @submit.prevent
+      >
+        <v-card>
+          <v-card-title>
+            <span class="headline">{{ editedSegment.id ? 'Edit' : 'Add' }} Segment</span>
+          </v-card-title>
+          <v-card-text>
+            <v-text-field
+              v-model="editedSegment.name"
+              label="Name"
+            />
+            <v-text-field
+              v-model.number="editedSegment.order"
+              label="Order in Event"
+              type="number"
+              step="1"
+            />
+            <v-text-field
+              v-model.number="editedSegment.weight"
+              label="Weight (0.0 to 1.0)"
+              type="number"
+              step="0.01"
+            />
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn
+              color="blue darken-1"
+              @click="segmentDialog = false"
+            >
+              Cancel
+            </v-btn>
+            <v-btn
+              color="blue darken-1"
+              type="submit"
+            >
+              Save
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-form>
     </v-dialog>
 
     <v-dialog
       v-model="categoryDialog"
       max-width="500px"
     >
-      <v-card>
-        <v-card-title>
-          <span class="headline">{{ editedCategory.id ? 'Edit' : 'Add' }} Category</span>
-        </v-card-title>
-        <v-card-text>
-          <v-text-field
-            v-model="editedCategory.name"
-            label="Name"
-          />
-          <v-text-field
-            v-model.number="editedCategory.weight"
-            label="Weight (0.0 to 1.0)"
-            type="number"
-            step="0.01"
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            color="blue darken-1"
-            @click="categoryDialog = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="blue darken-1"
-            @click="saveCategory"
-          >
-            Save
-          </v-btn>
-        </v-card-actions>
-      </v-card>
+      <v-form
+        @submit.prevent
+        @submit="saveCategory"
+      >
+        <v-card>
+          <v-card-title>
+            <span class="headline">{{ editedCategory.id ? 'Edit' : 'Add' }} Category</span>
+          </v-card-title>
+          <v-card-text>
+            <v-text-field
+              v-model="editedCategory.name"
+              label="Name"
+            />
+            <v-text-field
+              v-model.number="editedCategory.weight"
+              label="Weight (0.0 to 1.0)"
+              type="number"
+              step="0.01"
+            />
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn
+              color="blue darken-1"
+              @click="categoryDialog = false"
+            >
+              Cancel
+            </v-btn>
+            <v-btn
+              color="blue darken-1"
+              type="submit"
+            >
+              Save
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-form>
     </v-dialog>
   </div>
 </template>
@@ -352,6 +362,7 @@ const props = defineProps({
   },
 })
 
+const theme = useThemeStore()
 const api = useStrapiApi()
 const eventsStore = useEventsStore()
 const snackbar = useSnackbar()
@@ -484,3 +495,9 @@ const deleteCategory = async (item: CategoryData) => {
   }
 }
 </script>
+
+<style lang="css" scoped>
+.mt-n1px {
+  margin-top: -1px;
+}
+</style>
