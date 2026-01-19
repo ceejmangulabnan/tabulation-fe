@@ -46,6 +46,12 @@
             :to="`/admin/events/${item.id}/setup`"
           ></v-btn>
           <v-btn
+            icon="mdi-delete"
+            variant="text"
+            color="error"
+            @click="deleteEvent(item)"
+          ></v-btn>
+          <v-btn
             icon="mdi-arrow-right"
             variant="text"
             :to="`/admin/events/${item.id}`"
@@ -109,6 +115,8 @@
 
 <script setup lang="ts">
 const eventsStore = useEventsStore()
+const api = useStrapiApi()
+const snackbar = useSnackbar()
 const showCreateDialog = ref(false)
 
 onMounted(async () => {
@@ -133,6 +141,23 @@ function getStatusColor(status: string) {
       return 'blue'
     default:
       return 'default'
+  }
+}
+
+const deleteEvent = async (eventToDelete: EventData) => {
+  if (!eventToDelete.documentId) {
+    snackbar.showSnackbar('Event data not available for deletion.', 'error');
+    return;
+  }
+  if (confirm(`Are you sure you want to delete the event "${eventToDelete.name}"? This action cannot be undone.`)) {
+    try {
+      await api.delete(`/events/${eventToDelete.documentId}`);
+      snackbar.showSnackbar('Event deleted successfully.', 'success');
+      await eventsStore.fetchEvents(); // Refresh the list
+    } catch (e) {
+      snackbar.showSnackbar('Failed to delete event.', 'error');
+      console.error('Error deleting event:', e);
+    }
   }
 }
 

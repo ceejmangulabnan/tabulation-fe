@@ -1,8 +1,8 @@
 <template>
   <v-card class="pa-2">
     <v-card-title>Create Event</v-card-title>
-    <v-card-text>
-      <v-form>
+    <v-form @submit.prevent="createEvent">
+      <v-card-text>
         <v-text-field
           v-model="form.name"
           label="Event Name"
@@ -17,21 +17,22 @@
           variant="outlined"
           density="compact"
           class="mb-2"
+          @keydown.enter.prevent="createEvent"
         ></v-textarea>
-      </v-form>
-    </v-card-text>
-    <v-card-actions>
-      <v-btn
-        text="Cancel"
-        @click="$emit('close-dialog')"
-      ></v-btn>
-      <v-btn
-        text="Create"
-        variant="tonal"
-        :loading="eventsStore.isSubmitting"
-        @click="createEvent"
-      ></v-btn>
-    </v-card-actions>
+      </v-card-text>
+      <v-card-actions class="ml-auto">
+        <v-btn
+          text="Cancel"
+          @click="$emit('close-dialog')"
+        ></v-btn>
+        <v-btn
+          text="Create"
+          variant="tonal"
+          :loading="eventsStore.isSubmitting"
+          type="submit"
+        ></v-btn>
+      </v-card-actions>
+    </v-form>
   </v-card>
 </template>
 
@@ -48,7 +49,7 @@ const form = ref({
 
 const createEvent = async () => {
   console.log('Creating event with data:', form.value)
-  const response = await eventsStore.createEvent(form)
+  const response = await eventsStore.createEvent(form.value)
   console.log('Admin Create Event response:', response)
   if (response) {
     if (response.status === 201) {

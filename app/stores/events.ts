@@ -128,15 +128,15 @@ export const useEventsStore = defineStore('events', {
     },
 
     // Admin Create Event Basic
-    async createEvent(createEventData: Ref<{ name: string; description: string }>) {
+    async createEvent(createEventData: { name: string; description: string }) {
       const api = useStrapiApi()
       try {
         this.isLoading = true
         this.isSubmitting = true
         const payload = {
           data: {
-            name: createEventData.value.name,
-            description: createEventData.value.description,
+            name: createEventData.name,
+            description: createEventData.description,
           },
         }
         const response = await api.post(`/events`, payload)

@@ -24,7 +24,7 @@
 
     <v-row>
       <v-col cols="12">
-        <v-card>
+        <v-card class="pa-4">
           <v-card-title class="d-flex justify-space-between">
             <span>Participant Scores</span>
             <v-chip
@@ -76,7 +76,7 @@
                     density="compact"
                     hide-details
                     @change="
-                      (value) =>
+                      (value: string) =>
                         handleScoreChange(item.id, header.categoryId, header.segmentId, value)
                     "
                   />
@@ -148,7 +148,6 @@ const categoryHeaders = computed(() => {
           categoryId: category.id,
           segmentId: segment.id,
           sortable: false,
-          align: 'center',
         }))
       : []
   )

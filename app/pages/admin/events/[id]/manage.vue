@@ -2,23 +2,25 @@
   <v-container>
     <v-row>
       <v-col cols="12">
-        <header class="d-flex flex-column ga-sm-4 align-start ga-1 flex-sm-row">
-          <v-chip
-            :color="statusColor"
-            size="large"
-            class="font-weight-bold flex-shrink-0"
-          >
-            {{ event?.event_status.toUpperCase() }}
-          </v-chip>
-          <div>
-            <h1 class="text-h4 mb-2 mb-sm-0">
-              {{ event?.name }}
-            </h1>
-            <p>
-              {{ event?.description || 'No description provided.' }}
-            </p>
-          </div>
-        </header>
+        <div class="d-flex align-top mb-4 flex-wrap ga-2">
+          <header class="d-flex flex-column w-100 ga-sm-3 align-start ga-1 flex-shrink-1">
+            <v-chip
+              :color="statusColor"
+              size="large"
+              class="font-weight-bold flex-shrink-0 ml-n1"
+            >
+              {{ event?.event_status.toUpperCase() }}
+            </v-chip>
+            <div class="d-flex flex-column ga-1">
+              <h1 class="text-sm-h4 text-h5 mb-2 mb-sm-0 font-weight-bold">
+                {{ event?.name }}
+              </h1>
+              <p class="text-sm-body-1 text-subtitle-2">
+                {{ event?.description || 'No description provided.' }}
+              </p>
+            </div>
+          </header>
+        </div>
       </v-col>
     </v-row>
 

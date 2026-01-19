@@ -2,8 +2,10 @@
   <v-container>
     <v-row>
       <v-col cols="12">
-        <div class="d-flex justify-space-between align-top mb-4 flex-wrap ga-4">
-          <header class="d-flex flex-column ga-sm-4 align-start ga-1 flex-sm-row">
+        <div class="d-flex justify-space-between align-top mb-4 flex-wrap ga-2">
+          <header
+            class="d-flex ml-n1 justify-space-between w-100 ga-sm-3 align-center ga-1 flex-shrink-1"
+          >
             <v-chip
               :color="statusColor"
               size="large"
@@ -11,25 +13,61 @@
             >
               {{ event?.event_status.toUpperCase() }}
             </v-chip>
-            <div>
-              <h1 class="text-h4 mb-2 mb-sm-0">
-                {{ event?.name }}
-              </h1>
-              <p>
-                {{ event?.description || 'No description provided.' }}
-              </p>
+            <div class="d-flex flex-wrap ga-2 flex-shrink-0">
+              <v-btn
+                :to="`/admin/events/${eventId}/manage`"
+                icon
+                color="blue"
+                variant="text"
+              >
+                <v-icon size="28">mdi-cog</v-icon>
+                <v-tooltip
+                  activator="parent"
+                  location="bottom"
+                >
+                  Manage Event
+                </v-tooltip>
+              </v-btn>
+
+              <v-btn
+                :to="`/admin/events/${eventId}/setup`"
+                icon
+                color="green"
+                variant="text"
+              >
+                <v-icon size="28">mdi-pencil</v-icon>
+                <v-tooltip
+                  activator="parent"
+                  location="bottom"
+                >
+                  Setup Event
+                </v-tooltip>
+              </v-btn>
+
+              <v-btn
+                icon
+                color="red"
+                variant="text"
+                @click="deleteEvent"
+              >
+                <v-icon size="28">mdi-delete</v-icon>
+                <v-tooltip
+                  activator="parent"
+                  location="bottom"
+                >
+                  Delete Event
+                </v-tooltip>
+              </v-btn>
             </div>
           </header>
-          <div class="d-flex flex-wrap ga-2">
-            <NuxtLink
-              :to="`/admin/events/${eventId}/manage`"
-              class="mr-2"
-            >
-              <v-btn color="blue">Manage Event</v-btn>
-            </NuxtLink>
-            <NuxtLink :to="`/admin/events/${eventId}/setup`">
-              <v-btn color="green">Setup Event</v-btn>
-            </NuxtLink>
+
+          <div class="d-flex flex-column ga-1">
+            <h1 class="text-sm-h4 text-h5 mb-2 mb-sm-0 font-weight-bold">
+              {{ event?.name }}
+            </h1>
+            <p class="text-sm-body-1 text-subtitle-2">
+              {{ event?.description || 'No description provided.' }}
+            </p>
           </div>
         </div>
       </v-col>
@@ -42,7 +80,7 @@
         cols="12"
         class="d-flex"
       >
-        <v-card class="w-100 me-1 pa-2">
+        <v-card class="w-100 me-1 px-4 py-2">
           <v-card-title>Participants ({{ event?.participants?.length || 0 }})</v-card-title>
           <v-text-field
             v-model="participantSearch"
@@ -246,6 +284,9 @@
 <script setup lang="ts">
 const route = useRoute()
 const eventsStore = useEventsStore()
+const router = useRouter()
+const api = useStrapiApi()
+const snackbar = useSnackbar()
 
 const { smAndDown } = useDisplay()
 const hideFooterOnSmallScreens = computed(() => smAndDown.value)
@@ -262,6 +303,23 @@ onMounted(async () => {
   await eventsStore.fetchEvent(eventId)
   console.log('Event:', event.value)
 })
+
+const deleteEvent = async () => {
+  if (!event.value?.documentId) {
+    snackbar.showSnackbar('Cannot delete event without a documentId.', 'error')
+    return
+  }
+  if (confirm('Are you sure you want to delete this event? This cannot be undone.')) {
+    try {
+      await api.delete(`/events/${event.value.documentId}`)
+      snackbar.showSnackbar('Event deleted successfully.', 'success')
+      router.push('/admin/events')
+    } catch (e) {
+      snackbar.showSnackbar('Failed to delete event.', 'error')
+      console.error(e)
+    }
+  }
+}
 
 const statusColor = computed(() => {
   switch (event.value?.event_status) {

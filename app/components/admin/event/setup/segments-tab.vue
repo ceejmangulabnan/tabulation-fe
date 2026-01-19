@@ -58,6 +58,7 @@
           >
             <td>{{ item.name }}</td>
             <td>{{ item.weight }}</td>
+            <td>{{ item.order }}</td>
             <td>
               <v-icon
                 small
@@ -184,7 +185,7 @@
             <v-list-item
               v-bind="props"
               :title="segment.name"
-              :subtitle="`Weight: ${segment.weight * 100}%`"
+              :subtitle="`Weight: ${segment.weight * 100}%, Order: ${segment.order}`"
             >
               <template #append>
                 <v-icon
@@ -373,6 +374,7 @@ const { smAndDown } = useDisplay()
 const segmentHeaders = [
   { title: 'Name', key: 'name', sortable: true, class: 'font-weight-bold' },
   { title: 'Weight', value: 'weight', sortable: true, class: 'font-weight-bold' },
+  { title: 'Order', value: 'order', sortable: true, class: 'font-weight-bold' },
   { title: 'Actions', key: 'actions', sortable: false, class: 'font-weight-bold' },
   { key: 'data-table-expand', title: '', class: 'font-weight-bold', sortable: false },
 ]
@@ -417,14 +419,17 @@ const saveSegment = async () => {
         name: editedSegment.value.name,
         order: editedSegment.value.order,
         weight: editedSegment.value.weight,
-        event: props.event.id,
+        event: {
+          connect: [props.event.documentId],
+        },
       },
     }
+    console.log('Save Segment Payload', payload)
     if (editedSegment.value.documentId) {
       await api.put(`/segments/${editedSegment.value.documentId}`, payload)
       snackbar.showSnackbar('Segment updated successfully', 'success')
     } else {
-      await api.post('/segments', payload)
+      await api.post('/segments/create', payload)
       snackbar.showSnackbar('Segment created successfully!', 'success')
     }
     await eventsStore.fetchEvent(props.event.id?.toString() || '')
