@@ -420,6 +420,7 @@ const saveSegment = async () => {
         order: editedSegment.value.order,
         weight: editedSegment.value.weight,
         event: {
+          documentId: props.event.documentId,
           connect: [props.event.documentId],
         },
       },
