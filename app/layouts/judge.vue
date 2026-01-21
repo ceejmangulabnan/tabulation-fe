@@ -49,6 +49,17 @@
 
     <v-main :class="theme.current === 'light' && 'bg-grey-lighten-4'">
       <v-container fluid>
+        <div class="d-flex align-center mb-4">
+          <v-btn
+            icon="mdi-arrow-left"
+            variant="text"
+            @click="router.back()"
+          ></v-btn>
+          <v-breadcrumbs
+            :items="breadcrumbs"
+            class="pa-0 d-flex flex-wrap"
+          ></v-breadcrumbs>
+        </div>
         <slot />
       </v-container>
     </v-main>
@@ -59,4 +70,31 @@
 const drawer = ref(false)
 const authStore = useAuthStore()
 const theme = useThemeStore()
+const route = useRoute()
+const router = useRouter()
+
+const breadcrumbs = computed(() => {
+  const crumbs = [{ title: 'Dashboard', to: '/judge/dashboard', disabled: false }]
+  const pathArray = route.path.split('/').filter((i) => i)
+
+  // Start from index 1 to skip '/judge'
+  let path = '/judge'
+  for (let i = 1; i < pathArray.length; i++) {
+    const segment = pathArray[i]
+    if (!segment) return
+    path += `/${segment}`
+    crumbs.push({
+      title: segment?.charAt(0).toUpperCase() + segment?.slice(1),
+      to: path,
+      disabled: i === pathArray.length - 1,
+    })
+  }
+
+  // Handle base path /judge/dashboard
+  if (crumbs.length === 1 && route.path.includes('dashboard')) {
+    if (crumbs[0]) crumbs[0].disabled = true
+  }
+
+  return crumbs
+})
 </script>
