@@ -71,12 +71,15 @@
                       <template #item.name="{ item }">
                         <div class="d-flex align-center py-2">
                           <v-avatar
-                            v-if="item.headshot?.formats?.thumbnail?.url"
+                            v-if="item.headshot"
                             :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
+                            @click="showImagePreview(item.headshot.url)"
                             icon="mdi-account"
                             class="mr-3"
                             size="40"
-                          />
+                          >
+                            <v-img :src="getStrapiUrl(item.headshot.formats.thumbnail.url)" />
+                          </v-avatar>
 
                           <v-avatar
                             v-else
@@ -106,12 +109,15 @@
                       <template #item.name="{ item }">
                         <div class="d-flex align-center py-2">
                           <v-avatar
-                            v-if="item.headshot?.formats?.thumbnail?.url"
+                            v-if="item.headshot"
                             :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
+                            @click="showImagePreview(item.headshot.url)"
                             icon="mdi-account"
                             class="mr-3"
                             size="40"
-                          />
+                          >
+                            <v-img :src="getStrapiUrl(item.headshot.formats.thumbnail.url)" />
+                          </v-avatar>
 
                           <v-avatar
                             v-else
@@ -204,6 +210,15 @@
         </v-card>
       </v-window-item>
     </v-window>
+
+    <v-dialog
+      v-model="imagePreviewDialog"
+      max-width="500px"
+    >
+      <v-card>
+        <v-img :src="imagePreviewUrl" />
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -211,9 +226,11 @@
 const route = useRoute()
 const eventsStore = useEventsStore()
 const { showSnackbar } = useSnackbar()
-
 const eventId = route.params.id as string
 const event = computed(() => eventsStore.event)
+
+const imagePreviewDialog = ref(false)
+const imagePreviewUrl = ref<string | undefined>('')
 
 const pendingSegmentChanges = ref<{ [key: number]: SegmentData['segment_status'] }>({})
 
@@ -250,17 +267,22 @@ const selectedSegment = computed(() => {
   return event.value?.segments?.find((s) => s.id === selectedSegmentId.value) || null
 })
 
+const showImagePreview = (url: string) => {
+  imagePreviewUrl.value = getStrapiUrl(url)
+  imagePreviewDialog.value = true
+}
+
 // Helper function to get scores for a participant in a specific segment
 function getParticipantScoresForSegment(
   participant: ParticipantData,
   segment: SegmentData,
   allScores: ScoreData[]
 ) {
-  const scores: { [key: string]: number | string | HeadshotData } = {
+  const scores: { id: number; name: string; number: number; headshot: HeadshotData } = {
     id: participant.id,
     name: participant.name,
     number: participant.number,
-    headshot: participant.headshot as HeadshotData,
+    headshot: participant.headshot,
   }
 
   if (!segment.categories) {
@@ -275,7 +297,7 @@ function getParticipantScoresForSegment(
         s.category?.id === category.id
     )
     console.log('Matching Score found for this Event:', score)
-    scores[`category_${category.id}`] = score ? score.value : 'N/A'
+    scores[`category_${category.id}`] = score ? score.value : 0
   })
 
   return scores
@@ -324,6 +346,9 @@ const femaleParticipantsScores = computed(() => {
   )
 })
 
+console.log('femaleParticipantsScores', femaleParticipantsScores.value)
+console.log('femaleParticipants', event.value?.participants)
+
 function handleStatusChange(segmentId: number, newStatus: SegmentData['segment_status']) {
   pendingSegmentChanges.value[segmentId] = newStatus
 }
@@ -341,10 +366,12 @@ async function submitSegmentChanges() {
       changes.map(([segmentId, status]) => {
         const segment = event.value?.segments?.find((s) => s.id === Number(segmentId))
         if (segment) {
-          return api.put(`/segments/${segment.documentId}`, {
+          return api.put(`/segments/activate`, {
+            documentId: segment.documentId,
             data: { segment_status: status },
           })
         } else {
+          pendingSegmentChanges.value = {}
           return Promise.reject(new Error(`Segment with ID ${segmentId} not found.`))
         }
       })
