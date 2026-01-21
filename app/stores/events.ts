@@ -1,3 +1,5 @@
+import { defineStore } from 'pinia'
+
 interface EventsError {
   message: string
   status?: number
