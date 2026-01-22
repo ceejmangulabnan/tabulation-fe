@@ -367,10 +367,14 @@ async function submitSegmentChanges() {
         const segment = event.value?.segments?.find((s) => s.id === Number(segmentId))
 
         if (segment) {
-          return api.put(`/segments/activate`, {
+          const payload = {
             documentId: segment.documentId,
             data: { segment_status: status },
-          })
+          }
+          if (status === 'closed') {
+            return api.post(`/segments/${segment.documentId}/lock`, payload)
+          }
+          return api.put(`/segments/activate`, payload)
         } else {
           pendingSegmentChanges.value = {}
           return Promise.reject(new Error(`Segment with ID ${segmentId} not found.`))

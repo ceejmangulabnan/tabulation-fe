@@ -59,6 +59,8 @@
             <td>{{ item.name }}</td>
             <td>{{ item.weight }}</td>
             <td>{{ item.order }}</td>
+            <td>{{ item.advancement_type }}</td>
+            <td>{{ item.advancement_value }}</td>
             <td>
               <v-icon
                 small
@@ -185,7 +187,7 @@
             <v-list-item
               v-bind="props"
               :title="segment.name"
-              :subtitle="`Weight: ${segment.weight * 100}%, Order: ${segment.order}`"
+              :subtitle="`Weight: ${segment.weight * 100}%, Order: ${segment.order}, Advancement: ${segment.advancement_type} ${segment.advancement_value !== null ? `(${segment.advancement_value})` : ''}`"
             >
               <template #append>
                 <v-icon
@@ -291,6 +293,17 @@
               type="number"
               step="0.01"
             />
+            <v-select
+              v-model="editedSegment.advancement_type"
+              :items="['all', 'top_n', 'threshold', 'manual']"
+              label="Advancement Type"
+            />
+            <v-text-field
+              v-if="['top_n', 'threshold'].includes(editedSegment.advancement_type!)"
+              v-model.number="editedSegment.advancement_value"
+              label="Advancement Value"
+              type="number"
+            />
           </v-card-text>
           <v-card-actions>
             <v-spacer />
@@ -375,6 +388,13 @@ const segmentHeaders = [
   { title: 'Name', key: 'name', sortable: true, class: 'font-weight-bold' },
   { title: 'Weight', value: 'weight', sortable: true, class: 'font-weight-bold' },
   { title: 'Order', value: 'order', sortable: true, class: 'font-weight-bold' },
+  { title: 'Advancement Type', key: 'advancement_type', sortable: true, class: 'font-weight-bold' },
+  {
+    title: 'Advancement Value',
+    key: 'advancement_value',
+    sortable: true,
+    class: 'font-weight-bold',
+  },
   { title: 'Actions', key: 'actions', sortable: false, class: 'font-weight-bold' },
   { key: 'data-table-expand', title: '', class: 'font-weight-bold', sortable: false },
 ]
@@ -388,6 +408,8 @@ const editedSegment = ref<Partial<SegmentData>>({
   id: 0,
   name: '',
   weight: 0,
+  advancement_type: 'all',
+  advancement_value: null,
 })
 const categoryDialog = ref(false)
 const editedCategory = ref<Partial<CategoryData>>({
@@ -408,29 +430,49 @@ const calculateTotalCategoryWeight = (segment: SegmentData) => {
 
 // Segment Dialog
 const showSegmentDialog = (item: SegmentData | null = null) => {
-  editedSegment.value = item ? { ...item } : { name: '', weight: 0 }
+  editedSegment.value = item
+    ? { ...item }
+    : { name: '', weight: 0, advancement_type: 'all', advancement_value: null }
   segmentDialog.value = true
 }
 
 const saveSegment = async () => {
   try {
-    const payload = {
+    const updatePayload = {
       data: {
         name: editedSegment.value.name,
         order: editedSegment.value.order,
         weight: editedSegment.value.weight,
+        advancement_type: editedSegment.value.advancement_type,
+        advancement_value: ['top_n', 'threshold'].includes(editedSegment.value.advancement_type!)
+          ? editedSegment.value.advancement_value
+          : null,
+        event: {
+          connect: [props.event.documentId],
+        },
+      },
+    }
+
+    const createPayload = {
+      data: {
+        name: editedSegment.value.name,
+        order: editedSegment.value.order,
+        weight: editedSegment.value.weight,
+        advancement_type: editedSegment.value.advancement_type,
+        advancement_value: ['top_n', 'threshold'].includes(editedSegment.value.advancement_type!)
+          ? editedSegment.value.advancement_value
+          : null,
         event: {
           documentId: props.event.documentId,
           connect: [props.event.documentId],
         },
       },
     }
-    console.log('Save Segment Payload', payload)
     if (editedSegment.value.documentId) {
-      await api.put(`/segments/${editedSegment.value.documentId}`, payload)
+      await api.put(`/segments/${editedSegment.value.documentId}`, updatePayload)
       snackbar.showSnackbar('Segment updated successfully', 'success')
     } else {
-      await api.post('/segments/create', payload)
+      await api.post('/segments/create', createPayload)
       snackbar.showSnackbar('Segment created successfully!', 'success')
     }
     await eventsStore.fetchEvent(props.event.id?.toString() || '')
