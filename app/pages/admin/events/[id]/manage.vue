@@ -365,6 +365,7 @@ async function submitSegmentChanges() {
     await Promise.all(
       changes.map(([segmentId, status]) => {
         const segment = event.value?.segments?.find((s) => s.id === Number(segmentId))
+
         if (segment) {
           return api.put(`/segments/activate`, {
             documentId: segment.documentId,

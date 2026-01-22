@@ -48,6 +48,7 @@
     </v-navigation-drawer>
 
     <v-main :class="theme.current === 'light' && 'bg-grey-lighten-4'">
+      <Snackbar />
       <v-container fluid>
         <div class="d-flex align-center mb-4">
           <v-btn

@@ -38,20 +38,54 @@
             <v-tabs
               v-model="activeSegmentTab"
               background-color="primary"
+              show-arrows
               dark
             >
               <v-tab
-                v-for="segment in activeSegments"
+                v-for="segment in segmentsForTabs"
                 :key="segment.id"
                 :value="segment.id"
               >
                 {{ segment.name }}
+                <v-chip
+                  v-if="segment.segment_status === 'active'"
+                  color="green"
+                  class="ml-2"
+                  size="small"
+                  label
+                >
+                  Active
+                </v-chip>
+                <v-chip
+                  v-if="segment.segment_status === 'closed'"
+                  color="red"
+                  class="ml-2"
+                  size="small"
+                  label
+                >
+                  Closed
+                </v-chip>
+                <v-chip
+                  v-if="segment.segment_status === 'inactive'"
+                  color="gray"
+                  class="ml-2"
+                  size="small"
+                  label
+                >
+                  Closed
+                </v-chip>
               </v-tab>
             </v-tabs>
 
             <v-window v-model="activeSegmentTab">
+              <div
+                v-if="!segmentsForTabs || segmentsForTabs.length < 1"
+                class="text-center"
+              >
+                No segments found.
+              </div>
               <v-window-item
-                v-for="segment in activeSegments"
+                v-for="segment in segmentsForTabs"
                 :key="segment.id"
                 :value="segment.id"
               >
@@ -60,6 +94,7 @@
                     <v-tabs
                       v-model="activeGenderTab"
                       background-color="secondary"
+                      show-arrows
                       dark
                     >
                       <v-tab
@@ -78,12 +113,13 @@
                         :value="gender.key"
                       >
                         <v-data-table
-                          v-if="!mobile"
+                          v-if="!smAndDown"
                           :headers="getTableHeaders(segment)"
                           :items="getParticipantsByGender(gender.key)"
                           item-value="id"
                           class="elevation-1"
                           :loading="eventsStore.isLoading"
+                          :readonly="segment.segment_status === 'closed'"
                         >
                           <template v-slot:item.name="{ item }">
                             <div class="d-flex align-center py-2">
@@ -124,6 +160,9 @@
                                 min="0"
                                 max="10"
                                 step="0.1"
+                                maxlength="4"
+                                style="max-width: 80px"
+                                :readonly="segment.segment_status === 'closed'"
                               />
                             </div>
                           </template>
@@ -141,7 +180,7 @@
                           </template>
                         </v-data-table>
 
-                        <!-- Desktop View -->
+                        <!-- Mobile View -->
                         <v-list
                           v-else
                           lines="three"
@@ -149,6 +188,7 @@
                           <v-list-item
                             v-for="item in getParticipantsByGender(gender.key)"
                             :key="item.id"
+                            class="pa-0"
                           >
                             <v-card>
                               <v-card-title class="d-flex align-center">
@@ -166,7 +206,7 @@
                                   size="40"
                                 />
                                 <div>
-                                  <div class="font-weight-bold text-wrap">
+                                  <div class="font-weight-bold text-wrap text-subtitle-1">
                                     {{ item.name }}
                                   </div>
                                   <div class="text-caption">
@@ -179,6 +219,7 @@
                                   v-for="category in segment.categories"
                                   :key="category.id"
                                   align="center"
+                                  class="d-flex justify-space-between"
                                 >
                                   <v-col
                                     cols="6"
@@ -188,6 +229,8 @@
                                   </v-col>
                                   <v-col cols="6">
                                     <v-text-field
+                                      align="end"
+                                      class="ml-auto"
                                       v-model.number="item.scores[category.id]"
                                       type="number"
                                       variant="outlined"
@@ -197,14 +240,18 @@
                                       min="0"
                                       max="10"
                                       step="0.1"
+                                      maxlength="4"
+                                      style="max-width: 80px"
+                                      :readonly="segment.segment_status === 'closed'"
                                     />
                                   </v-col>
                                 </v-row>
                               </v-card-text>
                               <v-card-actions>
                                 <v-spacer />
-                                <span class="font-weight-bold text-h6">
-                                  Total: {{ calculateTotalScore(item, segment) }}
+                                <span class="font-weight-bold text-subtitle-1">
+                                  Total Segment Score: {{ calculateTotalScore(item, segment) }} /
+                                  100
                                 </span>
                               </v-card-actions>
                             </v-card>
@@ -216,7 +263,9 @@
                   <v-card-actions>
                     <v-spacer />
                     <v-btn
+                      v-if="segment.segment_status !== 'closed'"
                       color="primary"
+                      variant="flat"
                       @click="submitScores(segment)"
                     >
                       Submit Scores for {{ segment.name }}
@@ -246,7 +295,7 @@ const scoreRules = [
   },
 ]
 
-const { mobile } = useDisplay()
+const { smAndDown } = useDisplay()
 const route = useRoute()
 const eventsStore = useEventsStore()
 const authStore = useAuthStore()
@@ -292,8 +341,8 @@ onMounted(async () => {
     }
   })
 
-  if (activeSegments.value.length > 0) {
-    activeSegmentTab.value = activeSegments.value[0]?.id || null
+  if (segmentsForTabs.value.length > 0) {
+    activeSegmentTab.value = segmentsForTabs.value[0]?.id || null
   }
 })
 
@@ -327,8 +376,19 @@ const statusColor = computed(() => {
   }
 })
 
-const activeSegments = computed(() => {
-  return event.value?.segments?.filter((s: SegmentData) => s.segment_status === 'active') || []
+const segmentsForTabs = computed(() => {
+  if (!event.value?.segments) return []
+
+  const order = ['active', 'inactive', 'closed']
+
+  return event.value.segments
+    .filter(
+      (s: SegmentData) =>
+        s.segment_status === 'active' ||
+        s.segment_status === 'inactive' ||
+        s.segment_status === 'closed'
+    )
+    .sort((a, b) => order.indexOf(a.segment_status) - order.indexOf(b.segment_status))
 })
 
 type ParticipantWithScores = Omit<ParticipantData, 'scores'> & { scores: ParticipantScoreMap }
@@ -347,7 +407,7 @@ function getTableHeaders(segment: SegmentData) {
     { title: 'Name', value: 'name', sortable: true, width: '250' },
     { title: 'Department', value: 'department', sortable: true },
     ...categoryHeaders,
-    { title: 'Total Score', value: 'total_score', sortable: false },
+    { title: 'Total Score', value: 'total_score', sortable: false, width: '120' },
   ]
 }
 
@@ -369,6 +429,7 @@ function calculateTotalScore(participant: ParticipantWithScores, segment: Segmen
 }
 
 async function submitScores(segment: SegmentData) {
+  console.log('Clicked Submit')
   if (!judgeId.value) {
     showSnackbar('Judge ID not found.', 'error')
     return
