@@ -111,7 +111,7 @@ export const useEventsStore = defineStore('events', {
       try {
         const api = useStrapiApi()
         const { data } = await api.get(
-          `/events?filters[id][$eq]=${eventId}&populate[participants][populate][headshot]=true&populate[participants][populate][department]=true&populate[judges][populate][users_permissions_user][fields]=email&populate[scores][populate][category]=true&populate[scores][populate][judge]=true&populate[scores][populate][segment]=true&populate[scores][populate][participant]=true&populate[judge_requests]=true&populate[segments][populate][categories]=true`
+          `/events?filters[id][$eq]=${eventId}&populate[participants][populate][headshot]=true&populate[participants][populate][department]=true&populate[participants][populate][eliminated_at_segment]=true&populate[judges][populate][users_permissions_user][fields]=email&populate[scores][populate][category]=true&populate[scores][populate][judge]=true&populate[scores][populate][segment]=true&populate[scores][populate][participant]=true&populate[judge_requests]=true&populate[segments][populate][categories]=true`
         )
 
         this.event = data?.data[0] || {}
