@@ -59,79 +59,180 @@
 
             <v-window v-model="activeGenderTab">
               <v-window-item value="male">
-                <v-card flat>
-                  <v-card-text>
-                    <!-- Data table for male participants scores -->
-                    <v-data-table
-                      :headers="scoreTableHeaders"
-                      :items="maleParticipantsScores"
-                      item-key="id"
-                      class="elevation-1"
-                    >
-                      <template #item.name="{ item }">
-                        <div class="d-flex align-center py-2">
-                          <v-avatar
-                            v-if="item.headshot"
-                            :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
-                            @click="showImagePreview(item.headshot.url)"
-                            icon="mdi-account"
-                            class="mr-3"
-                            size="40"
-                          >
-                            <v-img :src="getStrapiUrl(item.headshot.formats.thumbnail.url)" />
-                          </v-avatar>
+                <v-data-table
+                  :headers="scoreTableHeaders"
+                  :items="maleParticipantsData"
+                  item-value="id"
+                  show-expand
+                  class="elevation-1"
+                >
+                  <template #item.name="{ item }">
+                    <div class="d-flex align-center py-2">
+                      <v-avatar
+                        v-if="item.headshot"
+                        :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
+                        class="mr-3"
+                        size="40"
+                      />
+                      <v-avatar
+                        v-else
+                        icon="mdi-account"
+                        class="mr-3"
+                        size="40"
+                      />
+                      <div class="font-weight-bold">{{ item.name }}</div>
+                      <v-chip
+                        v-if="item.isEliminated"
+                        color="red"
+                        class="ml-2"
+                        size="small"
+                        label
+                        >Eliminated</v-chip
+                      >
+                    </div>
+                  </template>
 
-                          <v-avatar
-                            v-else
-                            icon="mdi-account"
-                            class="mr-3"
-                            size="40"
-                          />
-                          <div class="font-weight-bold">{{ item.name }}</div>
-                        </div>
-                      </template>
-                      <template #no-data>No male participants for this segment.</template>
-                    </v-data-table>
-                  </v-card-text>
-                </v-card>
+                  <template #item.department.name="{ value }">
+                    {{ value || 'N/A' }}
+                  </template>
+
+                  <template #item.totalSegmentScorePercent="{ value }">
+                    <strong class="text-h6">{{ value }}%</strong>
+                  </template>
+
+                  <template #expanded-row="{ columns, item }">
+                    <tr>
+                      <td :colspan="columns.length">
+                        <v-card
+                          flat
+                          class="my-4"
+                        >
+                          <v-card-text>
+                            <div class="text-h6 mb-2">Score Details</div>
+                            <v-expansion-panels v-if="selectedSegment.categories?.length">
+                              <v-expansion-panel
+                                v-for="cat in selectedSegment.categories"
+                                :key="cat.id"
+                              >
+                                <v-expansion-panel-title>
+                                  <div class="d-flex justify-space-between w-100 align-center">
+                                    <span>{{ cat.name }} ({{ Math.round(cat.weight * 100) }}%)</span>
+                                    <strong class="mr-4"
+                                      >Avg: {{ getParticipantCategoryAverage(item.id, cat).toFixed(2) }}</strong
+                                    >
+                                  </div>
+                                </v-expansion-panel-title>
+                                <v-expansion-panel-text>
+                                  <v-list density="compact">
+                                    <v-list-item
+                                      v-for="judge in event.judges"
+                                      :key="judge.id"
+                                    >
+                                      <v-list-item-title>{{ judge.name }}</v-list-item-title>
+                                      <template #append>
+                                        <strong class="ml-4">{{
+                                          getParticipantScoreForCategoryByJudge(item.id, cat.id, judge.id)
+                                        }}</strong>
+                                      </template>
+                                    </v-list-item>
+                                  </v-list>
+                                </v-expansion-panel-text>
+                              </v-expansion-panel>
+                            </v-expansion-panels>
+                          </v-card-text>
+                        </v-card>
+                      </td>
+                    </tr>
+                  </template>
+                </v-data-table>
               </v-window-item>
-
               <v-window-item value="female">
-                <v-card flat>
-                  <v-card-text>
-                    <!-- Data table for female participants scores -->
-                    <v-data-table
-                      :headers="scoreTableHeaders"
-                      :items="femaleParticipantsScores"
-                      item-key="id"
-                      class="elevation-1"
-                    >
-                      <template #item.name="{ item }">
-                        <div class="d-flex align-center py-2">
-                          <v-avatar
-                            v-if="item.headshot"
-                            :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
-                            @click="showImagePreview(item.headshot.url)"
-                            icon="mdi-account"
-                            class="mr-3"
-                            size="40"
-                          >
-                            <v-img :src="getStrapiUrl(item.headshot.formats.thumbnail.url)" />
-                          </v-avatar>
+                <v-data-table
+                  :headers="scoreTableHeaders"
+                  :items="femaleParticipantsData"
+                  item-value="id"
+                  show-expand
+                  class="elevation-1"
+                >
+                  <template #item.name="{ item }">
+                    <div class="d-flex align-center py-2">
+                      <v-avatar
+                        v-if="item.headshot"
+                        :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
+                        class="mr-3"
+                        size="40"
+                      />
+                      <v-avatar
+                        v-else
+                        icon="mdi-account"
+                        class="mr-3"
+                        size="40"
+                      />
+                      <div class="font-weight-bold">{{ item.name }}</div>
+                      <v-chip
+                        v-if="item.isEliminated"
+                        color="red"
+                        class="ml-2"
+                        size="small"
+                        label
+                        >Eliminated</v-chip
+                      >
+                    </div>
+                  </template>
 
-                          <v-avatar
-                            v-else
-                            icon="mdi-account"
-                            class="mr-3"
-                            size="40"
-                          />
-                          <div class="font-weight-bold">{{ item.name }}</div>
-                        </div>
-                      </template>
-                      <template #no-data>No female participants for this segment.</template>
-                    </v-data-table>
-                  </v-card-text>
-                </v-card>
+                  <template #item.department.name="{ value }">
+                    {{ value || 'N/A' }}
+                  </template>
+
+                  <template #item.totalSegmentScorePercent="{ value }">
+                    <strong class="text-h6">{{ value }}%</strong>
+                  </template>
+
+                  <template #expanded-row="{ columns, item }">
+                    <tr>
+                      <td :colspan="columns.length">
+                        <v-card
+                          flat
+                          class="my-4"
+                        >
+                          <v-card-text>
+                            <div class="text-h6 mb-2">Score Details</div>
+                            <v-expansion-panels v-if="selectedSegment.categories?.length">
+                              <v-expansion-panel
+                                v-for="cat in selectedSegment.categories"
+                                :key="cat.id"
+                              >
+                                <v-expansion-panel-title>
+                                  <div class="d-flex justify-space-between w-100 align-center">
+                                    <span>{{ cat.name }} ({{ Math.round(cat.weight * 100) }}%)</span>
+                                    <strong class="mr-4"
+                                      >Avg: {{ getParticipantCategoryAverage(item.id, cat).toFixed(2) }}</strong
+                                    >
+                                  </div>
+                                </v-expansion-panel-title>
+                                <v-expansion-panel-text>
+                                  <v-list density="compact">
+                                    <v-list-item
+                                      v-for="judge in event.judges"
+                                      :key="judge.id"
+                                    >
+                                      <v-list-item-title>{{ judge.name }}</v-list-item-title>
+                                      <template #append>
+                                        <strong class="ml-4">{{
+                                          getParticipantScoreForCategoryByJudge(item.id, cat.id, judge.id)
+                                        }}</strong>
+                                      </template>
+                                    </v-list-item>
+                                  </v-list>
+                                </v-expansion-panel-text>
+                              </v-expansion-panel>
+                            </v-expansion-panels>
+                          </v-card-text>
+                        </v-card>
+                      </td>
+                    </tr>
+                  </template>
+                </v-data-table>
               </v-window-item>
             </v-window>
           </v-card-text>
@@ -223,6 +324,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref, watch } from 'vue'
+
 const route = useRoute()
 const eventsStore = useEventsStore()
 const { showSnackbar } = useSnackbar()
@@ -272,86 +375,72 @@ const showImagePreview = (url: string) => {
   imagePreviewDialog.value = true
 }
 
-// Helper function to get scores for a participant in a specific segment
-function getParticipantScoresForSegment(
-  participant: ParticipantData,
-  segment: SegmentData,
-  allScores: ScoreData[]
-) {
-  const scores: { id: number; name: string; number: number; headshot: HeadshotData } = {
-    id: participant.id,
-    name: participant.name,
-    number: participant.number,
-    headshot: participant.headshot,
-  }
-
-  if (!segment.categories) {
-    return scores
-  }
-
-  segment.categories.forEach((category) => {
-    const score = allScores.find(
-      (s) =>
-        s.participant?.id === participant.id &&
-        s.segment?.id === segment.id &&
-        s.category?.id === category.id
-    )
-    console.log('Matching Score found for this Event:', score)
-    scores[`category_${category.id}`] = score ? score.value : 0
-  })
-
-  return scores
+function getParticipantScoreForCategoryByJudge(participantId: number, categoryId: number, judgeId: number) {
+  const score = event.value?.scores?.find(
+    (s: any) =>
+      s.category?.id === categoryId && s.judge?.id === judgeId && s.participant?.id === participantId
+  )
+  return score ? score.value : '–'
 }
 
-const scoreTableHeaders = computed(() => {
-  const headers = [
-    { title: 'No.', value: 'number', sortable: true, width: '10' },
-    { title: 'Name', value: 'name', sortable: true },
-  ]
+function getParticipantCategoryAverage(participantId: number, category: any) {
+  const categoryScores = event.value?.scores?.filter(
+    (s: any) =>
+      s.category?.id === category.id && s.participant?.id === participantId && s.value !== null
+  )
+  if (!categoryScores || categoryScores.length === 0) return 0
+  const sum = categoryScores.reduce((acc, s) => acc + s.value, 0)
+  return sum / categoryScores.length
+}
 
-  if (selectedSegment.value && selectedSegment.value.categories) {
-    selectedSegment.value.categories.forEach((category) => {
-      headers.push({
-        title: `${category.name} (${category.weight * 100}%)`,
-        value: `category_${category.id}`,
-        sortable: false,
-      })
-    })
-  }
-  return headers
+function getParticipantSegmentScore(participant: any, segment: any) {
+  if (!segment?.categories) return 0
+
+  const total = segment.categories.reduce((total: number, cat: any) => {
+    const avgCategoryScore = getParticipantCategoryAverage(participant.id, cat) // 1-10 scale
+    return total + (avgCategoryScore / 10) * cat.weight
+  }, 0)
+
+  return total // 0-1 scale
+}
+
+const scoreTableHeaders = computed(() => [
+  { title: 'No.', key: 'number', sortable: true, width: '60px' },
+  { title: 'Name', key: 'name', sortable: true },
+  { title: 'Department', key: 'department.name', sortable: true },
+  { title: 'Total Score', key: 'totalSegmentScorePercent', sortable: true },
+  { title: '', key: 'data-table-expand' },
+])
+
+const participantsWithScores = computed(() => {
+  if (!event.value?.participants || !selectedSegment.value) return []
+
+  return event.value.participants.map((p: any) => {
+    const segmentScore = getParticipantSegmentScore(p, selectedSegment.value)
+    return {
+      ...p,
+      totalSegmentScorePercent: Math.round(segmentScore * 100),
+      isEliminated: p.participant_status === 'eliminated',
+    }
+  })
 })
 
-const maleParticipantsScores = computed(() => {
-  if (!event.value?.participants || !selectedSegment.value || !event.value?.scores) {
-    return []
-  }
-  console.log('Event Participants', event.value.participants)
-  const maleParticipants = event.value.participants
+const maleParticipantsData = computed(() => {
+  return participantsWithScores.value
     .filter((p) => p.gender === 'male')
-    .sort((a, b) => a.number - b.number)
-  return maleParticipants.map((p) =>
-    getParticipantScoresForSegment(p, selectedSegment.value!, event.value!.scores)
-  )
+    .sort((a, b) => b.totalSegmentScorePercent - a.totalSegmentScorePercent)
 })
 
-const femaleParticipantsScores = computed(() => {
-  if (!event.value?.participants || !selectedSegment.value || !event.value?.scores) {
-    return []
-  }
-  const femaleParticipants = event.value.participants
+const femaleParticipantsData = computed(() => {
+  return participantsWithScores.value
     .filter((p) => p.gender === 'female')
-    .sort((a, b) => a.number - b.number)
-  return femaleParticipants.map((p) =>
-    getParticipantScoresForSegment(p, selectedSegment.value!, event.value!.scores)
-  )
+    .sort((a, b) => b.totalSegmentScorePercent - a.totalSegmentScorePercent)
 })
-
-console.log('femaleParticipantsScores', femaleParticipantsScores.value)
-console.log('femaleParticipants', event.value?.participants)
 
 function handleStatusChange(segmentId: number, newStatus: SegmentData['segment_status']) {
   pendingSegmentChanges.value[segmentId] = newStatus
 }
+
 
 const api = useStrapiApi()
 
