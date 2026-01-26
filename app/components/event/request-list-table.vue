@@ -35,7 +35,7 @@
           v-for="item in judgeRequestsStore.judgeRequests"
           :key="item.id"
         >
-          <td>{{ item.event.name || 'No Event' }}</td>
+          <td>{{ item.event?.name || 'No Event' }}</td>
           <td align="center">{{ item.judge.name }}</td>
           <td align="center">
             <v-chip

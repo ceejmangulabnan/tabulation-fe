@@ -147,6 +147,16 @@
                     </template>
                   </tr>
                 </template>
+                <template #item.active="{ item: categoryItem }">
+                  <v-chip
+                    :color="categoryItem.active ? 'green' : 'red'"
+                    density="compact"
+                    class="ml-2"
+                    label
+                  >
+                    {{ categoryItem.active ? 'Active' : 'Inactive' }}
+                  </v-chip>
+                </template>
                 <template #item.actions="{ item: categoryItem }">
                   <v-icon
                     small
@@ -225,8 +235,18 @@
                 v-for="categoryItem in segment.categories"
                 :key="categoryItem.id"
                 :title="categoryItem.name"
-                :subtitle="`Weight: ${categoryItem.weight * 100}%`"
               >
+                <template #subtitle>
+                  <span>Weight: {{ categoryItem.weight * 100 }}%</span>
+                  <v-chip
+                    :color="categoryItem.active ? 'green' : 'red'"
+                    density="compact"
+                    class="ml-2"
+                    label
+                  >
+                    {{ categoryItem.active ? 'Active' : 'Inactive' }}
+                  </v-chip>
+                </template>
                 <template #append>
                   <v-icon
                     class="mr-2"
@@ -342,10 +362,16 @@
               label="Name"
             />
             <v-text-field
-              v-model.number="editedCategory.weight"
+              v-model="editedCategory.weight"
               label="Weight (0.0 to 1.0)"
               type="number"
               step="0.01"
+            />
+            <v-switch
+              v-model="editedCategory.active"
+              label="Active"
+              color="primary"
+              hide-details
             />
           </v-card-text>
           <v-card-actions>
@@ -401,6 +427,7 @@ const segmentHeaders = [
 const categoryHeaders = [
   { title: 'Name', key: 'name', sortable: true, class: 'font-weight-bold' },
   { title: 'Weight', value: 'weight', sortable: true, class: 'font-weight-bold' },
+  { title: 'Active', key: 'active', sortable: true, class: 'font-weight-bold' },
   { title: 'Actions', key: 'actions', sortable: false, class: 'font-weight-bold' },
 ]
 const segmentDialog = ref(false)
@@ -416,6 +443,7 @@ const editedCategory = ref<Partial<CategoryData>>({
   id: 0,
   name: '',
   weight: 0,
+  active: true, // Default to active for new categories
 })
 const currentSegmentIdForCategory = ref<string | null>(null)
 
@@ -500,7 +528,7 @@ const deleteSegment = async (item: SegmentData) => {
 
 // Category Dialog
 const showCategoryDialog = (item: CategoryData | null = null, segmentId: string) => {
-  editedCategory.value = item ? { ...item } : { name: '', weight: 0 }
+  editedCategory.value = item ? { ...item } : { name: '', weight: 0, active: true } // Default to active for new categories
   currentSegmentIdForCategory.value = segmentId
   categoryDialog.value = true
 }
@@ -512,6 +540,7 @@ const saveCategory = async () => {
       data: {
         name: editedCategory.value.name,
         weight: editedCategory.value.weight,
+        active: editedCategory.value.active, // Include active status
         segment: currentSegmentIdForCategory.value,
       },
     }

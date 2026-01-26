@@ -158,7 +158,7 @@
                           </template>
 
                           <template
-                            v-for="category in segment.categories"
+                            v-for="category in getActiveCategories(segment)"
                             :key="category.id"
                             v-slot:[`item.category_${category.id}`]="{ item }"
                           >
@@ -244,7 +244,7 @@
                               </v-card-title>
                               <v-card-text>
                                 <div
-                                  v-for="category in segment.categories"
+                                  v-for="category in getActiveCategories(segment)"
                                   :key="category.id"
                                   align="center"
                                   class="d-flex justify-space-between my-2 align-center ga-3 flex-wrap"
@@ -422,9 +422,16 @@ const segmentsForTabs = computed(() => {
 type ParticipantWithScores = Omit<ParticipantData, 'scores'> & { scores: ParticipantScoreMap }
 const participants = ref<ParticipantWithScores[]>([])
 
+function getActiveCategories(segment: SegmentData) {
+  if (!segment.categories) {
+    return []
+  }
+  return segment.categories.filter((category) => category.active)
+}
+
 function getTableHeaders(segment: SegmentData) {
   const categoryHeaders =
-    segment.categories?.map((category: CategoryData) => ({
+    getActiveCategories(segment).map((category: CategoryData) => ({
       title: `${category.name} (${category.weight * 100}%)`,
       value: `category_${category.id}`,
       sortable: false,
@@ -457,8 +464,7 @@ function getParticipantsByGender(gender: string, segment: SegmentData) {
 }
 
 function calculateTotalScore(participant: ParticipantWithScores, segment: SegmentData): string {
-  if (!segment.categories) return '0.00'
-  const total = segment.categories.reduce((acc, category) => {
+  const total = getActiveCategories(segment).reduce((acc, category) => {
     const score = participant.scores[category.id]
     if (score !== null && score !== undefined) {
       return acc + score * category.weight
@@ -477,14 +483,16 @@ async function submitScores(segment: SegmentData) {
     return
   }
 
+  const activeCategories = getActiveCategories(segment)
+
   const segmentParticipants = participants.value.filter((p) =>
-    segment.categories.some((c) => p.scores[c.id] !== undefined)
+    activeCategories.some((c) => p.scores[c.id] !== undefined)
   )
 
   const promises = []
 
   for (const p of segmentParticipants) {
-    for (const category of segment.categories) {
+    for (const category of activeCategories) {
       const scoreValue = p.scores[category.id]
       const existingScore = event.value?.scores?.find(
         (s: ScoreData) =>
