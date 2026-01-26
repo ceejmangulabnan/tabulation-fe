@@ -73,6 +73,7 @@
                         :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
                         class="mr-3"
                         size="40"
+                        @click="showImagePreview(item.headshot.url)"
                       />
                       <v-avatar
                         v-else
@@ -87,8 +88,9 @@
                         class="ml-2"
                         size="small"
                         label
-                        >Eliminated</v-chip
                       >
+                        Eliminated
+                      </v-chip>
                     </div>
                   </template>
 
@@ -109,30 +111,39 @@
                         >
                           <v-card-text>
                             <div class="text-h6 mb-2">Score Details</div>
-                            <v-expansion-panels v-if="selectedSegment.categories?.length">
+                            <v-expansion-panels v-if="selectedSegment?.categories?.length">
                               <v-expansion-panel
-                                v-for="cat in selectedSegment.categories"
+                                v-for="cat in selectedSegment?.categories"
                                 :key="cat.id"
                               >
                                 <v-expansion-panel-title>
                                   <div class="d-flex justify-space-between w-100 align-center">
-                                    <span>{{ cat.name }} ({{ Math.round(cat.weight * 100) }}%)</span>
-                                    <strong class="mr-4"
-                                      >Avg: {{ getParticipantCategoryAverage(item.id, cat).toFixed(2) }}</strong
-                                    >
+                                    <span>
+                                      {{ cat.name }} ({{ Math.round(cat.weight * 100) }}%)
+                                    </span>
+                                    <strong class="mr-4">
+                                      Avg:
+                                      {{ getParticipantCategoryAverage(item.id, cat).toFixed(2) }}
+                                    </strong>
                                   </div>
                                 </v-expansion-panel-title>
                                 <v-expansion-panel-text>
                                   <v-list density="compact">
                                     <v-list-item
-                                      v-for="judge in event.judges"
+                                      v-for="judge in event?.judges"
                                       :key="judge.id"
                                     >
                                       <v-list-item-title>{{ judge.name }}</v-list-item-title>
                                       <template #append>
-                                        <strong class="ml-4">{{
-                                          getParticipantScoreForCategoryByJudge(item.id, cat.id, judge.id)
-                                        }}</strong>
+                                        <strong class="ml-4">
+                                          {{
+                                            getParticipantScoreForCategoryByJudge(
+                                              item.id,
+                                              cat.id,
+                                              judge.id
+                                            )
+                                          }}
+                                        </strong>
                                       </template>
                                     </v-list-item>
                                   </v-list>
@@ -159,6 +170,7 @@
                       <v-avatar
                         v-if="item.headshot"
                         :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
+                        @click="showImagePreview(item.headshot.url)"
                         class="mr-3"
                         size="40"
                       />
@@ -175,8 +187,9 @@
                         class="ml-2"
                         size="small"
                         label
-                        >Eliminated</v-chip
                       >
+                        Eliminated
+                      </v-chip>
                     </div>
                   </template>
 
@@ -197,30 +210,39 @@
                         >
                           <v-card-text>
                             <div class="text-h6 mb-2">Score Details</div>
-                            <v-expansion-panels v-if="selectedSegment.categories?.length">
+                            <v-expansion-panels v-if="selectedSegment?.categories?.length">
                               <v-expansion-panel
-                                v-for="cat in selectedSegment.categories"
+                                v-for="cat in selectedSegment?.categories"
                                 :key="cat.id"
                               >
                                 <v-expansion-panel-title>
                                   <div class="d-flex justify-space-between w-100 align-center">
-                                    <span>{{ cat.name }} ({{ Math.round(cat.weight * 100) }}%)</span>
-                                    <strong class="mr-4"
-                                      >Avg: {{ getParticipantCategoryAverage(item.id, cat).toFixed(2) }}</strong
-                                    >
+                                    <span>
+                                      {{ cat.name }} ({{ Math.round(cat.weight * 100) }}%)
+                                    </span>
+                                    <strong class="mr-4">
+                                      Avg:
+                                      {{ getParticipantCategoryAverage(item.id, cat).toFixed(2) }}
+                                    </strong>
                                   </div>
                                 </v-expansion-panel-title>
                                 <v-expansion-panel-text>
                                   <v-list density="compact">
                                     <v-list-item
-                                      v-for="judge in event.judges"
+                                      v-for="judge in event?.judges"
                                       :key="judge.id"
                                     >
                                       <v-list-item-title>{{ judge.name }}</v-list-item-title>
                                       <template #append>
-                                        <strong class="ml-4">{{
-                                          getParticipantScoreForCategoryByJudge(item.id, cat.id, judge.id)
-                                        }}</strong>
+                                        <strong class="ml-4">
+                                          {{
+                                            getParticipantScoreForCategoryByJudge(
+                                              item.id,
+                                              cat.id,
+                                              judge.id
+                                            )
+                                          }}
+                                        </strong>
                                       </template>
                                     </v-list-item>
                                   </v-list>
@@ -375,10 +397,16 @@ const showImagePreview = (url: string) => {
   imagePreviewDialog.value = true
 }
 
-function getParticipantScoreForCategoryByJudge(participantId: number, categoryId: number, judgeId: number) {
+function getParticipantScoreForCategoryByJudge(
+  participantId: number,
+  categoryId: number,
+  judgeId: number
+) {
   const score = event.value?.scores?.find(
     (s: any) =>
-      s.category?.id === categoryId && s.judge?.id === judgeId && s.participant?.id === participantId
+      s.category?.id === categoryId &&
+      s.judge?.id === judgeId &&
+      s.participant?.id === participantId
   )
   return score ? score.value : '–'
 }
@@ -419,7 +447,7 @@ const participantsWithScores = computed(() => {
     const segmentScore = getParticipantSegmentScore(p, selectedSegment.value)
     return {
       ...p,
-      totalSegmentScorePercent: Math.round(segmentScore * 100),
+      totalSegmentScorePercent: (segmentScore * 100).toFixed(3),
       isEliminated: p.participant_status === 'eliminated',
     }
   })
@@ -440,7 +468,6 @@ const femaleParticipantsData = computed(() => {
 function handleStatusChange(segmentId: number, newStatus: SegmentData['segment_status']) {
   pendingSegmentChanges.value[segmentId] = newStatus
 }
-
 
 const api = useStrapiApi()
 

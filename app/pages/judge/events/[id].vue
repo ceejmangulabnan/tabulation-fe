@@ -164,6 +164,7 @@
                           >
                             <div class="my-2">
                               <v-text-field
+                                class="score-input"
                                 v-model.number="item.scores[category.id]"
                                 type="number"
                                 variant="outlined"
@@ -254,7 +255,7 @@
                                   <div>
                                     <v-text-field
                                       align="end"
-                                      class="ml-auto flex-shrink-0"
+                                      class="ml-auto flex-shrink-0 score-input"
                                       v-model.number="item.scores[category.id]"
                                       type="number"
                                       variant="outlined"
@@ -291,6 +292,7 @@
                       variant="flat"
                       class="text-wrap"
                       @click="submitScores(segment)"
+                      :loading="isLoading"
                     >
                       Submit Scores for {{ segment.name }}
                     </v-btn>
@@ -325,6 +327,7 @@ const eventsStore = useEventsStore()
 const authStore = useAuthStore()
 const { showSnackbar } = useSnackbar()
 const api = useStrapiApi()
+const isLoading = ref<boolean>(false)
 
 // Represents a map of categoryId -> score for a single participant, used for v-model.
 type ParticipantScoreMap = Record<number, number | null | undefined>
@@ -468,6 +471,7 @@ function calculateTotalScore(participant: ParticipantWithScores, segment: Segmen
 
 async function submitScores(segment: SegmentData) {
   console.log('Clicked Submit')
+  isLoading.value = true
   if (!judgeId.value) {
     showSnackbar('Judge ID not found.', 'error')
     return
@@ -525,6 +529,7 @@ async function submitScores(segment: SegmentData) {
   try {
     await Promise.all(promises)
     showSnackbar('Scores submitted successfully!', 'success')
+    isLoading.value = false
     // Refresh event data to get the latest scores
     await eventsStore.fetchEvent(eventId)
   } catch (error) {
@@ -533,3 +538,9 @@ async function submitScores(segment: SegmentData) {
   }
 }
 </script>
+
+<style lang="css" scoped>
+.score-input {
+  min-width: 100px;
+}
+</style>

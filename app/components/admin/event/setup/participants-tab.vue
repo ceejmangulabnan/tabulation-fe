@@ -493,7 +493,7 @@ const deleteParticipant = async (item: ParticipantData) => {
   if (!confirm('Are you sure?')) return
   try {
     await api.delete(`/participants/${item.documentId}`)
-    await eventsStore.fetchEvent(props.event.documentId || '')
+    await eventsStore.fetchEvent(props.event.id?.toString() || '')
     snackbar.showSnackbar('Participant deleted successfully', 'success')
   } catch (error) {
     snackbar.showSnackbar('Failed to delete participant', 'error')
