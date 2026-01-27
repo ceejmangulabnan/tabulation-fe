@@ -411,11 +411,14 @@
     </v-dialog>
 
     <!-- Printable Rankings Component -->
+    <!-- Printable Rankings Component (hidden, used for PDF only) -->
     <PrintableRankings
-      v-if="showPrint"
+      ref="printableRef"
       :male="maleRankings"
       :female="femaleRankings"
       :title="printTitle"
+      :event="event"
+      style="position: fixed; left: -9999px; top: 0"
     />
   </v-container>
 </template>
@@ -425,8 +428,9 @@ const route = useRoute()
 const eventsStore = useEventsStore()
 const { showSnackbar } = useSnackbar()
 const eventId = route.params.id as string
-const event = computed(() => eventsStore.event)
+const event = computed<EventData>(() => eventsStore.event as EventData)
 const showPrintDialog = ref<boolean>(false)
+const printableRef = ref<any | null>(null)
 
 const imagePreviewDialog = ref(false)
 const imagePreviewUrl = ref<string | undefined>('')
@@ -673,19 +677,16 @@ const fetchRankings = async () => {
   }
 }
 
-const showPrint = ref(false)
-
 const confirmPrint = async () => {
   const ok = await fetchRankings()
   if (!ok) return
 
   showPrintDialog.value = false
-  showPrint.value = true
+  console.log('Male Ranking:', maleRankings.value, 'Female Ranking:', femaleRankings.value)
 
   await nextTick()
-  window.print()
 
-  showPrint.value = false
+  await printableRef.value?.generatePdf()
 }
 
 // Initialize selectedSegmentId if segments are available

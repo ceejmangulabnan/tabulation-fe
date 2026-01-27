@@ -18,6 +18,8 @@
     "@strapi/client": "^1.6.0",
     "@strapi/types": "^5.32.0",
     "axios": "^1.13.2",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.0.0",
     "nuxt": "^4.2.2",
     "pinia": "^3.0.4",
     "vue": "^3.5.25",
