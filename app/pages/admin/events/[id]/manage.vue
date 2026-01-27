@@ -374,14 +374,15 @@
             label="Segment"
             @update:model-value="printCategoryId = null"
           />
-                      <v-select
-                      v-if="printType === 'category'"
-                      v-model="printCategoryId"
-                      :items="segmentCategories"
-                      item-title="title"
-                      item-value="value"
-                      label="Category"
-                    />          <v-select
+          <v-select
+            v-if="printType === 'category'"
+            v-model="printCategoryId"
+            :items="segmentCategories"
+            item-title="title"
+            item-value="value"
+            label="Category"
+          />
+          <v-select
             v-model="printGender"
             :items="[
               { title: 'Both', value: 'both' },
