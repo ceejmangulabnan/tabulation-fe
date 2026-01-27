@@ -112,123 +112,32 @@
                         :key="gender.key"
                         :value="gender.key"
                       >
-                        <v-data-table
-                          v-if="!smAndDown"
-                          :headers="getTableHeaders(segment)"
-                          :items="getParticipantsByGender(gender.key, segment)"
-                          item-value="id"
-                          class="elevation-1"
-                          :loading="eventsStore.isLoading"
-                          :readonly="segment.segment_status === 'closed'"
-                        >
-                          <template v-slot:item.name="{ item }">
-                            <div class="d-flex align-center py-2">
-                              <v-avatar
-                                v-if="item.headshot?.formats?.thumbnail?.url"
-                                :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
-                                icon="mdi-account"
-                                class="mr-3"
-                                size="40"
-                              />
-                              <v-avatar
-                                v-else
-                                icon="mdi-account"
-                                class="mr-3"
-                                size="40"
-                              />
-                              <div class="font-weight-bold">{{ item.name }}</div>
-                              <v-chip
-                                v-if="
-                                  segment.segment_status === 'closed' &&
-                                  item.participant_status === 'eliminated' &&
-                                  item.eliminated_at_segment?.id === segment.id
-                                "
-                                color="red"
-                                class="ml-2"
-                                size="small"
-                                label
-                              >
-                                Eliminated
-                              </v-chip>
-                            </div>
-                          </template>
-
-                          <template v-slot:item.department="{ item }">
-                            {{ item.department?.name || 'N/A' }}
-                          </template>
-
-                          <template
-                            v-for="category in getActiveCategories(segment)"
-                            :key="category.id"
-                            v-slot:[`item.category_${category.id}`]="{ item }"
+                        <v-form :ref="(el) => setFormRef(segment.id, gender.key, el)">
+                          <v-data-table
+                            v-if="!smAndDown"
+                            :headers="getTableHeaders(segment)"
+                            :items="getParticipantsByGender(gender.key, segment)"
+                            item-value="id"
+                            class="elevation-1"
+                            :loading="eventsStore.isLoading"
+                            :readonly="segment.segment_status === 'closed'"
                           >
-                            <div class="my-2">
-                              <v-text-field
-                                class="score-input"
-                                v-model.number="item.scores[category.id]"
-                                type="number"
-                                variant="outlined"
-                                density="compact"
-                                hide-details="auto"
-                                :rules="scoreRules"
-                                min="0"
-                                max="10"
-                                step="0.1"
-                                maxlength="4"
-                                style="max-width: 80px"
-                                :readonly="segment.segment_status === 'closed'"
-                              />
-                            </div>
-                          </template>
-
-                          <template v-slot:item.total_score="{ item }">
-                            <div class="font-weight-bold">
-                              {{ calculateTotalScore(item, segment) }}
-                            </div>
-                          </template>
-
-                          <template v-slot:no-data>
-                            <div class="pa-4 text-center">
-                              No participants found for this gender.
-                            </div>
-                          </template>
-                        </v-data-table>
-
-                        <!-- Mobile View -->
-                        <v-list
-                          v-else
-                          lines="three"
-                        >
-                          <v-list-item
-                            v-for="item in getParticipantsByGender(gender.key, segment)"
-                            :key="item.id"
-                            class="pa-0"
-                          >
-                            <v-card>
-                              <v-card-title class="d-flex align-start flex-wrap">
-                                <div class="d-flex align-center">
-                                  <v-avatar
-                                    v-if="item.headshot?.formats?.thumbnail?.url"
-                                    :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
-                                    icon="mdi-account"
-                                    class="mr-3"
-                                    size="40"
-                                  />
-                                  <v-avatar
-                                    v-else
-                                    icon="mdi-account"
-                                    class="mr-3"
-                                    size="40"
-                                  />
-                                  <div>
-                                    <div class="font-weight-bold text-wrap text-subtitle-1">
-                                      {{ item.name }}
-                                    </div>
-                                    <div class="text-caption">
-                                      {{ item.department?.name || 'N/A' }}
-                                    </div>
-                                  </div>
-                                </div>
+                            <template v-slot:item.name="{ item }">
+                              <div class="d-flex align-center py-2">
+                                <v-avatar
+                                  v-if="item.headshot?.formats?.thumbnail?.url"
+                                  :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
+                                  icon="mdi-account"
+                                  class="mr-3"
+                                  size="40"
+                                />
+                                <v-avatar
+                                  v-else
+                                  icon="mdi-account"
+                                  class="mr-3"
+                                  size="40"
+                                />
+                                <div class="font-weight-bold">{{ item.name }}</div>
                                 <v-chip
                                   v-if="
                                     segment.segment_status === 'closed' &&
@@ -236,51 +145,147 @@
                                     item.eliminated_at_segment?.id === segment.id
                                   "
                                   color="red"
-                                  class="mt-1 ml-4"
+                                  class="ml-2"
+                                  size="small"
                                   label
                                 >
                                   Eliminated
                                 </v-chip>
-                              </v-card-title>
-                              <v-card-text>
-                                <div
-                                  v-for="category in getActiveCategories(segment)"
-                                  :key="category.id"
-                                  align="center"
-                                  class="d-flex justify-space-between my-2 align-center ga-3 flex-wrap"
-                                >
-                                  <div class="text-subtitle-1">
-                                    {{ category.name }} ({{ (category.weight * 100).toFixed(0) }}%)
-                                  </div>
-                                  <div>
-                                    <v-text-field
-                                      align="end"
-                                      class="ml-auto flex-shrink-0 score-input"
-                                      v-model.number="item.scores[category.id]"
-                                      type="number"
-                                      variant="outlined"
-                                      density="compact"
-                                      hide-details="auto"
-                                      :rules="scoreRules"
-                                      min="0"
-                                      max="10"
-                                      step="0.1"
-                                      maxlength="4"
-                                      style="max-width: 80px"
-                                      :readonly="segment.segment_status === 'closed'"
+                              </div>
+                            </template>
+
+                            <template v-slot:item.department="{ item }">
+                              {{ item.department?.name || 'N/A' }}
+                            </template>
+
+                            <template
+                              v-for="category in getActiveCategories(segment)"
+                              :key="category.id"
+                              v-slot:[`item.category_${category.id}`]="{ item }"
+                            >
+                              <div class="my-2">
+                                <v-text-field
+                                  class="score-input"
+                                  v-model.number="item.scores[category.id]"
+                                  type="number"
+                                  variant="outlined"
+                                  density="compact"
+                                  hide-details="auto"
+                                  :rules="scoreRules"
+                                  validate-on="input"
+                                  min="0"
+                                  max="10"
+                                  step="0.1"
+                                  maxlength="4"
+                                  style="max-width: 80px"
+                                  :readonly="segment.segment_status === 'closed'"
+                                />
+                              </div>
+                            </template>
+
+                            <template v-slot:item.total_score="{ item }">
+                              <div class="font-weight-bold">
+                                {{ calculateTotalScore(item, segment) }}
+                              </div>
+                            </template>
+
+                            <template v-slot:no-data>
+                              <div class="pa-4 text-center">
+                                No participants found for this gender.
+                              </div>
+                            </template>
+                          </v-data-table>
+
+                          <!-- Mobile View -->
+                          <v-list
+                            v-else
+                            lines="three"
+                          >
+                            <v-list-item
+                              v-for="item in getParticipantsByGender(gender.key, segment)"
+                              :key="item.id"
+                              class="pa-0"
+                            >
+                              <v-card>
+                                <v-card-title class="d-flex align-start flex-wrap">
+                                  <div class="d-flex align-center">
+                                    <v-avatar
+                                      v-if="item.headshot?.formats?.thumbnail?.url"
+                                      :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
+                                      icon="mdi-account"
+                                      class="mr-3"
+                                      size="40"
                                     />
+                                    <v-avatar
+                                      v-else
+                                      icon="mdi-account"
+                                      class="mr-3"
+                                      size="40"
+                                    />
+                                    <div>
+                                      <div class="font-weight-bold text-wrap text-subtitle-1">
+                                        {{ item.name }}
+                                      </div>
+                                      <div class="text-caption">
+                                        {{ item.department?.name || 'N/A' }}
+                                      </div>
+                                    </div>
                                   </div>
-                                </div>
-                              </v-card-text>
-                              <v-card-actions>
-                                <v-spacer />
-                                <span class="font-weight-bold text-sm-subtitle-1 text-body-1">
-                                  Segment Score: {{ calculateTotalScore(item, segment) }} / 100
-                                </span>
-                              </v-card-actions>
-                            </v-card>
-                          </v-list-item>
-                        </v-list>
+                                  <v-chip
+                                    v-if="
+                                      segment.segment_status === 'closed' &&
+                                      item.participant_status === 'eliminated' &&
+                                      item.eliminated_at_segment?.id === segment.id
+                                    "
+                                    color="red"
+                                    class="mt-1 ml-4"
+                                    label
+                                  >
+                                    Eliminated
+                                  </v-chip>
+                                </v-card-title>
+                                <v-card-text>
+                                  <div
+                                    v-for="category in getActiveCategories(segment)"
+                                    :key="category.id"
+                                    align="center"
+                                    class="d-flex justify-space-between my-2 align-center ga-3 flex-wrap"
+                                  >
+                                    <div class="text-subtitle-1">
+                                      {{ category.name }} ({{
+                                        (category.weight * 100).toFixed(0)
+                                      }}%)
+                                    </div>
+                                                                      <div>
+                                                                        <v-text-field
+                                                                          align="end"
+                                                                          class="ml-auto flex-shrink-0 score-input"
+                                                                          v-model.number="item.scores[category.id]"
+                                                                          type="number"
+                                                                          variant="outlined"
+                                                                          density="compact"
+                                                                          hide-details="auto"
+                                                                          :rules="scoreRules"
+                                                                          validate-on="input"
+                                                                          min="0"
+                                                                          max="10"
+                                                                          step="0.1"
+                                                                          maxlength="4"
+                                                                          style="max-width: 80px"
+                                                                          :readonly="segment.segment_status === 'closed'"
+                                                                        />
+                                                                      </div>                                  </div>
+                                </v-card-text>
+                                <v-card-actions>
+                                  <v-spacer />
+                                  <span class="font-weight-bold text-sm-subtitle-1 text-body-1">
+                                    Segment Score: {{ calculateTotalScore(item, segment) }} / 100
+                                  </span>
+                                </v-card-actions>
+                              </v-card>
+                            </v-list-item>
+                          </v-list>
+                        </v-form>
                       </v-window-item>
                     </v-window>
                   </v-card-text>
@@ -315,8 +320,10 @@ definePageMeta({
 
 const scoreRules = [
   (v: number | null | undefined | string) => {
-    if (v === null || v === undefined || v === '') return true
+    if (v === undefined || v === '') return true // Allow empty field
+    if (v === null) return 'Invalid input.' // Catch standalone '.' or '-' which v-model.number converts to null
     const numericValue = parseFloat(v as string)
+    if (isNaN(numericValue)) return 'Score must be a number.'
     return (numericValue >= 0 && numericValue <= 10) || 'Score must be between 0 and 10'
   },
 ]
@@ -328,6 +335,13 @@ const authStore = useAuthStore()
 const { showSnackbar } = useSnackbar()
 const api = useStrapiApi()
 const isLoading = ref<boolean>(false)
+
+// For form validation
+const formRefs = ref<Record<string, HTMLFormElement | null>>({})
+
+function setFormRef(segmentId: number, genderKey: string, el: HTMLFormElement | null) {
+  formRefs.value[`${segmentId}-${genderKey}`] = el
+}
 
 // Represents a map of categoryId -> score for a single participant, used for v-model.
 type ParticipantScoreMap = Record<number, number | null | undefined>
@@ -478,8 +492,20 @@ function calculateTotalScore(participant: ParticipantWithScores, segment: Segmen
 async function submitScores(segment: SegmentData) {
   console.log('Clicked Submit')
   isLoading.value = true
+
+  const currentFormRef = formRefs.value[`${activeSegmentTab.value}-${activeGenderTab.value}`]
+  if (currentFormRef) {
+    const { valid } = await currentFormRef.validate()
+    if (!valid) {
+      showSnackbar('Please correct the invalid scores before submitting.', 'error')
+      isLoading.value = false // Set loading to false if validation fails
+      return
+    }
+  }
+
   if (!judgeId.value) {
     showSnackbar('Judge ID not found.', 'error')
+    isLoading.value = false // Also set loading to false here
     return
   }
 
@@ -531,18 +557,22 @@ async function submitScores(segment: SegmentData) {
 
   if (promises.length === 0) {
     showSnackbar('No changes to submit.', 'info')
+    isLoading.value = false // Set loading to false if no changes
     return
   }
 
   try {
     await Promise.all(promises)
     showSnackbar('Scores submitted successfully!', 'success')
-    isLoading.value = false
     // Refresh event data to get the latest scores
     await eventsStore.fetchEvent(eventId)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to submit scores:', error)
-    showSnackbar('Failed to submit some scores.', 'error')
+    const errorMessage =
+      error.response?.data?.error?.message || 'Failed to submit some scores. Please try again.'
+    showSnackbar(errorMessage, 'error')
+  } finally {
+    isLoading.value = false // Ensure isLoading is false on success or error
   }
 }
 </script>

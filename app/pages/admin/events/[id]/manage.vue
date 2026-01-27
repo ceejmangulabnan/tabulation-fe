@@ -374,15 +374,14 @@
             label="Segment"
             @update:model-value="printCategoryId = null"
           />
-          <v-select
-            v-if="printType === 'category'"
-            v-model="printCategoryId"
-            :items="segmentCategories"
-            item-title="name"
-            item-value="documentId"
-            label="Category"
-          />
-          <v-select
+                      <v-select
+                      v-if="printType === 'category'"
+                      v-model="printCategoryId"
+                      :items="segmentCategories"
+                      item-title="title"
+                      item-value="value"
+                      label="Category"
+                    />          <v-select
             v-model="printGender"
             :items="[
               { title: 'Both', value: 'both' },
@@ -440,6 +439,7 @@ const pendingSegmentChanges = ref<{ [key: number]: SegmentData['segment_status']
 const printType = ref<'segment' | 'category'>('segment')
 const printCategoryId = ref<string | null>(null)
 const printGender = ref<'male' | 'female' | 'both'>('both')
+console.log('printCategoryId', printCategoryId.value)
 
 const maleRankings = ref<any[]>([])
 const femaleRankings = ref<any[]>([])
