@@ -372,6 +372,7 @@
             item-title="name"
             item-value="documentId"
             label="Segment"
+            @update:model-value="printCategoryId = null"
           />
           <v-select
             v-if="printType === 'category'"
@@ -408,12 +409,18 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Printable Rankings Component -->
+    <PrintableRankings
+      v-if="showPrint"
+      :male="maleRankings"
+      :female="femaleRankings"
+      :title="printTitle"
+    />
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-
 const route = useRoute()
 const eventsStore = useEventsStore()
 const { showSnackbar } = useSnackbar()
@@ -426,11 +433,13 @@ const imagePreviewUrl = ref<string | undefined>('')
 
 const pendingSegmentChanges = ref<{ [key: number]: SegmentData['segment_status'] }>({})
 
-// const isLoadingRankings = ref(false)
-
 const printType = ref<'segment' | 'category'>('segment')
 const printCategoryId = ref<string | null>(null)
 const printGender = ref<'male' | 'female' | 'both'>('both')
+
+const maleRankings = ref<any[]>([])
+const femaleRankings = ref<any[]>([])
+const printTitle = ref('')
 
 function getStrapiUrl(url: string) {
   const config = useRuntimeConfig()
@@ -465,7 +474,15 @@ const selectedSegment = computed(() => {
   return event.value?.segments?.find((s) => s.documentId === selectedSegmentId.value) || null
 })
 
-const segmentCategories = computed(() => selectedSegment.value?.categories || [])
+const segmentCategories = computed(() => {
+  if (!selectedSegment.value) return []
+  return (
+    selectedSegment.value.categories?.map((cat) => ({
+      title: cat.name,
+      value: cat.documentId,
+    })) || []
+  )
+})
 
 const showImagePreview = (url: string) => {
   imagePreviewUrl.value = getStrapiUrl(url)
@@ -531,13 +548,13 @@ const participantsWithScores = computed(() => {
 const maleParticipantsData = computed(() => {
   return participantsWithScores.value
     .filter((p) => p.gender === 'male')
-    .sort((a, b) => b.totalSegmentScorePercent - a.totalSegmentScorePercent)
+    .sort((a, b) => parseFloat(b.totalSegmentScorePercent) - parseFloat(a.totalSegmentScorePercent))
 })
 
 const femaleParticipantsData = computed(() => {
   return participantsWithScores.value
     .filter((p) => p.gender === 'female')
-    .sort((a, b) => b.totalSegmentScorePercent - a.totalSegmentScorePercent)
+    .sort((a, b) => parseFloat(b.totalSegmentScorePercent) - parseFloat(a.totalSegmentScorePercent))
 })
 
 function handleStatusChange(segmentId: number, newStatus: SegmentData['segment_status']) {
@@ -582,34 +599,93 @@ async function submitSegmentChanges() {
   }
 }
 
-// Add the getScoringProgress function
 function getScoringProgress(category: CategoryData, judges: JudgeData[], eventScores: ScoreData[]) {
   if (!judges || judges.length === 0) return 'No judges assigned'
 
-  // Filter scores for the current category
   const categoryScores = (eventScores || []).filter((s) => s.category?.id === category.id)
-
   const assignedJudgeIds = new Set(judges.map((j) => j.id))
   const judgesWhoScored = new Set(
     categoryScores.map((s: ScoreData) => s.judge?.id).filter((id) => id)
   )
 
   const scoredCount = [...judgesWhoScored].filter((id) => assignedJudgeIds.has(id)).length
-
   return `${scoredCount} of ${judges.length} judges have scored.`
 }
 
 const segmentTotalWeight = computed(() => (segment: SegmentData) => {
-  if (!segment.categories) {
-    return 0
-  }
+  if (!segment.categories) return 0
   return segment.categories.reduce((total, category) => total + (category.weight || 0), 0)
 })
 
-const confirmPrint = () => {
-  // Print the current rankings from modal directly
-  window.print()
+const fetchRankings = async () => {
+  if (!selectedSegmentId.value) {
+    showSnackbar('Please select a segment.', 'warning')
+    return false
+  }
+
+  let url = ''
+  const segmentId = selectedSegmentId.value
+  const categoryId = printCategoryId.value
+
+  if (printType.value === 'category') {
+    if (!categoryId) {
+      showSnackbar('Please select a category.', 'warning')
+      return false
+    }
+
+    url = `/admin/events/${event.value?.documentId}/segments/${segmentId}/categories/${categoryId}/ranking`
+
+    const categoryName = selectedSegment.value?.categories?.find(
+      (c) => c.documentId === categoryId
+    )?.name
+
+    printTitle.value = `Category Ranking – ${categoryName}`
+  } else {
+    url = `/admin/events/${event.value?.documentId}/segments/${segmentId}/ranking`
+    printTitle.value = `Segment Ranking – ${selectedSegment.value?.name}`
+  }
+
+  try {
+    const { data } = await api.get(url)
+    const results = data.results
+
+    maleRankings.value = []
+    femaleRankings.value = []
+
+    if (printGender.value === 'male' || printGender.value === 'both') {
+      maleRankings.value = results.male
+    }
+
+    if (printGender.value === 'female' || printGender.value === 'both') {
+      femaleRankings.value = results.female
+    }
+
+    if (!maleRankings.value.length && !femaleRankings.value.length) {
+      showSnackbar('No ranking data found.', 'info')
+      return false
+    }
+
+    return true
+  } catch (err) {
+    console.error(err)
+    showSnackbar('Failed to fetch rankings.', 'error')
+    return false
+  }
+}
+
+const showPrint = ref(false)
+
+const confirmPrint = async () => {
+  const ok = await fetchRankings()
+  if (!ok) return
+
   showPrintDialog.value = false
+  showPrint.value = true
+
+  await nextTick()
+  window.print()
+
+  showPrint.value = false
 }
 
 // Initialize selectedSegmentId if segments are available
@@ -632,3 +708,10 @@ console.log('Debugging', {
   selectedSegmentId: selectedSegmentId.value,
 })
 </script>
+
+<style scoped>
+.pdf-content {
+  font-family: 'Roboto', sans-serif; /* Ensure consistent font */
+  color: #333;
+}
+</style>
