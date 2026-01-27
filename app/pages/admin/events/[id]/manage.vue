@@ -41,13 +41,20 @@
               v-model="selectedSegmentId"
               :items="event?.segments"
               item-title="name"
-              item-value="id"
+              item-value="documentId"
               label="Select Segment"
               variant="outlined"
               class="mb-4"
               clearable
               hide-details
             ></v-select>
+            <v-btn
+              variant="outlined"
+              color="primary"
+              @click="showPrintDialog = true"
+            >
+              Print Rankings
+            </v-btn>
 
             <v-tabs
               v-model="activeGenderTab"
@@ -342,6 +349,65 @@
         <v-img :src="imagePreviewUrl" />
       </v-card>
     </v-dialog>
+
+    <!-- Print Rankings Dialog -->
+    <v-dialog
+      v-model="showPrintDialog"
+      max-width="700px"
+    >
+      <v-card>
+        <v-card-title>Print Rankings</v-card-title>
+        <v-card-text>
+          <v-select
+            v-model="printType"
+            :items="[
+              { title: 'Per Segment', value: 'segment' },
+              { title: 'Per Category', value: 'category' },
+            ]"
+            label="Ranking Type"
+          />
+          <v-select
+            v-model="selectedSegmentId"
+            :items="event?.segments"
+            item-title="name"
+            item-value="documentId"
+            label="Segment"
+          />
+          <v-select
+            v-if="printType === 'category'"
+            v-model="printCategoryId"
+            :items="segmentCategories"
+            item-title="name"
+            item-value="documentId"
+            label="Category"
+          />
+          <v-select
+            v-model="printGender"
+            :items="[
+              { title: 'Both', value: 'both' },
+              { title: 'Male', value: 'male' },
+              { title: 'Female', value: 'female' },
+            ]"
+            label="Gender"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            variant="text"
+            @click="showPrintDialog = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="primary"
+            @click="confirmPrint"
+          >
+            Print
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -353,11 +419,18 @@ const eventsStore = useEventsStore()
 const { showSnackbar } = useSnackbar()
 const eventId = route.params.id as string
 const event = computed(() => eventsStore.event)
+const showPrintDialog = ref<boolean>(false)
 
 const imagePreviewDialog = ref(false)
 const imagePreviewUrl = ref<string | undefined>('')
 
 const pendingSegmentChanges = ref<{ [key: number]: SegmentData['segment_status'] }>({})
+
+// const isLoadingRankings = ref(false)
+
+const printType = ref<'segment' | 'category'>('segment')
+const printCategoryId = ref<string | null>(null)
+const printGender = ref<'male' | 'female' | 'both'>('both')
 
 function getStrapiUrl(url: string) {
   const config = useRuntimeConfig()
@@ -386,11 +459,13 @@ const statusColor = computed(() => {
 
 const activeTab = ref('scores')
 const activeGenderTab = ref('male')
-const selectedSegmentId = ref<number | null>(null)
+const selectedSegmentId = ref<string | null>(null)
 
 const selectedSegment = computed(() => {
-  return event.value?.segments?.find((s) => s.id === selectedSegmentId.value) || null
+  return event.value?.segments?.find((s) => s.documentId === selectedSegmentId.value) || null
 })
+
+const segmentCategories = computed(() => selectedSegment.value?.categories || [])
 
 const showImagePreview = (url: string) => {
   imagePreviewUrl.value = getStrapiUrl(url)
@@ -531,14 +606,29 @@ const segmentTotalWeight = computed(() => (segment: SegmentData) => {
   return segment.categories.reduce((total, category) => total + (category.weight || 0), 0)
 })
 
+const confirmPrint = () => {
+  // Print the current rankings from modal directly
+  window.print()
+  showPrintDialog.value = false
+}
+
 // Initialize selectedSegmentId if segments are available
 watch(
   () => event.value?.segments,
   (newSegments) => {
     if (newSegments && newSegments.length > 0 && selectedSegmentId.value === null) {
-      selectedSegmentId.value = newSegments[0]?.id || 0
+      selectedSegmentId.value = newSegments[0]?.documentId || ''
     }
   },
   { immediate: true }
 )
+
+watch(printType, (val) => {
+  if (val === 'segment') printCategoryId.value = null
+})
+
+console.log('Debugging', {
+  eventId: eventId,
+  selectedSegmentId: selectedSegmentId.value,
+})
 </script>

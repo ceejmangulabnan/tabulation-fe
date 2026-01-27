@@ -21,6 +21,7 @@
     "nuxt": "^4.2.2",
     "pinia": "^3.0.4",
     "vue": "^3.5.25",
+    "vue-html2pdf": "^1.8.0",
     "vue-router": "^4.6.4",
     "vuetify-nuxt-module": "0.18.7"
   },
