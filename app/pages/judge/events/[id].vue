@@ -112,7 +112,7 @@
                         :key="gender.key"
                         :value="gender.key"
                       >
-                        <v-form :ref="(el) => setFormRef(segment.id, gender.key, el)">
+                        <v-form>
                           <v-data-table
                             v-if="!smAndDown"
                             :headers="getTableHeaders(segment)"
@@ -165,8 +165,8 @@
                             >
                               <div class="my-2">
                                 <v-text-field
-                                  class="score-input"
                                   v-model.number="item.scores[category.id]"
+                                  class="flex-shrink-0 score-input"
                                   type="number"
                                   variant="outlined"
                                   density="compact"
@@ -179,6 +179,7 @@
                                   maxlength="4"
                                   style="max-width: 80px"
                                   :readonly="segment.segment_status === 'closed'"
+                                  @keydown="blockInvalidKeys"
                                 />
                               </div>
                             </template>
@@ -256,25 +257,26 @@
                                         (category.weight * 100).toFixed(0)
                                       }}%)
                                     </div>
-                                                                      <div>
-                                                                        <v-text-field
-                                                                          align="end"
-                                                                          class="ml-auto flex-shrink-0 score-input"
-                                                                          v-model.number="item.scores[category.id]"
-                                                                          type="number"
-                                                                          variant="outlined"
-                                                                          density="compact"
-                                                                          hide-details="auto"
-                                                                          :rules="scoreRules"
-                                                                          validate-on="input"
-                                                                          min="0"
-                                                                          max="10"
-                                                                          step="0.1"
-                                                                          maxlength="4"
-                                                                          style="max-width: 80px"
-                                                                          :readonly="segment.segment_status === 'closed'"
-                                                                        />
-                                                                      </div>                                  </div>
+                                    <div>
+                                      <v-text-field
+                                        align="end"
+                                        class="ml-auto flex-shrink-0 score-input"
+                                        v-model.number="item.scores[category.id]"
+                                        type="number"
+                                        variant="outlined"
+                                        density="compact"
+                                        hide-details="auto"
+                                        :rules="scoreRules"
+                                        validate-on="input"
+                                        min="0"
+                                        max="10"
+                                        step="0.1"
+                                        maxlength="4"
+                                        style="max-width: 80px"
+                                        :readonly="segment.segment_status === 'closed'"
+                                      />
+                                    </div>
+                                  </div>
                                 </v-card-text>
                                 <v-card-actions>
                                   <v-spacer />
@@ -319,12 +321,23 @@ definePageMeta({
 })
 
 const scoreRules = [
-  (v: number | null | undefined | string) => {
-    if (v === undefined || v === '') return true // Allow empty field
-    if (v === null) return 'Invalid input.' // Catch standalone '.' or '-' which v-model.number converts to null
-    const numericValue = parseFloat(v as string)
-    if (isNaN(numericValue)) return 'Score must be a number.'
-    return (numericValue >= 0 && numericValue <= 10) || 'Score must be between 0 and 10'
+  (v: number | string | null | undefined) => {
+    if (v === null || v === undefined || v === '') return true
+
+    const str = String(v)
+
+    // must be a valid integer or float
+    if (!/^\d+(\.\d+)?$/.test(str)) {
+      return 'Invalid score'
+    }
+
+    const num = Number(str)
+
+    if (num < 0 || num > 10) {
+      return 'Score must be between 0 and 10'
+    }
+
+    return true
   },
 ]
 
@@ -338,10 +351,6 @@ const isLoading = ref<boolean>(false)
 
 // For form validation
 const formRefs = ref<Record<string, HTMLFormElement | null>>({})
-
-function setFormRef(segmentId: number, genderKey: string, el: HTMLFormElement | null) {
-  formRefs.value[`${segmentId}-${genderKey}`] = el
-}
 
 // Represents a map of categoryId -> score for a single participant, used for v-model.
 type ParticipantScoreMap = Record<number, number | null | undefined>
@@ -481,7 +490,7 @@ function calculateTotalScore(participant: ParticipantWithScores, segment: Segmen
   const total = getActiveCategories(segment).reduce((acc, category) => {
     const score = participant.scores[category.id]
     if (score !== null && score !== undefined) {
-      return acc + score * category.weight
+      return acc + parseFloat(score as string) * category.weight
     }
     return acc
   }, 0)
@@ -489,8 +498,24 @@ function calculateTotalScore(participant: ParticipantWithScores, segment: Segmen
   return finalTotal.toFixed(2)
 }
 
+function blockInvalidKeys(e: KeyboardEvent) {
+  const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter']
+  if (allowedKeys.includes(e.key)) {
+    return // Allow navigation and editing keys
+  }
+
+  // Allow numbers and a single decimal point
+  if (e.key === '.' && !(e.target as HTMLInputElement).value.includes('.')) {
+    return // Allow one decimal point if not already present
+  }
+
+  // If it's not a digit, prevent it
+  if (!/^\d$/.test(e.key)) {
+    e.preventDefault()
+  }
+}
+
 async function submitScores(segment: SegmentData) {
-  console.log('Clicked Submit')
   isLoading.value = true
 
   const currentFormRef = formRefs.value[`${activeSegmentTab.value}-${activeGenderTab.value}`]
