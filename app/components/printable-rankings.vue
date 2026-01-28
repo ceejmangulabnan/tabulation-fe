@@ -6,15 +6,15 @@
     <header class="d-flex align-center">
       <img
         src="/logo.png"
-        width="150px"
-        height="150px"
+        width="100px"
+        height="100px"
       />
       <h1>{{ event.name }}</h1>
     </header>
     <h2 class="title primary">{{ title }}</h2>
 
     <!-- MALE TABLE -->
-    <section v-if="male?.length">
+    <section v-if="filteredMale?.length">
       <h2 class="gender">Male Participants</h2>
 
       <table class="ranking-table">
@@ -29,10 +29,10 @@
         </thead>
         <tbody>
           <tr
-            v-for="(row, index) in male"
+            v-for="(row, _index) in filteredMale"
             :key="row.participantId"
           >
-            <td>{{ index + 1 }}</td>
+            <td>{{ row.participant_number }}</td>
             <td>{{ row.name }}</td>
             <td>{{ row.department || '—' }}</td>
             <td>{{ row.averaged_score.toFixed(3) }}</td>
@@ -44,12 +44,12 @@
 
     <!-- PAGE BREAK -->
     <div
-      v-if="male?.length && female?.length"
+      v-if="filteredMale?.length && filteredFemale?.length"
       class="page-break"
     />
 
     <!-- FEMALE TABLE -->
-    <section v-if="female?.length">
+    <section v-if="filteredFemale?.length">
       <h2 class="gender">Female Participants</h2>
 
       <table class="ranking-table">
@@ -64,10 +64,10 @@
         </thead>
         <tbody>
           <tr
-            v-for="(row, index) in female"
+            v-for="(row, _index) in filteredFemale"
             :key="row.participantId"
           >
-            <td>{{ index + 1 }}</td>
+            <td>{{ row.participant_number }}</td>
             <td>{{ row.name }}</td>
             <td>{{ row.department || '—' }}</td>
             <td>{{ row.averaged_score.toFixed(3) }}</td>
@@ -89,6 +89,9 @@ const props = defineProps<{
   male: any[]
   female: any[]
 }>()
+
+const filteredMale = computed(() => props.male.filter((p) => p))
+const filteredFemale = computed(() => props.female.filter((p) => p))
 
 const pdfRoot = ref<HTMLElement | null>(null)
 
@@ -128,8 +131,12 @@ const generatePdf = async () => {
   }
 
   pdf.printHeaderRow
-  pdf.output('pdfobjectnewwindow', { filename: `${props.title}.pdf` })
+
+  //  pdf.output('pdfobjectnewwindow', { filename: `${props.title}.pdf` })
   // pdf.save(`${props.title}.pdf`)
+
+  const blob = pdf.output('bloburl')
+  window.open(blob, '_blank')
 }
 
 defineExpose({
@@ -138,6 +145,9 @@ defineExpose({
 </script>
 
 <style>
+h1 {
+  font-size: 20px;
+}
 .pdf-root {
   font-family: Roboto, Arial, sans-serif;
   color: #000;
@@ -152,7 +162,7 @@ defineExpose({
 }
 
 .gender {
-  margin-top: 16px;
+  margin-top: 8px;
   margin-bottom: 8px;
   font-size: 16px;
 }

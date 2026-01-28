@@ -413,6 +413,7 @@
     <!-- Printable Rankings Component -->
     <!-- Printable Rankings Component (hidden, used for PDF only) -->
     <PrintableRankings
+      v-if="event"
       ref="printableRef"
       :male="maleRankings"
       :female="femaleRankings"
