@@ -28,12 +28,13 @@
       v-model="activeTab"
       class="my-4"
     >
-      <v-tab value="scores">Scores</v-tab>
+      <v-tab value="view-scores">View Scores</v-tab>
+      <v-tab value="update-scores">Update Scores</v-tab>
       <v-tab value="segments">Segment Management</v-tab>
     </v-tabs>
 
     <v-window v-model="activeTab">
-      <v-window-item value="scores">
+      <v-window-item value="view-scores">
         <v-card>
           <v-card-title>Participant Scores</v-card-title>
           <v-card-text>
@@ -268,6 +269,53 @@
         </v-card>
       </v-window-item>
 
+      <v-window-item value="update-scores">
+        <v-card>
+          <v-card-title>Update Scores on Behalf of a Judge</v-card-title>
+          <v-card-text>
+            <v-select
+              v-model="selectedJudgeId"
+              :items="event?.judges"
+              item-title="name"
+              item-value="id"
+              label="Select Judge"
+              variant="outlined"
+              class="mb-4"
+              hide-details
+            ></v-select>
+
+            <v-select
+              v-model="selectedSegmentId"
+              :items="event?.segments"
+              item-title="name"
+              item-value="documentId"
+              label="Select Segment"
+              variant="outlined"
+              class="mb-4"
+              clearable
+              hide-details
+            ></v-select>
+
+            <template v-if="selectedJudgeId && selectedSegment">
+              <EventScoringCard
+                :isAdmin="true"
+                :segment="selectedSegment"
+                :event="event"
+                :participants="participantsWithScoresForJudge"
+                :judge-id="selectedJudgeId"
+                @scores-submitted="refreshEvent"
+              />
+            </template>
+            <div
+              v-else
+              class="text-center pa-4 text-grey-darken-1"
+            >
+              Please select a judge and a segment to start scoring.
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-window-item>
+
       <v-window-item value="segments">
         <v-card>
           <v-card-title>Segment Management</v-card-title>
@@ -363,10 +411,12 @@
             :items="[
               { title: 'Per Segment', value: 'segment' },
               { title: 'Per Category', value: 'category' },
+              { title: 'Final Ranking', value: 'final' },
             ]"
             label="Ranking Type"
           />
           <v-select
+            v-if="printType !== 'final'"
             v-model="selectedSegmentId"
             :items="event?.segments"
             item-title="name"
@@ -438,7 +488,7 @@ const imagePreviewUrl = ref<string | undefined>('')
 
 const pendingSegmentChanges = ref<{ [key: number]: SegmentData['segment_status'] }>({})
 
-const printType = ref<'segment' | 'category'>('segment')
+const printType = ref<'segment' | 'category' | 'final'>('segment')
 const printCategoryId = ref<string | null>(null)
 const printGender = ref<'male' | 'female' | 'both'>('both')
 console.log('printCategoryId', printCategoryId.value)
@@ -447,10 +497,51 @@ const maleRankings = ref<any[]>([])
 const femaleRankings = ref<any[]>([])
 const printTitle = ref('')
 
+type ParticipantScoreMap = Record<number, number | null | undefined>
+type ParticipantWithScores = Omit<ParticipantData, 'scores'> & { scores: ParticipantScoreMap }
+
+const participantsWithScoresForJudge = ref<ParticipantWithScores[]>([])
+const selectedJudgeId = ref<number | null>(null)
+
 function getStrapiUrl(url: string) {
   const config = useRuntimeConfig()
   return `${config.public.strapiUrl}${url}`
 }
+
+async function refreshEvent() {
+  await eventsStore.fetchEvent(eventId)
+  prepareScoresForJudge()
+}
+
+function prepareScoresForJudge() {
+  const currentEvent = event.value
+  if (!currentEvent?.participants || !selectedJudgeId.value) {
+    participantsWithScoresForJudge.value = []
+    return
+  }
+  participantsWithScoresForJudge.value = currentEvent.participants.map((p: ParticipantData) => {
+    const scores: ParticipantScoreMap = {}
+    currentEvent.scores?.forEach((score: ScoreData) => {
+      const scoreParticipantId = score.participant?.id
+      const scoreJudgeId = score.judge?.id
+      const scoreCategoryId = score.category?.id
+
+      if (
+        scoreParticipantId === p.id &&
+        scoreJudgeId === selectedJudgeId.value &&
+        scoreCategoryId
+      ) {
+        scores[scoreCategoryId] = score.value
+      }
+    })
+    return {
+      ...p,
+      scores,
+    }
+  })
+}
+
+watch(selectedJudgeId, prepareScoresForJudge)
 
 onMounted(async () => {
   await eventsStore.fetchEvent(eventId)
@@ -624,18 +715,13 @@ const segmentTotalWeight = computed(() => (segment: SegmentData) => {
 })
 
 const fetchRankings = async () => {
-  if (!selectedSegmentId.value) {
-    showSnackbar('Please select a segment.', 'warning')
-    return false
-  }
-
   let url = ''
   const segmentId = selectedSegmentId.value
   const categoryId = printCategoryId.value
 
   if (printType.value === 'category') {
-    if (!categoryId) {
-      showSnackbar('Please select a category.', 'warning')
+    if (!segmentId || !categoryId) {
+      showSnackbar('Please select a segment and a category.', 'warning')
       return false
     }
 
@@ -646,9 +732,16 @@ const fetchRankings = async () => {
     )?.name
 
     printTitle.value = `Category Ranking – ${categoryName}`
-  } else {
+  } else if (printType.value === 'segment') {
+    if (!segmentId) {
+      showSnackbar('Please select a segment.', 'warning')
+      return false
+    }
     url = `/admin/events/${event.value?.documentId}/segments/${segmentId}/ranking`
     printTitle.value = `Segment Ranking – ${selectedSegment.value?.name}`
+  } else if (printType.value === 'final') {
+    url = `/admin/events/${event.value?.documentId}/ranking`
+    printTitle.value = 'Final Event Ranking'
   }
 
   try {
@@ -703,18 +796,18 @@ watch(
 )
 
 watch(printType, (val) => {
-  if (val === 'segment') printCategoryId.value = null
-})
-
-console.log('Debugging', {
-  eventId: eventId,
-  selectedSegmentId: selectedSegmentId.value,
+  if (val === 'segment') {
+    printCategoryId.value = null
+  } else if (val === 'final') {
+    selectedSegmentId.value = null
+    printCategoryId.value = null
+  }
 })
 </script>
 
 <style scoped>
 .pdf-content {
-  font-family: 'Roboto', sans-serif; /* Ensure consistent font */
+  font-family: 'Roboto', sans-serif;
   color: #333;
 }
 </style>
