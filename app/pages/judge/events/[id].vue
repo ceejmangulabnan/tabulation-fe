@@ -27,12 +27,6 @@
         <v-card>
           <v-card-title class="d-flex justify-space-between">
             <span>Participant Scores</span>
-            <v-chip
-              color="primary"
-              variant="flat"
-            >
-              My Judge ID: {{ judgeId }}
-            </v-chip>
           </v-card-title>
           <v-card-text>
             <v-tabs

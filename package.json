@@ -16,7 +16,7 @@
     "@mdi/font": "^7.4.47",
     "@pinia/nuxt": "^0.11.3",
     "@strapi/client": "^1.6.0",
-    "@strapi/types": "^5.32.0",
+    "@strapi/types": "^0.0.0",
     "axios": "^1.13.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.0.0",
@@ -26,7 +26,7 @@
     "vue-html2pdf": "^1.8.0",
     "vue-router": "^4.6.4",
     "vue3-html2pdf": "^1.1.2",
-    "vuetify-nuxt-module": "0.18.7"
+    "vuetify-nuxt-module": "^0.19.5"
   },
   "devDependencies": {
     "@nuxt/eslint": "1.9.0",
