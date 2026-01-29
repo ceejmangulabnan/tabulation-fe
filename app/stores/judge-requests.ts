@@ -33,11 +33,8 @@ export const useJudgeRequestsStore = defineStore('judge-requests', {
       this.isError = false
       try {
         const api = useStrapiApi()
-        console.log('Fetching all judge requests...')
         const { data } = await api.get(`judge-requests?populate=*`)
-        console.log('Full response from /api/judge-requests:', data)
         this.allJudgeRequests = data?.data || []
-        console.log('Assigned to allJudgeRequests:', this.allJudgeRequests)
       } catch (error) {
         console.error('Failed to fetch all judge requests:', error)
         this.isError = true

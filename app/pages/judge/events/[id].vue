@@ -103,7 +103,7 @@
 
 <script setup lang="ts">
 definePageMeta({
-  middleware: ['judge', 'auth'],
+  middleware: ['judge'],
   layout: 'judge',
 })
 
