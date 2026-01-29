@@ -3,13 +3,14 @@
     ref="pdfRoot"
     class="pdf-root"
   >
-    <header class="d-flex align-center">
-      <img
-        src="/logo.png"
-        width="100px"
-        height="100px"
-      />
-      <h1>{{ event.name }}</h1>
+    <header class="header">
+      <!-- <img -->
+      <!--   src="/logo.png" -->
+      <!--   width="100" -->
+      <!--   height="100" -->
+      <!--   class="logo" -->
+      <!-- /> -->
+      <h1 class="event-title">{{ event.name }}</h1>
     </header>
     <h2 class="title primary">{{ title }}</h2>
 
@@ -35,7 +36,7 @@
             <td>{{ row.participant_number }}</td>
             <td>{{ row.name }}</td>
             <td>{{ row.department || '—' }}</td>
-            <td>{{ row.averaged_score.toFixed(3) }}</td>
+            <td>{{ (row.averaged_score * 10).toFixed(3) }}</td>
             <td>{{ row.rank }}</td>
           </tr>
         </tbody>
@@ -70,7 +71,7 @@
             <td>{{ row.participant_number }}</td>
             <td>{{ row.name }}</td>
             <td>{{ row.department || '—' }}</td>
-            <td>{{ row.averaged_score.toFixed(3) }}</td>
+            <td>{{ (row.averaged_score * 10).toFixed(3) }}</td>
             <td>{{ row.rank }}</td>
           </tr>
         </tbody>
@@ -145,9 +146,23 @@ defineExpose({
 </script>
 
 <style>
-h1 {
+.header {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.logo {
+  position: absolute;
+  left: 0;
+}
+
+.event-title {
+  width: 100%;
+  text-align: center;
   font-size: 20px;
 }
+
 .pdf-root {
   font-family: Roboto, Arial, sans-serif;
   color: #000;
