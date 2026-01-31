@@ -61,7 +61,6 @@ const judgeEvents = computed(() => {
   return eventsStore.getJudgeEvents(judgeId.value)
 })
 
-console.log('judge events', judgeEvents)
 watch(
   judgeId,
   (id) => {

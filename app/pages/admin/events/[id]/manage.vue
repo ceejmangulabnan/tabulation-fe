@@ -545,7 +545,6 @@ watch(selectedJudgeId, prepareScoresForJudge)
 
 onMounted(async () => {
   await eventsStore.fetchEvent(eventId)
-  console.log('Event:', event.value)
 })
 
 const statusColor = computed(() => {

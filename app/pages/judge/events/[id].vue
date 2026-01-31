@@ -117,7 +117,6 @@ type ParticipantWithScores = Omit<ParticipantData, 'scores'> & { scores: Partici
 const eventId = route.params.id as string
 const event = computed(() => eventsStore.event)
 const judgeId = computed(() => authStore.user?.judge?.id)
-console.log('Event', event.value)
 
 const activeSegmentTab = ref<number | null>(null)
 

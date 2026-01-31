@@ -146,17 +146,21 @@ function getStatusColor(status: string) {
 
 const deleteEvent = async (eventToDelete: EventData) => {
   if (!eventToDelete.documentId) {
-    snackbar.showSnackbar('Event data not available for deletion.', 'error');
-    return;
+    snackbar.showSnackbar('Event data not available for deletion.', 'error')
+    return
   }
-  if (confirm(`Are you sure you want to delete the event "${eventToDelete.name}"? This action cannot be undone.`)) {
+  if (
+    confirm(
+      `Are you sure you want to delete the event "${eventToDelete.name}"? This action cannot be undone.`
+    )
+  ) {
     try {
-      await api.delete(`/events/${eventToDelete.documentId}`);
-      snackbar.showSnackbar('Event deleted successfully.', 'success');
-      await eventsStore.fetchEvents(); // Refresh the list
+      await api.delete(`/events/${eventToDelete.documentId}`)
+      snackbar.showSnackbar('Event deleted successfully.', 'success')
+      await eventsStore.fetchEvents() // Refresh the list
     } catch (e) {
-      snackbar.showSnackbar('Failed to delete event.', 'error');
-      console.error('Error deleting event:', e);
+      snackbar.showSnackbar('Failed to delete event.', 'error')
+      console.error('Error deleting event:', e)
     }
   }
 }

@@ -31,7 +31,7 @@
               class="elevation-1"
               :loading="isLoading"
               :readonly="
-                segment.segment_status === 'inactive' || segment.segment_status ===  'closed'
+                segment.segment_status === 'inactive' || segment.segment_status === 'closed'
               "
             >
               <template #item.name="{ item }">
@@ -90,7 +90,9 @@
                     step="0.1"
                     maxlength="4"
                     style="max-width: 80px"
-                    :readonly="segment.segment_status === 'closed' || segment.segment_status === 'inactive'"
+                    :readonly="
+                      segment.segment_status === 'closed' || segment.segment_status === 'inactive'
+                    "
                     @keydown="blockInvalidKeys"
                   />
                 </div>

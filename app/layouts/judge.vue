@@ -34,6 +34,9 @@
         <v-list-item :to="`/${authStore.user?.userRole}/dashboard`">
           <v-list-item-title>Dashboard</v-list-item-title>
         </v-list-item>
+        <v-list-item :to="`/${authStore.user?.userRole}/events`">
+          <v-list-item-title>Events</v-list-item-title>
+        </v-list-item>
       </v-list>
       <template #append>
         <v-btn
@@ -47,7 +50,7 @@
       </template>
     </v-navigation-drawer>
 
-    <v-main :class="theme.current === 'light' && 'bg-grey-lighten-4'">
+    <v-main :class="theme.current === 'light' ? 'bg-grey-lighten-4' : ''">
       <Snackbar />
       <v-container fluid>
         <div class="d-flex align-center mb-4">
