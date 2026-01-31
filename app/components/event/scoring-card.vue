@@ -356,44 +356,53 @@ async function submitScores(segment: SegmentData) {
   }
 
   const activeCategories = getActiveCategories(segment)
-
-  const segmentParticipants = props.participants.filter((p) =>
-    activeCategories.some((c) => p.scores[c.id] !== undefined)
-  )
-
   const promises = []
 
-  for (const p of segmentParticipants) {
+  // Create a map for quick lookup of existing scores by participantId-categoryId-judgeId
+  const existingScoreMap = new Map<string, ScoreData>()
+  props.event?.scores?.forEach((s: ScoreData) => {
+    if (s.participant?.id && s.category?.id && s.judge?.id) {
+      const key = `${s.participant.id}-${s.category.id}-${s.judge.id}`
+      existingScoreMap.set(key, s)
+    }
+  })
+
+  for (const p of props.participants) {
     for (const category of activeCategories) {
       const scoreValue = p.scores[category.id]
-      const existingScore = props.event?.scores?.find(
-        (s: ScoreData) =>
-          s.participant?.id === p.id &&
-          s.category?.id === category.id &&
-          s.judge?.id === props.judgeId
-      )
+      const key = `${p.id}-${category.id}-${props.judgeId}`
+      const existingScore = existingScoreMap.get(key)
 
       if (existingScore) {
+        // Case 1: Existing score found
         if (scoreValue === null || scoreValue === undefined) {
+          // If the score is now null/undefined, delete it
           promises.push(api.delete(`/scores/${existingScore.documentId}`))
         } else if (existingScore.value !== scoreValue) {
+          // If the score has changed, update it
           promises.push(
             api.put(`/scores/${existingScore.documentId}`, { data: { value: scoreValue } })
           )
         }
-      } else if (scoreValue !== null && scoreValue !== undefined) {
-        promises.push(
-          api.post('/scores', {
-            data: {
-              value: scoreValue,
-              participant: p.id,
-              category: category.id,
-              judge: props.judgeId,
-              event: props.event.documentId,
-              segment: segment.id,
-            },
-          })
-        )
+        // If existingScore and scoreValue are the same, no action needed
+      } else {
+        // Case 2: No existing score found
+        if (scoreValue !== null && scoreValue !== undefined) {
+          // If a new score is provided, create it
+          promises.push(
+            api.post('/scores', {
+              data: {
+                value: scoreValue,
+                participant: p.id,
+                category: category.id,
+                judge: props.judgeId,
+                event: props.event.documentId,
+                segment: segment.id,
+              },
+            })
+          )
+        }
+        // If no existing score and scoreValue is null/undefined, no action needed
       }
     }
   }
