@@ -83,11 +83,11 @@
                     variant="outlined"
                     density="compact"
                     hide-details="auto"
-                    :rules="scoreRules"
+                    :rules="getScoreRules(category.weight * 100)"
                     validate-on="input"
                     min="0"
-                    max="10"
-                    step="0.1"
+                    :max="category.weight * 100"
+                    step="1"
                     maxlength="4"
                     style="max-width: 80px"
                     :readonly="
@@ -176,11 +176,11 @@
                           variant="outlined"
                           density="compact"
                           hide-details="auto"
-                          :rules="scoreRules"
+                          :rules="getScoreRules(category.weight * 100)"
                           validate-on="input"
                           min="0"
-                          max="10"
-                          step="0.1"
+                          :max="category.weight * 100"
+                          step="1"
                           maxlength="4"
                           style="max-width: 80px"
                           :readonly="segment.segment_status === 'closed'"
@@ -231,20 +231,22 @@ const props = defineProps<{
 
 const emit = defineEmits(['scores-submitted'])
 
-const scoreRules = [
-  (v: number | string | null | undefined) => {
-    if (v === null || v === undefined || v === '') return true
-    const str = String(v)
-    if (!/^\d+(\.\d+)?$/.test(str)) {
-      return 'Invalid score'
-    }
-    const num = Number(str)
-    if (num < 0 || num > 10) {
-      return 'Score must be between 0 and 10'
-    }
-    return true
-  },
-]
+function getScoreRules(maxScore: number) {
+  return [
+    (v: number | string | null | undefined) => {
+      if (v === null || v === undefined || v === '') return true
+      const str = String(v)
+      if (!/^\d+(\.\d+)?$/.test(str)) {
+        return 'Invalid score'
+      }
+      const num = Number(str)
+      if (num < 0 || num > maxScore) {
+        return `Score must be between 0 and ${maxScore}`
+      }
+      return true
+    },
+  ]
+}
 
 const { smAndDown } = useDisplay()
 const { showSnackbar } = useSnackbar()
@@ -313,12 +315,13 @@ function calculateTotalScore(participant: ParticipantWithScores, segment: Segmen
   const total = getActiveCategories(segment).reduce((acc, category) => {
     const score = participant.scores[category.documentId]
     if (score !== null && score !== undefined && score !== '') {
-      return acc + parseFloat(score as string) * category.weight
+      // If input is now on a 0 - (weight*100) scale, then just add the score
+      return acc + parseFloat(score as string)
     }
     return acc
   }, 0)
-  const finalTotal = total * 10
-  return finalTotal.toFixed(2)
+  // No need to multiply by 10 or anything else if it's already on 0-100 scale
+  return total.toFixed(2)
 }
 
 function blockInvalidKeys(e: KeyboardEvent) {
