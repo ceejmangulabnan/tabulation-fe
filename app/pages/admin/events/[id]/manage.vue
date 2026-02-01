@@ -663,12 +663,18 @@ function getParticipantCategoryAverage(participantId: string, category: any) {
 function getParticipantSegmentScore(participant: any, segment: any) {
   if (!segment?.categories) return 0
 
-  const total = segment.categories.reduce((total: number, cat: any) => {
-    const avgCategoryScore = getParticipantCategoryAverage(participant.documentId, cat) // 1-10 scale
-    return total + (avgCategoryScore / 10) * cat.weight
+  const rawSegmentTotal = segment.categories.reduce((acc: number, cat: any) => {
+    const avgCategoryScore = getParticipantCategoryAverage(participant.documentId, cat)
+    return acc + avgCategoryScore
   }, 0)
 
-  return total // 0-1 scale
+  let finalSegmentScore = rawSegmentTotal
+
+  if (segment.scoring_mode === 'normalized') {
+    finalSegmentScore = rawSegmentTotal * segment.weight
+  }
+
+  return finalSegmentScore
 }
 
 const scoreTableHeaders = computed(() => [
@@ -686,7 +692,7 @@ const participantsWithScores = computed(() => {
     const segmentScore = getParticipantSegmentScore(p, selectedSegment.value)
     return {
       ...p,
-      totalSegmentScorePercent: (segmentScore * 100).toFixed(3),
+      totalSegmentScorePercent: segmentScore.toFixed(3),
       isEliminated: p.participant_status === 'eliminated',
     }
   })
