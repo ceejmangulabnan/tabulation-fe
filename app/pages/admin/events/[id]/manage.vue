@@ -571,6 +571,8 @@ onMounted(async () => {
   await eventsStore.fetchEvent(eventId)
 })
 
+const activeTab = ref('scores')
+
 onUnmounted(() => { // Added onUnmounted hook to clear interval
   if (refetchInterval.value) {
     clearInterval(refetchInterval.value)
@@ -590,22 +592,6 @@ watch(activeTab, (newTab, oldTab) => { // Added watch for activeTab
   }
 })
 
-const statusColor = computed(() => {
-  switch (event.value?.event_status) {
-    case 'draft':
-      return 'grey'
-    case 'active':
-      return 'green'
-    case 'inactive':
-      return 'orange'
-    case 'finished':
-      return 'blue'
-    default:
-      return 'grey'
-  }
-})
-
-const activeTab = ref('scores')
 const activeGenderTab = ref('male')
 const selectedSegmentId = ref<string | null>(null)
 
