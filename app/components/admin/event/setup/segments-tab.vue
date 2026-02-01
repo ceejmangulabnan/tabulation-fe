@@ -324,6 +324,12 @@
               label="Advancement Value"
               type="number"
             />
+
+            <v-select
+              v-model="editedSegment.scoring_mode"
+              :items="['normalized', 'raw_category']"
+              label="Scoring Mode"
+            />
           </v-card-text>
           <v-card-actions>
             <v-spacer />
@@ -475,6 +481,7 @@ const saveSegment = async () => {
         advancement_value: ['top_n', 'threshold'].includes(editedSegment.value.advancement_type!)
           ? editedSegment.value.advancement_value
           : null,
+        scoring_mode: editedSegment.value.scoring_mode,
         event: {
           connect: [props.event.documentId],
         },
@@ -490,6 +497,7 @@ const saveSegment = async () => {
         advancement_value: ['top_n', 'threshold'].includes(editedSegment.value.advancement_type!)
           ? editedSegment.value.advancement_value
           : null,
+        scoring_mode: editedSegment.value.scoring_mode,
         event: {
           documentId: props.event.documentId,
           connect: [props.event.documentId],

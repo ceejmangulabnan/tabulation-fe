@@ -241,7 +241,7 @@ function getScoreRules(maxScore: number) {
       }
       const num = Number(str)
       if (num < 0 || num > maxScore) {
-        return `Score must be between 0 and ${maxScore}`
+        return `Score must be from 0 to ${maxScore}`
       }
       return true
     },
@@ -312,16 +312,31 @@ function getParticipantsByGender(gender: string, segment: SegmentData) {
 }
 
 function calculateTotalScore(participant: ParticipantWithScores, segment: SegmentData): string {
-  const total = getActiveCategories(segment).reduce((acc, category) => {
-    const score = participant.scores[category.documentId]
-    if (score !== null && score !== undefined && score !== '') {
-      // If input is now on a 0 - (weight*100) scale, then just add the score
-      return acc + parseFloat(score as string)
+  // sum category scores directly (they are already weighted)
+  const rawSegmentTotal = getActiveCategories(segment).reduce((acc, category) => {
+    const value = participant.scores[category.documentId]
+
+    if (value === null || value === undefined || String(value) === '') {
+      return acc
     }
-    return acc
+
+    const score = Number(value)
+    if (Number.isNaN(score)) return acc
+
+    return acc + score
   }, 0)
-  // No need to multiply by 10 or anything else if it's already on 0-100 scale
-  return total.toFixed(2)
+
+  // apply segment rule
+  let finalSegmentScore = rawSegmentTotal
+
+  if (segment.scoring_mode === 'normalized') {
+    finalSegmentScore = rawSegmentTotal * segment.weight
+    console.log('Final Segment Score:', finalSegmentScore)
+  }
+
+  // raw_category → no multiplication
+
+  return finalSegmentScore.toFixed(2)
 }
 
 function blockInvalidKeys(e: KeyboardEvent) {
@@ -376,19 +391,28 @@ async function submitScores(segment: SegmentData) {
 
       if (existingScore) {
         // Case 1: Existing score found
-        if (scoreValue === null || scoreValue === undefined || scoreValue === '') {
+        if (scoreValue === null || scoreValue === undefined || String(scoreValue) === '') {
           // If the score is now null/undefined/empty, delete it
           promises.push(api.delete(`/scores/${existingScore.documentId}`))
         } else if (existingScore.value !== scoreValue) {
           // If the score has changed, update it
           promises.push(
-            api.put(`/scores/${existingScore.documentId}`, { data: { value: scoreValue } })
+            api.put(`/scores/update/${existingScore.documentId}`, {
+              data: {
+                value: scoreValue,
+                participant: p.documentId,
+                category: category.documentId,
+                judge: props.judgeId,
+                event: props.event.documentId,
+                segment: segment.documentId,
+              },
+            })
           )
         }
         // If existingScore and scoreValue are the same, no action needed
       } else {
         // Case 2: No existing score found
-        if (scoreValue !== null && scoreValue !== undefined && scoreValue !== '') {
+        if (scoreValue !== null && scoreValue !== undefined && String(scoreValue) !== '') {
           const createScorePayload = {
             data: {
               value: scoreValue,
@@ -402,7 +426,7 @@ async function submitScores(segment: SegmentData) {
 
           console.log('Create Score Payload', createScorePayload)
           // If a new score is provided, create it
-          promises.push(api.post('/scores', createScorePayload))
+          promises.push(api.post('/scores/create', createScorePayload))
         }
         // If no existing score and scoreValue is null/undefined/empty, no action needed
       }
