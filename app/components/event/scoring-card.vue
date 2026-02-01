@@ -218,8 +218,6 @@
 </template>
 
 <script setup lang="ts">
-import { useDisplay } from 'vuetify'
-
 type ParticipantScoreMap = Record<number, number | null | undefined>
 type ParticipantWithScores = Omit<ParticipantData, 'scores'> & { scores: ParticipantScoreMap }
 
@@ -314,7 +312,7 @@ function getParticipantsByGender(gender: string, segment: SegmentData) {
 function calculateTotalScore(participant: ParticipantWithScores, segment: SegmentData): string {
   const total = getActiveCategories(segment).reduce((acc, category) => {
     const score = participant.scores[category.id]
-    if (score !== null && score !== undefined) {
+    if (score !== null && score !== undefined && score !== '') {
       return acc + parseFloat(score as string) * category.weight
     }
     return acc
