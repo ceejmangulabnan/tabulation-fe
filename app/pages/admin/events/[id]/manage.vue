@@ -56,6 +56,16 @@
             >
               Print Rankings
             </v-btn>
+            <v-btn
+              variant="flat"
+              color="info"
+              class="ml-2"
+              @click="refreshEventData"
+              :loading="eventsStore.isLoading"
+            >
+              <v-icon start icon="mdi-refresh"></v-icon>
+              Refetch Scores
+            </v-btn>
 
             <v-tabs
               v-model="activeGenderTab"
@@ -511,9 +521,15 @@ type ParticipantWithScores = Omit<ParticipantData, 'scores'> & { scores: Partici
 const participantsWithScoresForJudge = ref<ParticipantWithScores[]>([])
 const selectedJudgeId = ref<string | null>(null)
 
+const refetchInterval = ref<NodeJS.Timeout | null>(null) // Added ref for interval
+
 function getStrapiUrl(url: string) {
   const config = useRuntimeConfig()
   return `${config.public.strapiUrl}${url}`
+}
+
+async function refreshEventData() { // New function for manual/auto refetch
+  await eventsStore.fetchEvent(eventId)
 }
 
 async function refreshEvent() {
@@ -553,6 +569,25 @@ watch(selectedJudgeId, prepareScoresForJudge)
 
 onMounted(async () => {
   await eventsStore.fetchEvent(eventId)
+})
+
+onUnmounted(() => { // Added onUnmounted hook to clear interval
+  if (refetchInterval.value) {
+    clearInterval(refetchInterval.value)
+  }
+})
+
+watch(activeTab, (newTab, oldTab) => { // Added watch for activeTab
+  if (newTab === 'view-scores') {
+    // Start auto-refetch when entering 'view-scores' tab
+    refetchInterval.value = setInterval(() => {
+      refreshEventData()
+    }, 10000) // 10 seconds
+  } else if (oldTab === 'view-scores' && refetchInterval.value) {
+    // Clear interval when leaving 'view-scores' tab
+    clearInterval(refetchInterval.value)
+    refetchInterval.value = null
+  }
 })
 
 const statusColor = computed(() => {
