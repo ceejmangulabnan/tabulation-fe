@@ -373,8 +373,8 @@ async function submitScores(segment: SegmentData) {
 
       if (existingScore) {
         // Case 1: Existing score found
-        if (scoreValue === null || scoreValue === undefined) {
-          // If the score is now null/undefined, delete it
+        if (scoreValue === null || scoreValue === undefined || scoreValue === '') {
+          // If the score is now null/undefined/empty, delete it
           promises.push(api.delete(`/scores/${existingScore.documentId}`))
         } else if (existingScore.value !== scoreValue) {
           // If the score has changed, update it
@@ -385,7 +385,7 @@ async function submitScores(segment: SegmentData) {
         // If existingScore and scoreValue are the same, no action needed
       } else {
         // Case 2: No existing score found
-        if (scoreValue !== null && scoreValue !== undefined) {
+        if (scoreValue !== null && scoreValue !== undefined && scoreValue !== '') {
           // If a new score is provided, create it
           promises.push(
             api.post('/scores', {
@@ -400,7 +400,7 @@ async function submitScores(segment: SegmentData) {
             })
           )
         }
-        // If no existing score and scoreValue is null/undefined, no action needed
+        // If no existing score and scoreValue is null/undefined/empty, no action needed
       }
     }
   }
