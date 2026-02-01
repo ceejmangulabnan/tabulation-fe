@@ -63,7 +63,10 @@
               @click="refreshEventData"
               :loading="eventsStore.isLoading"
             >
-              <v-icon start icon="mdi-refresh"></v-icon>
+              <v-icon
+                start
+                icon="mdi-refresh"
+              ></v-icon>
               Refetch Scores
             </v-btn>
 
@@ -478,7 +481,6 @@
       </v-card>
     </v-dialog>
 
-    <!-- Printable Rankings Component -->
     <!-- Printable Rankings Component (hidden, used for PDF only) -->
     <PrintableRankings
       v-if="event"
@@ -528,7 +530,8 @@ function getStrapiUrl(url: string) {
   return `${config.public.strapiUrl}${url}`
 }
 
-async function refreshEventData() { // New function for manual/auto refetch
+async function refreshEventData() {
+  // New function for manual/auto refetch
   await eventsStore.fetchEvent(eventId)
 }
 
@@ -573,13 +576,15 @@ onMounted(async () => {
 
 const activeTab = ref('scores')
 
-onUnmounted(() => { // Added onUnmounted hook to clear interval
+onUnmounted(() => {
+  // Added onUnmounted hook to clear interval
   if (refetchInterval.value) {
     clearInterval(refetchInterval.value)
   }
 })
 
-watch(activeTab, (newTab, oldTab) => { // Added watch for activeTab
+watch(activeTab, (newTab, oldTab) => {
+  // Added watch for activeTab
   if (newTab === 'view-scores') {
     // Start auto-refetch when entering 'view-scores' tab
     refetchInterval.value = setInterval(() => {
@@ -589,6 +594,21 @@ watch(activeTab, (newTab, oldTab) => { // Added watch for activeTab
     // Clear interval when leaving 'view-scores' tab
     clearInterval(refetchInterval.value)
     refetchInterval.value = null
+  }
+})
+
+const statusColor = computed(() => {
+  switch (event.value?.event_status) {
+    case 'draft':
+      return 'grey'
+    case 'active':
+      return 'green'
+    case 'inactive':
+      return 'orange'
+    case 'finished':
+      return 'blue'
+    default:
+      return 'grey'
   }
 })
 
