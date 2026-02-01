@@ -89,7 +89,7 @@
                   :segment="segment"
                   :event="event"
                   :participants="participants"
-                  :judge-id="judgeId"
+                  :judgeId="judgeId"
                   @scores-submitted="refreshEvent"
                 />
               </v-window-item>
@@ -111,12 +111,12 @@ const route = useRoute()
 const eventsStore = useEventsStore()
 const authStore = useAuthStore()
 
-type ParticipantScoreMap = Record<number, number | null | undefined>
+type ParticipantScoreMap = Record<string, number | null | undefined>
 type ParticipantWithScores = Omit<ParticipantData, 'scores'> & { scores: ParticipantScoreMap }
 
 const eventId = route.params.id as string
 const event = computed(() => eventsStore.event)
-const judgeId = computed(() => authStore.user?.judge?.id)
+const judgeId = computed(() => authStore.user?.judge?.documentId)
 
 const activeSegmentTab = ref<number | null>(null)
 
@@ -130,11 +130,15 @@ async function refreshEvent() {
   participants.value = currentEvent.participants.map((p: ParticipantData) => {
     const scores: ParticipantScoreMap = {}
     currentEvent.scores?.forEach((score: ScoreData) => {
-      const scoreParticipantId = score.participant?.id
-      const scoreJudgeId = score.judge?.id
-      const scoreCategoryId = score.category?.id
+      const scoreParticipantId = score.participant?.documentId
+      const scoreJudgeId = score.judge?.documentId
+      const scoreCategoryId = score.category?.documentId
 
-      if (scoreParticipantId === p.id && scoreJudgeId === judgeId.value && scoreCategoryId) {
+      if (
+        scoreParticipantId === p.documentId &&
+        scoreJudgeId === judgeId.value &&
+        scoreCategoryId
+      ) {
         scores[scoreCategoryId] = score.value
       }
     })

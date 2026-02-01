@@ -72,12 +72,12 @@
 
               <template
                 v-for="category in getActiveCategories(segment)"
-                :key="category.id"
-                #[`item.category_${category.id}`]="{ item }"
+                :key="category.documentId"
+                #[`item.category_${category.documentId}`]="{ item }"
               >
                 <div class="my-2">
                   <v-text-field
-                    v-model.number="item.scores[category.id]"
+                    v-model.number="item.scores[category.documentId]"
                     class="flex-shrink-0 score-input"
                     type="number"
                     variant="outlined"
@@ -160,7 +160,7 @@
                   <v-card-text>
                     <div
                       v-for="category in getActiveCategories(segment)"
-                      :key="category.id"
+                      :key="category.documentId"
                       align="center"
                       class="d-flex justify-space-between my-2 align-center ga-3 flex-wrap"
                     >
@@ -171,7 +171,7 @@
                         <v-text-field
                           align="end"
                           class="ml-auto flex-shrink-0 score-input"
-                          v-model.number="item.scores[category.id]"
+                          v-model.number="item.scores[category.documentId]"
                           type="number"
                           variant="outlined"
                           density="compact"
@@ -218,7 +218,7 @@
 </template>
 
 <script setup lang="ts">
-type ParticipantScoreMap = Record<number, number | null | undefined>
+type ParticipantScoreMap = Record<string, number | null | undefined>
 type ParticipantWithScores = Omit<ParticipantData, 'scores'> & { scores: ParticipantScoreMap }
 
 const props = defineProps<{
@@ -226,7 +226,7 @@ const props = defineProps<{
   segment: SegmentData
   event: EventData
   participants: ParticipantWithScores[]
-  judgeId: number
+  judgeId: string
 }>()
 
 const emit = defineEmits(['scores-submitted'])
@@ -281,7 +281,7 @@ function getTableHeaders(segment: SegmentData) {
   const categoryHeaders =
     getActiveCategories(segment).map((category: CategoryData) => ({
       title: `${category.name} (${category.weight * 100}%)`,
-      value: `category_${category.id}`,
+      value: `category_${category.documentId}`,
       sortable: false,
     })) || []
 
@@ -311,7 +311,7 @@ function getParticipantsByGender(gender: string, segment: SegmentData) {
 
 function calculateTotalScore(participant: ParticipantWithScores, segment: SegmentData): string {
   const total = getActiveCategories(segment).reduce((acc, category) => {
-    const score = participant.scores[category.id]
+    const score = participant.scores[category.documentId]
     if (score !== null && score !== undefined && score !== '') {
       return acc + parseFloat(score as string) * category.weight
     }
@@ -359,16 +359,16 @@ async function submitScores(segment: SegmentData) {
   // Create a map for quick lookup of existing scores by participantId-categoryId-judgeId
   const existingScoreMap = new Map<string, ScoreData>()
   props.event?.scores?.forEach((s: ScoreData) => {
-    if (s.participant?.id && s.category?.id && s.judge?.id) {
-      const key = `${s.participant.id}-${s.category.id}-${s.judge.id}`
+    if (s.participant?.documentId && s.category?.documentId && s.judge?.documentId) {
+      const key = `${s.participant.documentId}-${s.category.documentId}-${s.judge.documentId}`
       existingScoreMap.set(key, s)
     }
   })
 
   for (const p of props.participants) {
     for (const category of activeCategories) {
-      const scoreValue = p.scores[category.id]
-      const key = `${p.id}-${category.id}-${props.judgeId}`
+      const scoreValue = p.scores[category.documentId]
+      const key = `${p.documentId}-${category.documentId}-${props.judgeId}`
       const existingScore = existingScoreMap.get(key)
 
       if (existingScore) {
@@ -386,19 +386,20 @@ async function submitScores(segment: SegmentData) {
       } else {
         // Case 2: No existing score found
         if (scoreValue !== null && scoreValue !== undefined && scoreValue !== '') {
+          const createScorePayload = {
+            data: {
+              value: scoreValue,
+              participant: p.documentId,
+              category: category.documentId,
+              judge: props.judgeId,
+              event: props.event.documentId,
+              segment: segment.documentId,
+            },
+          }
+
+          console.log('Create Score Payload', createScorePayload)
           // If a new score is provided, create it
-          promises.push(
-            api.post('/scores', {
-              data: {
-                value: scoreValue,
-                participant: p.id,
-                category: category.id,
-                judge: props.judgeId,
-                event: props.event.documentId,
-                segment: segment.id,
-              },
-            })
-          )
+          promises.push(api.post('/scores', createScorePayload))
         }
         // If no existing score and scoreValue is null/undefined/empty, no action needed
       }

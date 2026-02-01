@@ -131,7 +131,11 @@
                                     </span>
                                     <strong class="mr-4">
                                       Avg:
-                                      {{ getParticipantCategoryAverage(item.id, cat).toFixed(2) }}
+                                      {{
+                                        getParticipantCategoryAverage(item.documentId, cat).toFixed(
+                                          2
+                                        )
+                                      }}
                                     </strong>
                                   </div>
                                 </v-expansion-panel-title>
@@ -146,9 +150,9 @@
                                         <strong class="ml-4">
                                           {{
                                             getParticipantScoreForCategoryByJudge(
-                                              item.id,
-                                              cat.id,
-                                              judge.id
+                                              item.documentId,
+                                              cat.documentId,
+                                              judge.documentId
                                             )
                                           }}
                                         </strong>
@@ -230,7 +234,11 @@
                                     </span>
                                     <strong class="mr-4">
                                       Avg:
-                                      {{ getParticipantCategoryAverage(item.id, cat).toFixed(2) }}
+                                      {{
+                                        getParticipantCategoryAverage(item.documentId, cat).toFixed(
+                                          2
+                                        )
+                                      }}
                                     </strong>
                                   </div>
                                 </v-expansion-panel-title>
@@ -245,9 +253,9 @@
                                         <strong class="ml-4">
                                           {{
                                             getParticipantScoreForCategoryByJudge(
-                                              item.id,
-                                              cat.id,
-                                              judge.id
+                                              item.documentId,
+                                              cat.documentId,
+                                              judge.documentId
                                             )
                                           }}
                                         </strong>
@@ -277,7 +285,7 @@
               v-model="selectedJudgeId"
               :items="event?.judges"
               item-title="name"
-              item-value="id"
+              item-value="documentId"
               label="Select Judge"
               variant="outlined"
               class="mb-4"
@@ -302,7 +310,7 @@
                 :segment="selectedSegment"
                 :event="event"
                 :participants="participantsWithScoresForJudge"
-                :judge-id="selectedJudgeId"
+                :judgeId="selectedJudgeId"
                 @scores-submitted="refreshEvent"
               />
             </template>
@@ -497,11 +505,11 @@ const maleRankings = ref<any[]>([])
 const femaleRankings = ref<any[]>([])
 const printTitle = ref('')
 
-type ParticipantScoreMap = Record<number, number | null | undefined>
+type ParticipantScoreMap = Record<string, number | null | undefined>
 type ParticipantWithScores = Omit<ParticipantData, 'scores'> & { scores: ParticipantScoreMap }
 
 const participantsWithScoresForJudge = ref<ParticipantWithScores[]>([])
-const selectedJudgeId = ref<number | null>(null)
+const selectedJudgeId = ref<string | null>(null)
 
 function getStrapiUrl(url: string) {
   const config = useRuntimeConfig()
@@ -522,12 +530,12 @@ function prepareScoresForJudge() {
   participantsWithScoresForJudge.value = currentEvent.participants.map((p: ParticipantData) => {
     const scores: ParticipantScoreMap = {}
     currentEvent.scores?.forEach((score: ScoreData) => {
-      const scoreParticipantId = score.participant?.id
-      const scoreJudgeId = score.judge?.id
-      const scoreCategoryId = score.category?.id
+      const scoreParticipantId = score.participant?.documentId
+      const scoreJudgeId = score.judge?.documentId
+      const scoreCategoryId = score.category?.documentId
 
       if (
-        scoreParticipantId === p.id &&
+        scoreParticipantId === p.documentId &&
         scoreJudgeId === selectedJudgeId.value &&
         scoreCategoryId
       ) {
@@ -586,23 +594,25 @@ const showImagePreview = (url: string) => {
 }
 
 function getParticipantScoreForCategoryByJudge(
-  participantId: number,
-  categoryId: number,
-  judgeId: number
+  participantId: string,
+  categoryId: string,
+  judgeId: string
 ) {
   const score = event.value?.scores?.find(
     (s: any) =>
-      s.category?.id === categoryId &&
-      s.judge?.id === judgeId &&
-      s.participant?.id === participantId
+      s.category?.documentId === categoryId &&
+      s.judge?.documentId === judgeId &&
+      s.participant?.documentId === participantId
   )
   return score ? score.value : '–'
 }
 
-function getParticipantCategoryAverage(participantId: number, category: any) {
+function getParticipantCategoryAverage(participantId: string, category: any) {
   const categoryScores = event.value?.scores?.filter(
     (s: any) =>
-      s.category?.id === category.id && s.participant?.id === participantId && s.value !== null
+      s.category?.documentId === category.documentId &&
+      s.participant?.documentId === participantId &&
+      s.value !== null
   )
   if (!categoryScores || categoryScores.length === 0) return 0
   const sum = categoryScores.reduce((acc, s) => acc + s.value, 0)
@@ -613,7 +623,7 @@ function getParticipantSegmentScore(participant: any, segment: any) {
   if (!segment?.categories) return 0
 
   const total = segment.categories.reduce((total: number, cat: any) => {
-    const avgCategoryScore = getParticipantCategoryAverage(participant.id, cat) // 1-10 scale
+    const avgCategoryScore = getParticipantCategoryAverage(participant.documentId, cat) // 1-10 scale
     return total + (avgCategoryScore / 10) * cat.weight
   }, 0)
 
