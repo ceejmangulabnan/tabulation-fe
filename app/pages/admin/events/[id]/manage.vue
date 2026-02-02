@@ -485,6 +485,7 @@
     <PrintableRankings
       v-if="event"
       ref="printableRef"
+      :gender="printGender"
       :male="maleRankings"
       :female="femaleRankings"
       :title="printTitle"
@@ -802,18 +803,60 @@ const fetchRankings = async () => {
 
   try {
     const { data } = await api.get(url)
-    const results = data.results
+    const results: {
+      male: {
+        averaged_score: number
+        department: string
+        gender: 'male'
+        participant_number: number
+        name: string
+        rank: number
+      }[]
+      female: {
+        averaged_score: number
+        department: string
+        gender: 'female'
+        participant_number: number
+        name: string
+        rank: number
+      }[]
+    } = data.results
+    console.log('Ranking Results:', results)
 
     maleRankings.value = []
     femaleRankings.value = []
 
-    if (printGender.value === 'male' || printGender.value === 'both') {
-      maleRankings.value = results.male
+    if (categoryId && (printGender.value === 'male' || printGender.value === 'both')) {
+      maleRankings.value = results.male.filter((p) => p.rank === 1).slice(0, 1)
     }
 
-    if (printGender.value === 'female' || printGender.value === 'both') {
-      femaleRankings.value = results.female
+    if (categoryId && (printGender.value === 'female' || printGender.value === 'both')) {
+      femaleRankings.value = results.female.filter((p) => p.rank === 1).slice(0, 1)
     }
+
+    // Handle Male Segment and Final Ranking
+    if (printGender.value === 'male' || printGender.value === 'both') {
+      if (printTitle.value === 'Final Event Ranking') {
+        maleRankings.value = results.male.filter((p) => p.rank === 1).slice(0, 5)
+      }
+      maleRankings.value = results.male.filter((p) => p.rank === 1).slice(0, 5)
+    }
+
+    // Handle Female Segment and Final Ranking
+    if (printGender.value === 'female' || printGender.value === 'both') {
+      if (printTitle.value === 'Final Event Ranking') {
+        femaleRankings.value = results.female.filter((p) => p.rank === 1).slice(0, 5)
+      }
+      femaleRankings.value = results.female.filter((p) => p.rank === 1).slice(0, 5)
+    }
+
+    // if (printGender.value === 'male' || printGender.value === 'both') {
+    //   maleRankings.value = results.male
+    // }
+    //
+    // if (printGender.value === 'female' || printGender.value === 'both') {
+    //   femaleRankings.value = results.female
+    // }
 
     if (!maleRankings.value.length && !femaleRankings.value.length) {
       showSnackbar('No ranking data found.', 'info')

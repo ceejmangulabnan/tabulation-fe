@@ -1,81 +1,104 @@
 <template>
-  <div
-    ref="pdfRoot"
-    class="pdf-root"
-  >
-    <header class="header">
-      <!-- <img -->
-      <!--   src="/logo.png" -->
-      <!--   width="100" -->
-      <!--   height="100" -->
-      <!--   class="logo" -->
-      <!-- /> -->
-      <h1 class="event-title">{{ event.name }}</h1>
-    </header>
-    <h2 class="title primary">{{ title }}</h2>
+  <div ref="pdfRoot">
+    <!-- PAGE 1 -->
+    <section class="page">
+      <div class="content">
+        <!-- HEADER -->
+        <header class="header">
+          <img
+            src="/logo.png"
+            width="100"
+            height="100"
+            class="logo"
+          />
+          <div class="header-text">
+            <h1 class="event-org">St. Nicolas College of Business and Technology</h1>
+            <h2 class="event-title">{{ event.name }}</h2>
+            <h3 class="title">{{ title }}</h3>
+          </div>
+        </header>
 
-    <!-- MALE TABLE -->
-    <section v-if="filteredMale?.length">
-      <h2 class="gender">Male Participants</h2>
+        <!-- MALE TABLE -->
+        <section v-if="filteredMale.length">
+          <h4 class="gender">Male Participants</h4>
 
-      <table class="ranking-table">
-        <thead>
-          <tr>
-            <th>No.</th>
-            <th>Name</th>
-            <th>Department</th>
-            <th>Average Score</th>
-            <th>Rank</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="(row, _index) in filteredMale"
-            :key="row.participantId"
-          >
-            <td>{{ row.participant_number }}</td>
-            <td>{{ row.name }}</td>
-            <td>{{ row.department || '—' }}</td>
-            <td>{{ (row.averaged_score * 10).toFixed(3) }}</td>
-            <td>{{ row.rank }}</td>
-          </tr>
-        </tbody>
-      </table>
+          <table class="ranking-table">
+            <thead>
+              <tr>
+                <th>No.</th>
+                <th>Name</th>
+                <th>Department</th>
+                <th>Average Score</th>
+                <th>Rank</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="row in filteredMale"
+                :key="row.participant_number"
+              >
+                <td>{{ row.participant_number }}</td>
+                <td>{{ row.name }}</td>
+                <td>{{ row.department || '-' }}</td>
+                <td>{{ row.averaged_score.toFixed(3) }}</td>
+                <td>{{ row.rank }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <div class="spacer" />
+
+        <!-- FEMALE TABLE -->
+        <section v-if="filteredFemale.length">
+          <h4 class="gender">Female Participants</h4>
+
+          <table class="ranking-table">
+            <thead>
+              <tr>
+                <th>No.</th>
+                <th>Name</th>
+                <th>Department</th>
+                <th>Average Score</th>
+                <th>Rank</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="row in filteredFemale"
+                :key="row.participant_number"
+              >
+                <td>{{ row.participant_number }}</td>
+                <td>{{ row.name }}</td>
+                <td>{{ row.department || '-' }}</td>
+                <td>{{ row.averaged_score.toFixed(3) }}</td>
+                <td>{{ row.rank }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
     </section>
 
-    <!-- PAGE BREAK -->
-    <div
-      v-if="filteredMale?.length && filteredFemale?.length"
-      class="page-break"
-    />
+    <!-- PAGE 2 -->
+    <section class="page">
+      <div class="content center">
+        <h1 class="event-org-large">St. Nicolas College of Business and Technology</h1>
 
-    <!-- FEMALE TABLE -->
-    <section v-if="filteredFemale?.length">
-      <h2 class="gender">Female Participants</h2>
+        <img
+          src="/logo.png"
+          class="logo-large"
+        />
 
-      <table class="ranking-table">
-        <thead>
-          <tr>
-            <th>No.</th>
-            <th>Name</th>
-            <th>Department</th>
-            <th>Average Score</th>
-            <th>Rank</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="(row, _index) in filteredFemale"
-            :key="row.participantId"
-          >
-            <td>{{ row.participant_number }}</td>
-            <td>{{ row.name }}</td>
-            <td>{{ row.department || '—' }}</td>
-            <td>{{ (row.averaged_score * 10).toFixed(3) }}</td>
-            <td>{{ row.rank }}</td>
-          </tr>
-        </tbody>
-      </table>
+        <h3 class="title">
+          {{
+            gender === 'both'
+              ? 'MALE & FEMALE PARTICIPANTS'
+              : `${gender.toUpperCase()} PARTICIPANTS`
+          }}
+        </h3>
+        <h3 class="title">{{ title }}</h3>
+      </div>
     </section>
   </div>
 </template>
@@ -85,26 +108,22 @@ import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 
 const props = defineProps<{
+  gender: 'male' | 'female' | 'both'
   event: EventData
   title: string
   male: any[]
   female: any[]
 }>()
 
-const filteredMale = computed(() => props.male.filter((p) => p))
-const filteredFemale = computed(() => props.female.filter((p) => p))
+const filteredMale = computed(() => props.male.filter(Boolean))
+const filteredFemale = computed(() => props.female.filter(Boolean))
 
 const pdfRoot = ref<HTMLElement | null>(null)
 
 const generatePdf = async () => {
   if (!pdfRoot.value) return
 
-  const canvas = await html2canvas(pdfRoot.value, {
-    scale: 2,
-    useCORS: true,
-  })
-
-  const imgData = canvas.toDataURL('image/png')
+  const pages = pdfRoot.value.querySelectorAll('.page')
 
   const pdf = new jsPDF({
     orientation: 'portrait',
@@ -112,86 +131,120 @@ const generatePdf = async () => {
     format: 'a4',
   })
 
-  const pageWidth = pdf.internal.pageSize.getWidth()
-  const pageHeight = pdf.internal.pageSize.getHeight()
+  for (let i = 0; i < pages.length; i++) {
+    const canvas = await html2canvas(pages[i] as HTMLElement, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+    })
 
-  const imgWidth = pageWidth
-  const imgHeight = (canvas.height * imgWidth) / canvas.width
+    const imgData = canvas.toDataURL('image/png')
 
-  let heightLeft = imgHeight
-  let position = 0
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
 
-  pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-  heightLeft -= pageHeight
+    const imgWidth = pageWidth
+    const imgHeight = (canvas.height * imgWidth) / canvas.width
 
-  while (heightLeft > 0) {
-    position -= pageHeight
-    pdf.addPage()
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-    heightLeft -= pageHeight
+    if (i > 0) pdf.addPage()
+
+    // bottom-aligned placement
+    pdf.addImage(imgData, 'PNG', 0, pageHeight - imgHeight, imgWidth, imgHeight)
   }
 
-  pdf.printHeaderRow
-
-  //  pdf.output('pdfobjectnewwindow', { filename: `${props.title}.pdf` })
-  // pdf.save(`${props.title}.pdf`)
-
-  const blob = pdf.output('bloburl')
-  window.open(blob, '_blank')
+  window.open(pdf.output('bloburl'), '_blank')
 }
 
-defineExpose({
-  generatePdf,
-})
+defineExpose({ generatePdf })
 </script>
 
 <style>
+/* A4 PAGE */
+.page {
+  width: 794px;
+  height: 1123px;
+  background: white;
+  margin: 0 auto;
+  overflow: hidden;
+  display: flex;
+  box-sizing: border-box;
+}
+
+/* CONTENT - BOTTOM ALIGNED */
+.content {
+  margin-top: auto;
+  width: 100%;
+  padding: 32px;
+  box-sizing: border-box;
+  font-family: Roboto, Arial, sans-serif;
+  color: #000;
+}
+
+.content.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  text-align: center;
+}
+
+/* HEADER */
 .header {
   display: flex;
   align-items: center;
-  position: relative;
+  margin-bottom: 16px;
 }
 
 .logo {
-  position: absolute;
-  left: 0;
+  margin-right: 16px;
+}
+
+.logo-large {
+  width: 200px;
+}
+
+.header-text {
+  flex: 1;
+  text-align: center;
+  margin-left: -100px;
+}
+
+.event-org {
+  font-size: 14px;
+  margin: 0;
+}
+
+.event-org-large {
+  font-size: 24px;
+  margin: 0;
 }
 
 .event-title {
-  width: 100%;
-  text-align: center;
-  font-size: 20px;
-}
-
-.pdf-root {
-  font-family: Roboto, Arial, sans-serif;
-  color: #000;
-  width: 794px; /* A4 width in px @ 96dpi */
-  padding: 24px;
+  font-size: 18px;
+  margin: 4px 0;
 }
 
 .title {
-  text-align: center;
-  font-size: 20px;
-  margin-bottom: 24px;
+  font-size: 16px;
+  margin-top: 4px;
 }
 
+/* TABLE */
 .gender {
-  margin-top: 8px;
-  margin-bottom: 8px;
-  font-size: 16px;
+  font-size: 14px;
+  margin-bottom: 6px;
 }
 
 .ranking-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .ranking-table th,
 .ranking-table td {
   border: 1px solid #000;
-  padding: 6px;
+  padding: 4px;
   text-align: center;
 }
 
@@ -200,7 +253,7 @@ defineExpose({
   font-weight: bold;
 }
 
-.page-break {
-  page-break-before: always;
+.spacer {
+  height: 16px;
 }
 </style>
