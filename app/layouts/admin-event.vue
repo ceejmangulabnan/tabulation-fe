@@ -102,7 +102,6 @@ watch(
   async (id) => {
     if (!id) return
     await eventsStore.fetchEvent(id)
-    console.log('Event:', event.value)
   },
   { immediate: true }
 )
@@ -112,7 +111,7 @@ const categories = computed(() => {
 
   return event.value.segments.flatMap((segment) =>
     segment.categories.map((cat) => ({
-      id: cat.documentId,
+      id: cat.id,
       name: cat.name,
       slug: cat.name.toLowerCase().replace(/\s+/g, '-'),
     }))

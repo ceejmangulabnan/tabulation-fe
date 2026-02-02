@@ -3,8 +3,6 @@ definePageMeta({
   middleware: ['admin'],
   layout: 'admin',
 })
-const authStore = useAuthStore()
-console.log('User', authStore.user)
 </script>
 
 <template>
