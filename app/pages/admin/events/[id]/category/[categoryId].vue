@@ -15,6 +15,20 @@
             </v-chip>
             <div class="d-flex flex-wrap ga-2 flex-shrink-0">
               <v-btn
+                icon
+                color="purple"
+                variant="text"
+                @click="handlePrint"
+              >
+                <v-icon size="28">mdi-printer</v-icon>
+                <v-tooltip
+                  activator="parent"
+                  location="bottom"
+                >
+                  Print Rankings
+                </v-tooltip>
+              </v-btn>
+              <v-btn
                 :loading="eventsStore.isLoading"
                 icon
                 color="primary"
@@ -121,10 +135,23 @@
         </v-window>
       </v-col>
     </v-row>
+    <PrintableRankings
+      v-if="event"
+      ref="printableRef"
+      gender="both"
+      :male="maleRankings"
+      :female="femaleRankings"
+      :title="printTitle"
+      :event="event"
+      style="position: fixed; left: -9999px; top: 0"
+    />
   </v-container>
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import type { ParticipantData } from '~/shared/types/strapi-data'
+
 interface DataTableHeader {
   key: string
   title: string
@@ -141,6 +168,10 @@ const api = useStrapiApi()
 const router = useRouter()
 const tab = ref('male')
 let refreshInterval: NodeJS.Timeout | null = null
+const printableRef = ref<any | null>(null)
+const maleRankings = ref<any[]>([])
+const femaleRankings = ref<any[]>([])
+const printTitle = ref('')
 
 const event = computed(() => eventsStore.event)
 
@@ -197,6 +228,61 @@ const category = computed(() => {
     .flatMap((segment) => segment.categories)
     .find((cat) => cat.id.toString() === categoryId.value)
 })
+
+const segment = computed(() => {
+  if (!event.value?.segments) return null
+  return event.value.segments.find((s) =>
+    s.categories.some((c) => c.id.toString() === categoryId.value)
+  )
+})
+
+const handlePrint = async () => {
+  if (!event.value || !segment.value || !category.value) {
+    snackbar.showSnackbar('Cannot print without event, segment or category.', 'error')
+    return
+  }
+
+  const url = `/admin/events/${event.value.documentId}/segments/${segment.value.documentId}/categories/${category.value.documentId}/ranking`
+  printTitle.value = `Category Ranking – ${category.value.name}`
+
+  try {
+    const { data } = await api.get(url)
+    const results: {
+      male: {
+        averaged_score: number
+        department: string
+        gender: 'male'
+        participant_number: number
+        name: string
+        rank: number
+      }[]
+      female: {
+        averaged_score: number
+        department: string
+        gender: 'female'
+        participant_number: number
+        name: string
+        rank: number
+      }[]
+    } = data.results
+
+    // maleRankings.value = results.male. || []
+    // femaleRankings.value = results.female || []
+
+    maleRankings.value = results.male.filter((p) => p.rank === 1).slice(0, 1)
+    femaleRankings.value = results.female.filter((p) => p.rank === 1).slice(0, 1)
+    if (!maleRankings.value.length && !femaleRankings.value.length) {
+      snackbar.showSnackbar('No ranking data found.', 'info')
+      return
+    }
+
+    await nextTick()
+    await printableRef.value?.generatePdf()
+  } catch (err) {
+    console.error(err)
+    snackbar.showSnackbar('Failed to fetch rankings for printing.', 'error')
+  }
+}
 
 const judges = computed(() => event.value?.judges || [])
 
