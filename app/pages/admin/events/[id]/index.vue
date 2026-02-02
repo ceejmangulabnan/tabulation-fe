@@ -282,6 +282,10 @@
 </template>
 
 <script setup lang="ts">
+// event id index page
+definePageMeta({
+  layout: 'admin-event',
+})
 const route = useRoute()
 const eventsStore = useEventsStore()
 const router = useRouter()
@@ -301,7 +305,6 @@ function getStrapiUrl(url: string) {
 
 onMounted(async () => {
   await eventsStore.fetchEvent(eventId)
-  console.log('Event:', event.value)
 })
 
 const deleteEvent = async () => {
