@@ -46,7 +46,7 @@
           <v-list-item
             v-for="cat in categories"
             :key="cat.id"
-            :to="`/admin/events/${eventId}/${cat.slug}`"
+            :to="`/admin/events/${eventId}/category/${cat.id}`"
           >
             <v-list-item-title>
               {{ cat.name }}
