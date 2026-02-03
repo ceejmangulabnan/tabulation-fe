@@ -3,13 +3,26 @@
     :theme="theme.current"
     :class="theme.current === 'light' && 'light-bg'"
   >
-    <v-app-bar :class="theme.current === 'light' ? 'glassmorphism-light' : 'glassmorphism-dark'">
+    <v-app-bar
+      :class="
+        theme.current === 'light'
+          ? 'glassmorphism-light text-white'
+          : 'glassmorphism-dark text-black'
+      "
+    >
       <v-app-bar-title>
         <NuxtLink
           to="/"
           class=""
         >
-          <p class="px-4 font-weight-bold text-xl">SNC Tabulation</p>
+          <div class="d-flex align-center ga-2">
+            <v-img
+              src="/logo.png"
+              max-width="80px"
+            ></v-img>
+
+            <p class="font-weight-bold text-2xl">SNC Tabulation</p>
+          </div>
         </NuxtLink>
       </v-app-bar-title>
 
@@ -38,7 +51,7 @@
     <v-main
       class="d-flex align-center justify-center"
       style="min-height: 100vh"
-      :class="{ 'light-bg': theme.current === 'light' }"
+      :class="{ 'green-bg': theme.current === 'light' }"
     >
       <slot />
     </v-main>
@@ -50,6 +63,11 @@ const theme = useThemeStore()
 </script>
 
 <style scoped>
+.green-bg {
+  background: #003b08;
+  background: radial-gradient(circle, rgba(0, 59, 8, 1) 0%, rgba(30, 128, 17, 1) 100%);
+}
+
 .light-bg {
   background-color: #f5f5f5;
   background-image: linear-gradient(135deg, #ffffff 0%, #e8e8e8 100%);

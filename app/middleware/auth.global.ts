@@ -6,6 +6,9 @@ export default defineNuxtRouteMiddleware((to) => {
   if (!authStore.isAuthenticated) {
     console.log('From Auth Middleware:', authStore.isAuthenticated)
     // Prevent redirect loop if already on the login page
+    if (to.path == '/') {
+      return
+    }
     if (to.path !== '/auth') {
       return navigateTo('/auth')
     }
