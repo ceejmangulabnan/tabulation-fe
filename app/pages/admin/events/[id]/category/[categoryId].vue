@@ -122,6 +122,7 @@
               :items="maleItems"
               item-key="id"
               class="elevation-1"
+              :sort-by="[{ key: 'rank', order: 'asc' }]"
             />
           </v-window-item>
           <v-window-item value="female">
@@ -130,6 +131,7 @@
               :items="femaleItems"
               item-key="id"
               class="elevation-1"
+              :sort-by="[{ key: 'rank', order: 'asc' }]"
             />
           </v-window-item>
         </v-window>
@@ -329,7 +331,7 @@ const headers = computed<DataTableHeader[]>(() => {
   }))
 
   return [
-    { title: 'Rank', key: 'rank', align: 'start', sortable: true },
+    { title: 'Rank', key: 'rank', align: 'start', sortable: true, order: 'asc' },
     { title: 'Participant', key: 'name', align: 'start', sortable: true },
     ...judgeHeaders,
     { title: 'Average', key: 'average', align: 'end', sortable: true },
