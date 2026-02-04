@@ -3,13 +3,7 @@
     :theme="theme.current"
     :class="theme.current === 'light' && 'light-bg'"
   >
-    <v-app-bar
-      :class="
-        theme.current === 'light'
-          ? 'glassmorphism-light text-white'
-          : 'glassmorphism-dark text-black'
-      "
-    >
+    <v-app-bar :class="theme.current === 'light' ? 'glassmorphism-light' : 'glassmorphism-dark'">
       <v-app-bar-title>
         <NuxtLink
           to="/"
@@ -51,7 +45,7 @@
     <v-main
       class="d-flex align-center justify-center"
       style="min-height: 100vh"
-      :class="{ 'green-bg': theme.current === 'light' }"
+      :class="{ 'light-bg': theme.current === 'light' }"
     >
       <slot />
     </v-main>

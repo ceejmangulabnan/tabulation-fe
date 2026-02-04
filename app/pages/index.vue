@@ -1,13 +1,13 @@
 <template>
   <div :class="theme.current === 'light' ? 'text-white' : 'text-white'">
-    <div class="text-center">
+    <div class="text-center d-flex flex-column align-center">
       <!-- Colors to convert to black in logo svg -->
       <!-- f9fbca f8fbca f7f8c6 -->
 
       <!-- <div class="d-flex flex-column my-4 my-md-8 ga-4"> -->
       <v-img
-        src="/lakan_at_mutya_logo.png"
-        max-width="1400px"
+        :width="imageWidth"
+        src="/lakan_at_mutya_gold.png"
       ></v-img>
       <!-- <h1 -->
       <!--   :class="[ -->
@@ -22,27 +22,55 @@
       <!-- > -->
       <!--   SNC Pageant Tabulation -->
       <!-- </h1> -->
-      <p :class="['text-h6', 'px-8', theme.current === 'light' ? 'text-white' : 'text-white']">
+      <p
+        :class="[
+          'text-h6',
+          'px-8',
+          'text-center',
+
+          theme.current === 'light' ? 'text-black' : 'text-white',
+        ]"
+      >
         Streamline your pageant judging with our elegant, real-time tabulation system designed for
         accuracy and transparency.
       </p>
-      <!-- </div> -->
-      <div>
-        <v-btn
-          to="/auth"
-          size="large"
-          class="ma-2 font-weight-bold"
-          :color="theme.current === 'light' ? 'white' : 'green'"
-        >
-          Get Started
-        </v-btn>
-      </div>
+      <v-btn
+        class="ma-2 mt-6 font-weight-bold"
+        :color="theme.current === 'light' ? 'black' : 'white'"
+        size="large"
+        to="/auth"
+      >
+        Get Started
+      </v-btn>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useDisplay } from 'vuetify'
+
 const theme = useThemeStore()
+const { name } = useDisplay()
+
+const imageWidth = computed(() => {
+  // Adjust these values as needed for your design
+  switch (name.value) {
+    case 'xs':
+      return '90vw' // For extra small screens, use 90% of the viewport width
+    case 'sm':
+      return '80vw' // For small screens, use 80% of the viewport width
+    case 'md':
+      return 800 // For medium screens, set a fixed width
+    case 'lg':
+      return 1000 // For large screens
+    case 'xl':
+      return 1400 // For extra large screens
+    default:
+      return '100%' // Fallback for other cases
+  }
+})
+
 definePageMeta({
   layout: 'landing',
 })
