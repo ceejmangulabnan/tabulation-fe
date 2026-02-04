@@ -24,8 +24,8 @@
 
     <v-row>
       <v-col cols="12">
-        <v-card>
-          <v-card-title class="d-flex justify-space-between">
+        <v-card class="pa-4">
+          <v-card-title class="d-flex justify-space-between text-h5">
             <span>Participant Scores</span>
           </v-card-title>
           <v-card-text>

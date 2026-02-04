@@ -24,10 +24,10 @@
       <!-- </h1> -->
       <p
         :class="[
-          'text-h6',
+          'text-body-1',
+          'text-md-h5',
           'px-8',
           'text-center',
-
           theme.current === 'light' ? 'text-black' : 'text-white',
         ]"
       >
@@ -35,9 +35,10 @@
         accuracy and transparency.
       </p>
       <v-btn
+        rounded="xl"
         class="ma-2 mt-6 font-weight-bold"
         :color="theme.current === 'light' ? 'black' : 'white'"
-        size="large"
+        size="x-large"
         to="/auth"
       >
         Get Started
@@ -79,7 +80,10 @@ definePageMeta({
 <style scoped>
 p {
   line-height: 1.2;
-  font-weight: 200;
-  max-width: 700px;
+  font-weight: 400;
+  font-style: italic;
+  font-size: 24px;
+  padding: 1rem 0;
+  /* max-width: 1000px; */
 }
 </style>
