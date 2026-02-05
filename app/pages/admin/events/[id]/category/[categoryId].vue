@@ -99,14 +99,14 @@
             </p>
           </div>
         </div>
-        <h1 class="text-h4 font-weight-bold">
-          {{ category?.name }}
-        </h1>
       </v-col>
     </v-row>
 
     <v-row>
       <v-col cols="12">
+        <h1 class="text-h6 font-weight-bold">
+          {{ category?.name }}
+        </h1>
         <v-tabs
           v-model="tab"
           class="mb-4"
@@ -151,9 +151,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import type { ParticipantData } from '~/shared/types/strapi-data'
-
 interface DataTableHeader {
   key: string
   title: string
@@ -295,22 +292,28 @@ const maleParticipants = computed(() => participants.value.filter((p) => p.gende
 const femaleParticipants = computed(() => participants.value.filter((p) => p.gender === 'female'))
 
 const getJudgeScore = (participantId: number, judgeId: number) => {
-  if (!event.value?.scores) return 0
+  if (!event.value?.scores) return null
   const score = event.value.scores.find(
     (s) =>
       s.participant?.id === participantId &&
       s.judge?.id === judgeId &&
       s.category?.id.toString() === categoryId.value
   )
-  return score?.value || 0
+  return score?.value || null
 }
 
 const getAverageScore = (participantId: number) => {
-  if (!event.value?.scores || judges.value.length === 0) return '0.00'
-  const totalScore = judges.value.reduce((total, judge) => {
-    return total + getJudgeScore(participantId, judge.id)
-  }, 0)
-  return (totalScore / judges.value.length).toFixed(2)
+  if (!event.value?.scores) return '-'
+  const validScores = judges.value
+    .map((judge) => getJudgeScore(participantId, judge.id))
+    .filter((score) => score !== null) as number[]
+
+  if (validScores.length === 0) {
+    return '-'
+  }
+
+  const totalScore = validScores.reduce((total, score) => total + score, 0)
+  return (totalScore / validScores.length).toFixed(2)
 }
 
 const getRank = (participant: ParticipantData, gender: 'male' | 'female') => {

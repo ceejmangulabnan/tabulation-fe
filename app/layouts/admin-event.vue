@@ -3,9 +3,23 @@
     id="inspire"
     :theme="theme.current"
   >
-    <v-app-bar>
+    <v-app-bar :class="theme.current === 'light' ? 'glassmorphism-light' : 'glassmorphism-dark'">
       <v-app-bar-nav-icon @click="drawer = !drawer" />
-      <v-app-bar-title class="font-weight-bold">SNC Tabulation</v-app-bar-title>
+      <v-app-bar-title class="font-weight-bold">
+        <NuxtLink
+          to="/"
+          class=""
+        >
+          <div class="d-flex align-center ga-2">
+            <v-img
+              src="/logo.png"
+              max-width="80px"
+            ></v-img>
+
+            <p class="font-weight-bold text-2xl">SNC Tabulation</p>
+          </div>
+        </NuxtLink>
+      </v-app-bar-title>
 
       <template #append>
         <div class="px-4">
@@ -143,3 +157,26 @@ const breadcrumbs = computed(() => {
   return crumbs
 })
 </script>
+
+<style scoped>
+.glassmorphism-light {
+  background: rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.glassmorphism-dark {
+  background: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+a:link,
+a:visited,
+a:hover,
+a:active {
+  text-decoration: none;
+  color: inherit;
+}
+</style>
