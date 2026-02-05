@@ -2,7 +2,7 @@
   <div :class="theme.current === 'light' ? 'text-white' : 'text-white'">
     <div class="text-center d-flex flex-column align-center">
       <!-- Colors to convert to black in logo svg -->
-      <!-- f9fbca f8fbca f7f8c6 -->
+      <!-- f9fbca ff9fbca f7f8c6 -->
 
       <!-- <div class="d-flex flex-column my-4 my-md-8 ga-4"> -->
       <v-img
@@ -64,7 +64,7 @@ const imageWidth = computed(() => {
     case 'md':
       return 800 // For medium screens, set a fixed width
     case 'lg':
-      return 1000 // For large screens
+      return 800 // For large screens
     case 'xl':
       return 1400 // For extra large screens
     default:
