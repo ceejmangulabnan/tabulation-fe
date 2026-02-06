@@ -31,7 +31,10 @@
       </template>
     </v-app-bar>
 
-    <v-navigation-drawer v-model="drawer">
+    <v-navigation-drawer
+      v-model="drawer"
+      :temporary="!display.mdAndUp.value"
+    >
       <v-list>
         <v-list-item
           :subtitle="authStore.user?.email"
@@ -85,7 +88,8 @@
 </template>
 
 <script setup lang="ts">
-const drawer = ref(false)
+const display = useDisplay()
+const drawer = ref(display.mdAndUp.value)
 const authStore = useAuthStore()
 const theme = useThemeStore()
 const route = useRoute()
