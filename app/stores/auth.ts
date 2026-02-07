@@ -50,14 +50,22 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    async register(username: string, email: string, password: string): Promise<StrapiUser> {
+    async register(
+      name: string,
+      username: string,
+      password: string,
+      email?: string,
+      eventId?: string
+    ): Promise<StrapiUser> {
       this.isLoading = true
       try {
         const api = useStrapiApi()
         const response = await api.post<AuthResponse>('/auth/local/register', {
+          name,
           username,
           email,
           password,
+          eventId,
         })
 
         const { jwt, user } = response.data

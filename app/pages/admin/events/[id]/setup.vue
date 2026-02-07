@@ -46,8 +46,8 @@
           <v-window-item value="three">
             <AdminEventSetupJudgesTab
               :event="event"
-              :available-judges="availableJudges"
-              :judge-role-id="judgeRoleId!"
+              :availableJudges="availableJudges"
+              :judgeRoleId="judgeRoleId!"
               @judges-updated="fetchAvailableJudges"
             />
           </v-window-item>

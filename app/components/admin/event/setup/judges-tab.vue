@@ -95,6 +95,10 @@
       <v-window-item value="create">
         <v-card-text>
           <v-text-field
+            v-model="newJudge.name"
+            label="Name"
+          />
+          <v-text-field
             v-model="newJudge.username"
             label="Username"
           />
@@ -176,10 +180,14 @@ const { smAndDown } = useDisplay()
 
 const judgeTab = ref('assign')
 const selectedJudge = ref<number | null>(null)
-const newJudge = ref({ username: '', email: '', password: '', confirmPassword: '' })
+const newJudge = ref({ name: '', username: '', email: '', password: '', confirmPassword: '' })
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 const errorMsg = ref<string | null>(null)
+const route = useRoute()
+
+const eventId = route.params.id
+console.log('EventID', eventId)
 
 // --- Judges Tab ---
 const judgeHeaders = [
@@ -234,20 +242,28 @@ const toggleShowConfirmPassword = () => {
 }
 
 const createJudge = async () => {
-  if (!props.judgeRoleId) {
-    console.error('Judge role ID not found')
-    return
-  }
+  // if (!props.judgeRoleId) {
+  //   console.error('Judge role ID not found')
+  //   return
+  // }
   try {
     if (newJudge.value.password !== newJudge.value.confirmPassword) {
       errorMsg.value = 'Passwords do not match!'
       return
     }
 
-    await authStore.register(newJudge.value.username, newJudge.value.email, newJudge.value.password)
+    await authStore.register(
+      newJudge.value.name,
+      newJudge.value.username,
+      newJudge.value.password,
+      newJudge.value.email,
+      eventsStore.event?.documentId
+    )
 
     snackbar.showSnackbar('Judge created successfully!', 'success')
     emit('judges-updated')
+
+    await eventsStore.fetchEvent(String(eventId))
   } catch (e) {
     snackbar.showSnackbar('Failed to create judge', 'error')
     console.error('Could not create or assign judge', e)
