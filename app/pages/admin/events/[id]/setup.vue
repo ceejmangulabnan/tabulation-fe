@@ -130,7 +130,10 @@ const fetchAvailableJudges = async () => {
   try {
     const api = useStrapiApi()
     const res = await api.get('/judges')
-    availableJudges.value = res.data.data
+    const assignedJudgeIds = new Set(event.value.judges?.map((judge) => judge.documentId) || [])
+    availableJudges.value = res.data.data.filter(
+      (judge: JudgeData) => !assignedJudgeIds.has(judge.documentId)
+    )
   } catch (e) {
     console.error('Could not fetch judges', e)
   }

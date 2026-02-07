@@ -214,6 +214,7 @@ const assignJudge = async () => {
     }
 
     await eventsStore.fetchEvent(props.event.id?.toString() || '')
+    emit('judges-updated')
     selectedJudge.value = null
   } catch (e) {
     snackbar.showSnackbar('Failed to assign judge.', 'error')
@@ -224,8 +225,15 @@ const assignJudge = async () => {
 const removeJudge = async (judge: JudgeData) => {
   if (!confirm('Are you sure?')) return
   try {
-    await api.delete(`/judges/${judge.documentId}`)
+    await api.put(`/judges/${judge.documentId}`, {
+      data: {
+        events: {
+          disconnect: [props.event.documentId],
+        },
+      },
+    })
     await eventsStore.fetchEvent(props.event.id?.toString() || '')
+    emit('judges-updated')
     snackbar.showSnackbar('Judge removed successfully', 'success')
   } catch (e) {
     snackbar.showSnackbar('Failed to delete judge', 'error')
