@@ -93,62 +93,73 @@
         </v-card-text>
       </v-window-item>
       <v-window-item value="create">
-        <v-card-text>
-          <v-text-field
-            v-model="newJudge.name"
-            label="Name"
-          />
-          <v-text-field
-            v-model="newJudge.username"
-            label="Username"
-          />
-          <v-text-field
-            v-model="newJudge.email"
-            label="Email (optional)"
-          />
-          <v-text-field
-            v-model="newJudge.password"
-            label="Password"
-            :type="showPassword ? 'text' : 'password'"
-          >
-            <template #append-inner>
-              <v-btn
-                tabindex="-1"
-                icon
-                variant="text"
-                @click="toggleShowPassword"
-              >
-                <v-icon size="small">
-                  {{ showPassword ? 'mdi-eye-outline' : 'mdi-eye-off' }}
-                </v-icon>
-              </v-btn>
-            </template>
-          </v-text-field>
-          <v-text-field
-            v-model="newJudge.confirmPassword"
-            label="Confirm Password"
-            :type="showConfirmPassword ? 'text' : 'password'"
-          >
-            <template #append-inner>
-              <v-btn
-                tabindex="-1"
-                icon
-                variant="text"
-                @click="toggleShowConfirmPassword"
-              >
-                <v-icon size="small">
-                  {{ showPassword ? 'mdi-eye-outline' : 'mdi-eye-off' }}
-                </v-icon>
-              </v-btn>
-            </template>
-          </v-text-field>
-          <v-btn
-            color="green"
-            @click="createJudge"
-          >
-            Create and Assign
-          </v-btn>
-        </v-card-text>
+        <v-form
+          ref="formRef"
+          @submit.prevent="createJudge"
+        >
+          <v-card-text>
+            <v-text-field
+              v-model="newJudge.name"
+              label="Name"
+              :rules="requiredRule"
+            />
+            <v-text-field
+              v-model="newJudge.username"
+              label="Username"
+              :rules="requiredRule"
+            />
+            <v-text-field
+              v-model="newJudge.email"
+              label="Email"
+              :rules="[...emailRule, ...requiredRule]"
+            />
+            <v-text-field
+              v-model="newJudge.password"
+              label="Password"
+              :type="showPassword ? 'text' : 'password'"
+              :rules="[...requiredRule, ...passwordLengthRule]"
+            >
+              <template #append-inner>
+                <v-btn
+                  tabindex="-1"
+                  icon
+                  variant="text"
+                  @click="toggleShowPassword"
+                >
+                  <v-icon size="small">
+                    {{ showPassword ? 'mdi-eye-outline' : 'mdi-eye-off' }}
+                  </v-icon>
+                </v-btn>
+              </template>
+            </v-text-field>
+            <v-text-field
+              v-model="newJudge.confirmPassword"
+              label="Confirm Password"
+              :type="showConfirmPassword ? 'text' : 'password'"
+              :rules="[...requiredRule, ...passwordLengthRule, ...passwordMatchRule]"
+            >
+              <template #append-inner>
+                <v-btn
+                  tabindex="-1"
+                  icon
+                  variant="text"
+                  @click="toggleShowConfirmPassword"
+                >
+                  <v-icon size="small">
+                    {{ showPassword ? 'mdi-eye-outline' : 'mdi-eye-off' }}
+                  </v-icon>
+                </v-btn>
+              </template>
+            </v-text-field>
+            <v-btn
+              class="mt-4"
+              color="green"
+              type="submit"
+            >
+              Create and Assign
+            </v-btn>
+          </v-card-text>
+        </v-form>
       </v-window-item>
     </v-window>
   </div>
@@ -183,11 +194,19 @@ const selectedJudge = ref<number | null>(null)
 const newJudge = ref({ name: '', username: '', email: '', password: '', confirmPassword: '' })
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
-const errorMsg = ref<string | null>(null)
 const route = useRoute()
 
+// Form Validation Rules
+const formRef = ref<HTMLFormElement | null>(null)
+
+const requiredRule = [(v: string) => !!v || 'Field is required']
+const emailRule = [(v: string) => !v || /.+@.+\..+/.test(v) || 'E-mail must be valid']
+const passwordLengthRule = [
+  (v: string) => v.length >= 6 || 'Password must be at least 6 characters',
+]
+const passwordMatchRule = [(v: string) => v === newJudge.value.password || 'Passwords do not match']
+
 const eventId = route.params.id
-console.log('EventID', eventId)
 
 // --- Judges Tab ---
 const judgeHeaders = [
@@ -250,16 +269,10 @@ const toggleShowConfirmPassword = () => {
 }
 
 const createJudge = async () => {
-  // if (!props.judgeRoleId) {
-  //   console.error('Judge role ID not found')
-  //   return
-  // }
+  if (!formRef.value) return
+  const { valid } = await formRef.value.validate()
+  if (!valid) return
   try {
-    if (newJudge.value.password !== newJudge.value.confirmPassword) {
-      errorMsg.value = 'Passwords do not match!'
-      return
-    }
-
     await authStore.register(
       newJudge.value.name,
       newJudge.value.username,

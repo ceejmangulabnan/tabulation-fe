@@ -1,24 +1,77 @@
 <template>
   <v-container>
-    <div class="d-flex align-top mb-4 flex-wrap ga-2">
-      <header class="d-flex flex-column w-100 mb-8 ga-sm-3 align-start ga-1 flex-shrink-1">
-        <v-chip
-          :color="statusColor"
-          size="large"
-          class="font-weight-bold flex-shrink-0 ml-n1"
-        >
-          {{ event?.event_status?.toUpperCase() }}
-        </v-chip>
-        <div class="d-flex flex-column ga-1">
-          <h1 class="text-sm-h4 text-h5 mb-2 mb-sm-0 font-weight-bold">
-            {{ event?.name }}
-          </h1>
-          <p class="text-sm-body-1 text-subtitle-2">
-            {{ event?.description || 'No description provided.' }}
-          </p>
+    <v-row>
+      <v-col cols="12">
+        <div class="d-flex justify-space-between align-top mb-4 flex-wrap ga-2">
+          <header
+            class="d-flex ml-n1 justify-space-between w-100 ga-sm-3 align-center ga-1 flex-shrink-1"
+          >
+            <v-chip
+              :color="statusColor"
+              size="large"
+              class="font-weight-bold flex-shrink-0"
+            >
+              {{ displayEvent?.event_status.toUpperCase() }}
+            </v-chip>
+            <div class="d-flex flex-wrap ga-2 flex-shrink-0">
+              <v-btn
+                :to="`/admin/events/${eventId}/manage`"
+                icon
+                color="blue"
+                variant="text"
+              >
+                <v-icon size="28">mdi-cog</v-icon>
+                <v-tooltip
+                  activator="parent"
+                  location="bottom"
+                >
+                  Manage Event
+                </v-tooltip>
+              </v-btn>
+
+              <v-btn
+                :to="`/admin/events/${eventId}/setup`"
+                icon
+                color="green"
+                variant="text"
+              >
+                <v-icon size="28">mdi-pencil</v-icon>
+                <v-tooltip
+                  activator="parent"
+                  location="bottom"
+                >
+                  Setup Event
+                </v-tooltip>
+              </v-btn>
+
+              <v-btn
+                icon
+                color="red"
+                variant="text"
+                @click="deleteEvent"
+              >
+                <v-icon size="28">mdi-delete</v-icon>
+                <v-tooltip
+                  activator="parent"
+                  location="bottom"
+                >
+                  Delete Event
+                </v-tooltip>
+              </v-btn>
+            </div>
+          </header>
+
+          <div class="d-flex flex-column ga-1">
+            <h1 class="text-sm-h4 text-h5 mb-2 mb-sm-0 font-weight-bold">
+              {{ event?.name }}
+            </h1>
+            <p class="text-sm-body-1 text-subtitle-2">
+              {{ event?.description || 'No description provided.' }}
+            </p>
+          </div>
         </div>
-      </header>
-    </div>
+      </v-col>
+    </v-row>
 
     <v-card>
       <v-tabs
@@ -83,6 +136,9 @@ const route = useRoute()
 const eventsStore = useEventsStore()
 const snackbar = useSnackbar()
 const dataLoaded = ref(false)
+const displayEvent = computed<EventData>(() => eventsStore.event as EventData)
+const api = useStrapiApi()
+const router = useRouter()
 
 const event = computed<Partial<EventData>>(() =>
   eventsStore.event
@@ -105,6 +161,23 @@ const event = computed<Partial<EventData>>(() =>
         participants: [],
       }
 )
+
+const deleteEvent = async () => {
+  if (!event.value?.documentId) {
+    snackbar.showSnackbar('Cannot delete event without a documentId.', 'error')
+    return
+  }
+  if (confirm('Are you sure you want to delete this event? This cannot be undone.')) {
+    try {
+      await api.delete(`/events/${event.value.documentId}`)
+      snackbar.showSnackbar('Event deleted successfully.', 'success')
+      router.push('/admin/events')
+    } catch (e) {
+      snackbar.showSnackbar('Failed to delete event.', 'error')
+      console.error(e)
+    }
+  }
+}
 
 const statusColor = computed(() => {
   switch (event.value?.event_status) {

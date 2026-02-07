@@ -2,24 +2,73 @@
   <v-container>
     <v-row>
       <v-col cols="12">
-        <div class="d-flex align-top mb-4 flex-wrap ga-2">
-          <header class="d-flex flex-column w-100 ga-sm-3 align-start ga-1 flex-shrink-1">
+        <div class="d-flex justify-space-between align-top mb-4 flex-wrap ga-2">
+          <header
+            class="d-flex ml-n1 justify-space-between w-100 ga-sm-3 align-center ga-1 flex-shrink-1"
+          >
             <v-chip
               :color="statusColor"
               size="large"
-              class="font-weight-bold flex-shrink-0 ml-n1"
+              class="font-weight-bold flex-shrink-0"
             >
               {{ event?.event_status.toUpperCase() }}
             </v-chip>
-            <div class="d-flex flex-column ga-1">
-              <h1 class="text-sm-h4 text-h5 mb-2 mb-sm-0 font-weight-bold">
-                {{ event?.name }}
-              </h1>
-              <p class="text-sm-body-1 text-subtitle-2">
-                {{ event?.description || 'No description provided.' }}
-              </p>
+            <div class="d-flex flex-wrap ga-2 flex-shrink-0">
+              <v-btn
+                :to="`/admin/events/${eventId}/manage`"
+                icon
+                color="blue"
+                variant="text"
+              >
+                <v-icon size="28">mdi-cog</v-icon>
+                <v-tooltip
+                  activator="parent"
+                  location="bottom"
+                >
+                  Manage Event
+                </v-tooltip>
+              </v-btn>
+
+              <v-btn
+                :to="`/admin/events/${eventId}/setup`"
+                icon
+                color="green"
+                variant="text"
+              >
+                <v-icon size="28">mdi-pencil</v-icon>
+                <v-tooltip
+                  activator="parent"
+                  location="bottom"
+                >
+                  Setup Event
+                </v-tooltip>
+              </v-btn>
+
+              <v-btn
+                icon
+                color="red"
+                variant="text"
+                @click="deleteEvent"
+              >
+                <v-icon size="28">mdi-delete</v-icon>
+                <v-tooltip
+                  activator="parent"
+                  location="bottom"
+                >
+                  Delete Event
+                </v-tooltip>
+              </v-btn>
             </div>
           </header>
+
+          <div class="d-flex flex-column ga-1">
+            <h1 class="text-sm-h4 text-h5 mb-2 mb-sm-0 font-weight-bold">
+              {{ event?.name }}
+            </h1>
+            <p class="text-sm-body-1 text-subtitle-2">
+              {{ event?.description || 'No description provided.' }}
+            </p>
+          </div>
         </div>
       </v-col>
     </v-row>
@@ -499,6 +548,7 @@
 const route = useRoute()
 const eventsStore = useEventsStore()
 const { showSnackbar } = useSnackbar()
+const router = useRouter()
 const eventId = route.params.id as string
 const event = computed<EventData>(() => eventsStore.event as EventData)
 const showPrintDialog = ref<boolean>(false)
@@ -525,6 +575,23 @@ const participantsWithScoresForJudge = ref<ParticipantWithScores[]>([])
 const selectedJudgeId = ref<string | null>(null)
 
 const refetchInterval = ref<NodeJS.Timeout | null>(null) // Added ref for interval
+
+const deleteEvent = async () => {
+  if (!event.value?.documentId) {
+    showSnackbar('Cannot delete event without a documentId.', 'error')
+    return
+  }
+  if (confirm('Are you sure you want to delete this event? This cannot be undone.')) {
+    try {
+      await api.delete(`/events/${event.value.documentId}`)
+      showSnackbar('Event deleted successfully.', 'success')
+      router.push('/admin/events')
+    } catch (e) {
+      showSnackbar('Failed to delete event.', 'error')
+      console.error(e)
+    }
+  }
+}
 
 function getStrapiUrl(url: string) {
   const config = useRuntimeConfig()
