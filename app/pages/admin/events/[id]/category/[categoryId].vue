@@ -265,9 +265,6 @@ const handlePrint = async () => {
       }[]
     } = data.results
 
-    // maleRankings.value = results.male. || []
-    // femaleRankings.value = results.female || []
-
     maleRankings.value = results.male.filter((p) => p.rank === 1).slice(0, 1)
     femaleRankings.value = results.female.filter((p) => p.rank === 1).slice(0, 1)
     if (!maleRankings.value.length && !femaleRankings.value.length) {

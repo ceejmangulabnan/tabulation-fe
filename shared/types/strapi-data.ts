@@ -50,6 +50,8 @@ export interface CategoryData extends StrapiPopulatedItem {
   scores: ScoreData[]
   weight: number
   active: boolean
+  locked: boolean
+  activeJudges: JudgeData[]
   segment: SegmentData
 }
 

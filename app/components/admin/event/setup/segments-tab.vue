@@ -156,6 +156,20 @@
                   >
                     {{ categoryItem.active ? 'Active' : 'Inactive' }}
                   </v-chip>
+
+                  <v-chip
+                    v-if="categoryItem.locked"
+                    color="red"
+                    density="compact"
+                    class="ml-2"
+                    label
+                  >
+                    <v-icon
+                      icon="mdi-lock"
+                      class="mr-1"
+                    />
+                    {{ categoryItem.locked ? 'Locked' : 'Unlocked' }}
+                  </v-chip>
                 </template>
                 <template #item.actions="{ item: categoryItem }">
                   <v-icon
@@ -245,6 +259,14 @@
                     label
                   >
                     {{ categoryItem.active ? 'Active' : 'Inactive' }}
+                  </v-chip>
+                  <v-chip
+                    :color="categoryItem.locked ? 'green' : 'gray'"
+                    density="compact"
+                    class="ml-2"
+                    label
+                  >
+                    {{ categoryItem.locked ? 'Locked' : 'Unlocked' }}
                   </v-chip>
                 </template>
                 <template #append>
@@ -379,6 +401,12 @@
               color="primary"
               hide-details
             />
+            <v-switch
+              v-model="editedCategory.locked"
+              label="Locked"
+              color="primary"
+              hide-details
+            />
           </v-card-text>
           <v-card-actions>
             <v-spacer />
@@ -450,6 +478,8 @@ const editedCategory = ref<Partial<CategoryData>>({
   name: '',
   weight: 0,
   active: true, // Default to active for new categories
+  locked: false, // Default false
+  activeJudges: [],
 })
 const currentSegmentIdForCategory = ref<string | null>(null)
 
@@ -548,7 +578,8 @@ const saveCategory = async () => {
       data: {
         name: editedCategory.value.name,
         weight: editedCategory.value.weight,
-        active: editedCategory.value.active, // Include active status
+        active: editedCategory.value.active,
+        locked: editedCategory.value.locked,
         segment: currentSegmentIdForCategory.value,
       },
     }

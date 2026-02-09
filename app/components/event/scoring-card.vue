@@ -82,7 +82,6 @@
                     type="number"
                     variant="outlined"
                     density="compact"
-                    hide-details="auto"
                     :rules="getScoreRules(category.weight * 100)"
                     validate-on="input"
                     min="0"
@@ -91,7 +90,9 @@
                     maxlength="4"
                     style="max-width: 80px"
                     :readonly="
-                      segment.segment_status === 'closed' || segment.segment_status === 'inactive'
+                      category.locked ||
+                      segment.segment_status === 'closed' ||
+                      segment.segment_status === 'inactive'
                     "
                     @keydown="blockInvalidKeys"
                   />
@@ -106,6 +107,22 @@
 
               <template #no-data>
                 <div class="pa-4 text-center">No participants found for this gender.</div>
+              </template>
+
+              <template
+                v-for="category in getActiveCategories(segment)"
+                :key="category.documentId"
+                #[`header.category_${category.documentId}`]="{ column }"
+              >
+                <div class="d-flex ga-2 align-start">
+                  <v-icon
+                    v-if="category.locked"
+                    size="small"
+                  >
+                    mdi-lock
+                  </v-icon>
+                  {{ column.title }}
+                </div>
               </template>
             </v-data-table>
 
@@ -165,6 +182,13 @@
                       class="d-flex justify-space-between my-2 align-center ga-3 flex-wrap"
                     >
                       <div class="text-subtitle-1">
+                        <v-icon
+                          v-if="category.locked"
+                          size="small"
+                          class="mr-1"
+                        >
+                          mdi-lock
+                        </v-icon>
                         {{ category.name }} ({{ (category.weight * 100).toFixed(0) }}%)
                       </div>
                       <div>
@@ -175,7 +199,6 @@
                           type="number"
                           variant="outlined"
                           density="compact"
-                          hide-details="auto"
                           :rules="getScoreRules(category.weight * 100)"
                           validate-on="input"
                           min="0"
@@ -183,7 +206,11 @@
                           step="1"
                           maxlength="4"
                           style="max-width: 80px"
-                          :readonly="segment.segment_status === 'closed'"
+                          :readonly="
+                            category.locked ||
+                            segment.segment_status === 'closed' ||
+                            segment.segment_status === 'inactive'
+                          "
                         />
                       </div>
                     </div>
@@ -285,6 +312,7 @@ function getTableHeaders(segment: SegmentData) {
       title: `${category.name} (${category.weight * 100}%)`,
       value: `category_${category.documentId}`,
       sortable: false,
+      locked: category.locked, // Add locked property to header
     })) || []
 
   return [
