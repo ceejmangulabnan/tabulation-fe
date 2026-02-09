@@ -466,37 +466,26 @@ const allJudgeIds = computed(() => {
   return props.event.judges.map((judge) => judge.documentId)
 })
 
-const selectedJudges = computed({
-  get: () => {
-    if (!editedCategory.value.active_judges) return []
-    if (
-      editedCategory.value.active_judges.length === allJudgeIds.value.length &&
-      allJudgeIds.value.length > 0
-    ) {
-      return [...allJudgeIds.value, 'select-all']
-    }
-    return editedCategory.value.active_judges
+const selectedJudges = computed<string[]>({
+  get() {
+    return editedCategory.value.active_judges || []
   },
-  set: (val: (string | null)[]) => {
-    const containsSelectAll = val.includes('select-all')
-    const filteredVal = val.filter(
-      (v: string | null): v is string => v !== null && v !== 'select-all'
-    )
-
-    if (containsSelectAll) {
-      editedCategory.value.active_judges = allJudgeIds.value
-    } else {
-      editedCategory.value.active_judges = filteredVal
+  set(val) {
+    // user clicked Select All
+    if (val.includes('__all__')) {
+      editedCategory.value.active_judges = [...allJudgeIds.value]
+      return
     }
+
+    // normal selection
+    editedCategory.value.active_judges = val
   },
 })
 
 const judgeSelectionOptions = computed(() => {
-  const options = [...availableJudges.value]
-  if (options.length > 0) {
-    options.unshift({ title: 'Select All', value: 'select-all' })
-  }
-  return options
+  if (!availableJudges.value.length) return []
+
+  return [{ title: 'Select All', value: '__all__' }, ...availableJudges.value]
 })
 
 // --- Scoring Segments State & Headers ---
