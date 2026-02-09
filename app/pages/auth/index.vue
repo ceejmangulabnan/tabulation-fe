@@ -67,6 +67,7 @@
         </div>
       </v-card-item>
     </v-card>
+    <Snackbar />
   </div>
 </template>
 

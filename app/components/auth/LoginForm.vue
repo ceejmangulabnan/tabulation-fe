@@ -7,13 +7,16 @@
       <div>
         <v-text-field
           ref="usernameField"
-          v-model="username"
+          v-model="user.username"
           label="Username"
+          :autofocus="true"
+          :rules="requiredRule"
         />
         <v-text-field
-          v-model="password"
+          v-model="user.password"
           label="Password"
           :type="showPassword ? 'text' : 'password'"
+          :rules="requiredRule"
         >
           <template #append-inner>
             <v-btn
@@ -56,25 +59,26 @@ import { useAuthStore } from '~/stores/auth'
 
 const emit = defineEmits(['success'])
 const authStore = useAuthStore()
+const { showSnackbar } = useSnackbar()
 
-const username = ref('')
-const password = ref('')
+const user = ref({ username: '', password: '' })
 const errorMsg = ref<string | null>(null)
 const showPassword = ref(false)
 
+const requiredRule = [(v: string) => !!v || 'Field is required']
 function toggleShowPassword() {
   showPassword.value = !showPassword.value
 }
 
-const usernameField = ref()
-
 async function login() {
   try {
-    await authStore.login(username.value, password.value)
+    await authStore.login(user.value.username, user.value.password)
     emit('success')
+    showSnackbar('User signed in successfully!', 'success')
   } catch (error) {
     const err = error as { response?: { data?: { message?: string } } }
     errorMsg.value = err.response?.data?.message || 'Login failed'
+    showSnackbar(`User sign in failed`, 'error')
   }
 }
 </script>

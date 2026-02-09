@@ -10,6 +10,7 @@
           v-model="newUser.name"
           label="Name"
           :rules="requiredRule"
+          :autofocus="true"
         />
         <v-text-field
           v-model="newUser.username"
