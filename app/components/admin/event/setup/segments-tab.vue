@@ -610,10 +610,29 @@ const deleteSegment = async (item: SegmentData) => {
 }
 
 // Category Dialog
-const showCategoryDialog = (item: CategoryData | null = null, segmentId: string) => {
+// const showCategoryDialog = (item: CategoryData | null = null, segmentId: string) => {
+//   editedCategory.value = item
+//     ? { ...item, active_judges: item.active_judges || [] }
+//     : { name: '', weight: 0, active: true, locked: false, active_judges: [] }
+//   currentSegmentIdForCategory.value = segmentId
+//   categoryDialog.value = true
+//   console.log('Edited Category Item on dialog open', editedCategory.value)
+// }
+
+const showCategoryDialog = (item: CategoryData | null, segmentId: string) => {
   editedCategory.value = item
-    ? { ...item, active_judges: item.active_judges || [] }
-    : { name: '', weight: 0, active: true, locked: false, active_judges: [] }
+    ? {
+        ...item,
+        active_judges: (item.active_judges || []).map((j: any) => j.documentId),
+      }
+    : {
+        name: '',
+        weight: 0,
+        active: true,
+        locked: false,
+        active_judges: [],
+      }
+
   currentSegmentIdForCategory.value = segmentId
   categoryDialog.value = true
 }
