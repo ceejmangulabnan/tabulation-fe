@@ -51,7 +51,7 @@ export interface CategoryData extends StrapiPopulatedItem {
   weight: number
   active: boolean
   locked: boolean
-  activeJudges: JudgeData[]
+  active_judges: JudgeData[]
   segment: SegmentData
 }
 
@@ -90,6 +90,7 @@ export interface HeadshotData extends StrapiPopulatedItem {
 export interface JudgeData extends StrapiPopulatedItem {
   name: string
   event: EventData
+  judging_categories: CategoryData[]
   users_permissions_user: {
     id: number
     username: string

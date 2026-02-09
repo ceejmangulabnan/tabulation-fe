@@ -395,6 +395,16 @@
               type="number"
               step="0.01"
             />
+            <v-select
+              v-model="selectedJudges"
+              :items="judgeSelectionOptions"
+              label="Active Judges"
+              multiple
+              chips
+              closable-chips
+              clearable
+              variant="outlined"
+            />
             <v-switch
               v-model="editedCategory.active"
               label="Active"
@@ -443,6 +453,52 @@ const eventsStore = useEventsStore()
 const snackbar = useSnackbar()
 const { smAndDown } = useDisplay()
 
+const availableJudges = computed(() => {
+  if (!props.event.judges) return []
+  return props.event.judges.map((judge) => ({
+    title: judge.name,
+    value: judge.documentId,
+  }))
+})
+
+const allJudgeIds = computed(() => {
+  if (!props.event.judges) return []
+  return props.event.judges.map((judge) => judge.documentId)
+})
+
+const selectedJudges = computed({
+  get: () => {
+    if (!editedCategory.value.active_judges) return []
+    if (
+      editedCategory.value.active_judges.length === allJudgeIds.value.length &&
+      allJudgeIds.value.length > 0
+    ) {
+      return [...allJudgeIds.value, 'select-all']
+    }
+    return editedCategory.value.active_judges
+  },
+  set: (val: (string | null)[]) => {
+    const containsSelectAll = val.includes('select-all')
+    const filteredVal = val.filter(
+      (v: string | null): v is string => v !== null && v !== 'select-all'
+    )
+
+    if (containsSelectAll) {
+      editedCategory.value.active_judges = allJudgeIds.value
+    } else {
+      editedCategory.value.active_judges = filteredVal
+    }
+  },
+})
+
+const judgeSelectionOptions = computed(() => {
+  const options = [...availableJudges.value]
+  if (options.length > 0) {
+    options.unshift({ title: 'Select All', value: 'select-all' })
+  }
+  return options
+})
+
 // --- Scoring Segments State & Headers ---
 const segmentHeaders = [
   { title: 'Name', key: 'name', sortable: true, class: 'font-weight-bold' },
@@ -479,7 +535,7 @@ const editedCategory = ref<Partial<CategoryData>>({
   weight: 0,
   active: true, // Default to active for new categories
   locked: false, // Default false
-  activeJudges: [],
+  active_judges: [],
 })
 const currentSegmentIdForCategory = ref<string | null>(null)
 
@@ -566,7 +622,9 @@ const deleteSegment = async (item: SegmentData) => {
 
 // Category Dialog
 const showCategoryDialog = (item: CategoryData | null = null, segmentId: string) => {
-  editedCategory.value = item ? { ...item } : { name: '', weight: 0, active: true } // Default to active for new categories
+  editedCategory.value = item
+    ? { ...item, active_judges: item.active_judges || [] }
+    : { name: '', weight: 0, active: true, locked: false, active_judges: [] }
   currentSegmentIdForCategory.value = segmentId
   categoryDialog.value = true
 }
@@ -581,6 +639,7 @@ const saveCategory = async () => {
         active: editedCategory.value.active,
         locked: editedCategory.value.locked,
         segment: currentSegmentIdForCategory.value,
+        active_judges: editedCategory.value.active_judges,
       },
     }
     if (editedCategory.value.documentId) {
