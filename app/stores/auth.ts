@@ -55,7 +55,8 @@ export const useAuthStore = defineStore('auth', {
       username: string,
       password: string,
       email?: string,
-      eventId?: string
+      eventId?: string,
+      autoLogin = true
     ): Promise<StrapiUser> {
       this.isLoading = true
       try {
@@ -70,11 +71,13 @@ export const useAuthStore = defineStore('auth', {
 
         const { jwt, user } = response.data
 
-        this.jwt = jwt
-        this.user = user
+        if (autoLogin) {
+          this.jwt = jwt
+          this.user = user
 
-        const tokenCookie = useCookie<string | null>(JWT_COOKIE_NAME, { maxAge: 60 * 60 * 24 * 7 })
-        tokenCookie.value = jwt
+          const tokenCookie = useCookie<string | null>(JWT_COOKIE_NAME, { maxAge: 60 * 60 * 24 * 7 })
+          tokenCookie.value = jwt
+        }
 
         return user
       } catch (error) {

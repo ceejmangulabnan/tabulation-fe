@@ -278,13 +278,14 @@ const createJudge = async () => {
       newJudge.value.username,
       newJudge.value.password,
       newJudge.value.email,
-      eventsStore.event?.documentId
+      eventsStore.event?.documentId,
+      false // Prevent login of created judge in event setup
     )
 
     snackbar.showSnackbar('Judge created successfully!', 'success')
-    emit('judges-updated')
 
     await eventsStore.fetchEvent(String(eventId))
+    emit('judges-updated')
   } catch (e) {
     snackbar.showSnackbar('Failed to create judge', 'error')
     console.error('Could not create or assign judge', e)
