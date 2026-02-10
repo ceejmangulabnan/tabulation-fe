@@ -123,7 +123,20 @@
               item-key="id"
               class="elevation-1"
               :sort-by="[{ key: 'rank', order: 'asc' }]"
-            />
+            >
+              <template
+                v-for="judge in judges"
+                #[`header.judge_${judge.id}`]="{ column }"
+                :key="`judge-header-male-${judge.id}`"
+              >
+                <span
+                  :class="{ 'active-judge-header': isJudgeActive(judge) }"
+                  class="font-weight-bold"
+                >
+                  {{ column.title }}
+                </span>
+              </template>
+            </v-data-table>
           </v-window-item>
           <v-window-item value="female">
             <v-data-table
@@ -132,7 +145,20 @@
               item-key="id"
               class="elevation-1"
               :sort-by="[{ key: 'rank', order: 'asc' }]"
-            />
+            >
+              <template
+                v-for="judge in judges"
+                #[`header.judge_${judge.id}`]="{ column }"
+                :key="`judge-header-female-${judge.id}`"
+              >
+                <span
+                  :class="{ 'active-judge-header': isJudgeActive(judge) }"
+                  class="font-weight-bold"
+                >
+                  {{ column.title }}
+                </span>
+              </template>
+            </v-data-table>
           </v-window-item>
         </v-window>
       </v-col>
@@ -156,6 +182,7 @@ interface DataTableHeader {
   title: string
   align?: 'start' | 'end' | 'center'
   sortable?: boolean
+  class?: string
 }
 
 const route = useRoute()
@@ -300,8 +327,20 @@ const getJudgeScore = (participantId: number, judgeId: number) => {
 }
 
 const getAverageScore = (participantId: number) => {
-  if (!event.value?.scores) return '-'
-  const validScores = judges.value
+  if (!event.value?.scores || !category.value) return '-'
+
+  // Filter judges to include only active judges for the current category
+  const activeJudgesForCategory = judges.value.filter((judge) =>
+    category.value?.active_judges?.some(
+      (activeJudge) => String(activeJudge.documentId) === String(judge.documentId)
+    )
+  )
+
+  if (activeJudgesForCategory.length === 0) {
+    return '-'
+  }
+
+  const validScores = activeJudgesForCategory
     .map((judge) => getJudgeScore(participantId, judge.id))
     .filter((score) => score !== null) as number[]
 
@@ -310,7 +349,7 @@ const getAverageScore = (participantId: number) => {
   }
 
   const totalScore = validScores.reduce((total, score) => total + score, 0)
-  return (totalScore / validScores.length).toFixed(2)
+  return (totalScore / validScores.length).toFixed(3)
 }
 
 const getRank = (participant: ParticipantData, gender: 'male' | 'female') => {
@@ -322,13 +361,21 @@ const getRank = (participant: ParticipantData, gender: 'male' | 'female') => {
   return rank
 }
 
+const isJudgeActive = (judge: JudgeData) => {
+  return category.value?.active_judges?.some(
+    (activeJudge) => String(activeJudge.documentId) === String(judge.documentId)
+  )
+}
+
 const headers = computed<DataTableHeader[]>(() => {
-  const judgeHeaders: DataTableHeader[] = judges.value.map((judge) => ({
-    title: judge.name,
-    key: `judge_${judge.id}`,
-    align: 'end',
-    sortable: true,
-  }))
+  const judgeHeaders: DataTableHeader[] = judges.value.map((judge) => {
+    return {
+      title: judge.name,
+      key: `judge_${judge.id}`,
+      align: 'end',
+      sortable: true,
+    }
+  })
 
   return [
     { title: 'Rank', key: 'rank', align: 'start', sortable: true, order: 'asc' },
@@ -363,3 +410,9 @@ const createTableItems = (gender: 'male' | 'female') => {
 const maleItems = computed(() => createTableItems('male'))
 const femaleItems = computed(() => createTableItems('female'))
 </script>
+
+<style scoped>
+.active-judge-header {
+  color: green !important; /* Green text for the header */
+}
+</style>
