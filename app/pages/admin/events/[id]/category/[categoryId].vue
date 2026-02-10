@@ -105,7 +105,7 @@
     <v-row>
       <v-col cols="12">
         <h1 class="text-h6 font-weight-bold">
-          {{ category?.name }}
+          {{ category?.name }} - {{ (category?.weight || 0) * 100 }}%
         </h1>
         <v-tabs
           v-model="tab"
@@ -346,7 +346,7 @@ const getAverageScore = (participantId: number) => {
   }
 
   const totalScore = validScores.reduce((total, score) => total + score, 0)
-  return (totalScore / validScores.length).toFixed(3)
+  return (totalScore / activeJudgesForCategory.length).toFixed(3)
 }
 
 const getRank = (participant: ParticipantData, gender: 'male' | 'female') => {

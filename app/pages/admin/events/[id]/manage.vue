@@ -345,7 +345,9 @@
           <v-card-text>
             <v-select
               v-model="selectedJudgeId"
-              :items="event?.judges"
+              :items="
+                event?.judges.sort((a: JudgeData, b: JudgeData) => a.name.localeCompare(b.name))
+              "
               item-title="name"
               item-value="documentId"
               label="Select Judge"
@@ -599,7 +601,6 @@ function getStrapiUrl(url: string) {
 }
 
 async function refreshEventData() {
-  // New function for manual/auto refetch
   await eventsStore.fetchEvent(eventId)
 }
 
@@ -904,17 +905,23 @@ const fetchRankings = async () => {
     // Handle Male Segment and Final Ranking
     if (printGender.value === 'male' || printGender.value === 'both') {
       if (printTitle.value === 'Final Event Ranking') {
-        maleRankings.value = results.male.filter((p) => p.rank === 1).slice(0, 5)
+        maleRankings.value = results.male.slice(0, 5)
+        console.log('Male Rankings Final:', maleRankings.value)
       }
-      maleRankings.value = results.male.filter((p) => p.rank === 1).slice(0, 5)
+      maleRankings.value = results.male.slice(0, 5)
+
+      console.log('Male Rankings Segment:', maleRankings.value)
     }
 
     // Handle Female Segment and Final Ranking
     if (printGender.value === 'female' || printGender.value === 'both') {
       if (printTitle.value === 'Final Event Ranking') {
-        femaleRankings.value = results.female.filter((p) => p.rank === 1).slice(0, 5)
+        femaleRankings.value = results.female.slice(0, 5)
+
+        console.log('Female Rankings Final:', femaleRankings.value)
       }
-      femaleRankings.value = results.female.filter((p) => p.rank === 1).slice(0, 5)
+      femaleRankings.value = results.female.slice(0, 5)
+      console.log('Female Rankings Segment:', femaleRankings.value)
     }
 
     // if (printGender.value === 'male' || printGender.value === 'both') {

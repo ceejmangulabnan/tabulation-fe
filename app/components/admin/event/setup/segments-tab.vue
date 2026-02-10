@@ -487,7 +487,10 @@ const selectedJudges = computed<string[]>({
 const judgeSelectionOptions = computed(() => {
   if (!availableJudges.value.length) return []
 
-  return [{ title: 'Select All', value: '__all__' }, ...availableJudges.value]
+  return [
+    { title: 'Select All', value: '__all__' },
+    ...availableJudges.value.sort((a, b) => a.title.localeCompare(b.title)),
+  ]
 })
 
 // --- Scoring Segments State & Headers ---
