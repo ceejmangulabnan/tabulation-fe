@@ -296,14 +296,36 @@ const genders = [
   { key: 'other', label: 'Other' },
 ]
 
+// Filter scoreable categories based on locked value and active_judges
 function getActiveCategories(segment: SegmentData) {
   if (!segment.categories) {
     return []
   }
 
-  if (props.isAdmin) return segment.categories
+  const categoriesToProcess = props.isAdmin
+    ? segment.categories // If admin, consider all categories from the segment
+    : segment.categories.filter((category) => category.active) // If not admin, only consider active categories
 
-  return segment.categories.filter((category) => category.active)
+  return categoriesToProcess.map((category) => {
+    // Check if the current judge is in the category's active_judges list
+    const isJudgeAssignedToCategory = category.active_judges?.some(
+      (judge) => String(judge.documentId) === String(props.judgeId)
+    )
+
+    // A category should be locked if:
+    // 1. Its 'locked' property from the backend is true.
+    // 2. OR it has active_judges defined, and the current judge is NOT among them.
+    //    If active_judges is not defined or is empty, it implies all judges can score (unless category.locked is true).
+    const shouldBeLockedBecauseOfJudgeAssignment =
+      category.active_judges && category.active_judges.length > 0 && !isJudgeAssignedToCategory
+
+    return {
+      ...category,
+      // The category is locked if it's explicitly locked from the backend,
+      // OR if it has active judges specified and the current judge is not one of them.
+      locked: category.locked || shouldBeLockedBecauseOfJudgeAssignment,
+    }
+  })
 }
 
 function getTableHeaders(segment: SegmentData) {
