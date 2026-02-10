@@ -308,11 +308,8 @@ const handlePrint = async () => {
 }
 
 const judges = computed(() => event.value?.judges || [])
-
 const participants = computed(() => event.value?.participants || [])
-
 const maleParticipants = computed(() => participants.value.filter((p) => p.gender === 'male'))
-
 const femaleParticipants = computed(() => participants.value.filter((p) => p.gender === 'female'))
 
 const getJudgeScore = (participantId: number, judgeId: number) => {
@@ -368,14 +365,16 @@ const isJudgeActive = (judge: JudgeData) => {
 }
 
 const headers = computed<DataTableHeader[]>(() => {
-  const judgeHeaders: DataTableHeader[] = judges.value.map((judge) => {
-    return {
-      title: judge.name,
-      key: `judge_${judge.id}`,
-      align: 'end',
-      sortable: true,
-    }
-  })
+  const judgeHeaders: DataTableHeader[] = judges.value
+    .sort((a: JudgeData, b: JudgeData) => a.name.localeCompare(b.name))
+    .map((judge) => {
+      return {
+        title: judge.name,
+        key: `judge_${judge.id}`,
+        align: 'end',
+        sortable: true,
+      }
+    })
 
   return [
     { title: 'Rank', key: 'rank', align: 'start', sortable: true, order: 'asc' },
