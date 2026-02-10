@@ -264,6 +264,7 @@
             <v-text-field
               v-model="editedParticipant.name"
               label="Name"
+              :autofocus="true"
               required
             />
             <v-text-field

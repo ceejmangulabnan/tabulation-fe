@@ -322,6 +322,7 @@
             <v-text-field
               v-model="editedSegment.name"
               label="Name"
+              :autofocus="true"
             />
             <v-text-field
               v-model.number="editedSegment.order"
@@ -388,6 +389,7 @@
             <v-text-field
               v-model="editedCategory.name"
               label="Name"
+              :autofocus="true"
             />
             <v-text-field
               v-model="editedCategory.weight"

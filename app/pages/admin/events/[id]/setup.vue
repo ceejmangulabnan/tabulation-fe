@@ -204,9 +204,9 @@ const fetchAvailableJudges = async () => {
     const api = useStrapiApi()
     const res = await api.get('/judges')
     const assignedJudgeIds = new Set(event.value.judges?.map((judge) => judge.documentId) || [])
-    availableJudges.value = res.data.data.filter(
-      (judge: JudgeData) => !assignedJudgeIds.has(judge.documentId)
-    )
+    availableJudges.value = res.data.data
+      .filter((judge: JudgeData) => !assignedJudgeIds.has(judge.documentId))
+      .sort((a: JudgeData, b: JudgeData) => a.name.localeCompare(b.name))
   } catch (e) {
     console.error('Could not fetch judges', e)
   }

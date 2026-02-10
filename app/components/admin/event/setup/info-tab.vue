@@ -19,6 +19,7 @@
         <v-text-field
           v-model="formData.name"
           label="Title"
+          :autofocus="true"
         />
 
         <v-textarea

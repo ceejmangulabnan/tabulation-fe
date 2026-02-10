@@ -77,6 +77,9 @@
       <v-window-item value="assign">
         <v-card-text>
           <v-autocomplete
+            :clearable="true"
+            :multiple="true"
+            autocomplete="off"
             v-model="selectedJudge"
             :items="availableJudges"
             item-title="name"
@@ -190,7 +193,7 @@ const snackbar = useSnackbar()
 const { smAndDown } = useDisplay()
 
 const judgeTab = ref('assign')
-const selectedJudge = ref<number | null>(null)
+const selectedJudge = ref<number[] | null>(null)
 const newJudge = ref({ name: '', username: '', email: '', password: '', confirmPassword: '' })
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
@@ -215,29 +218,44 @@ const judgeHeaders = [
 ]
 
 const assignJudge = async () => {
-  const selectedJudgeUserData = props.availableJudges.find((j) => j.id === selectedJudge.value)
-  if (!selectedJudgeUserData) return
+  if (!selectedJudge.value || selectedJudge.value.length === 0) {
+    snackbar.showSnackbar('Please select at least one judge to assign.', 'warning')
+    return
+  }
 
-  try {
-    const res = await api.put(`/judges/${selectedJudgeUserData.documentId}`, {
+  const assignmentPromises = selectedJudge.value.map(async (judgeId) => {
+    const judgeToAssign = props.availableJudges.find((j) => j.id === judgeId)
+    if (!judgeToAssign) {
+      console.warn(`Could not find judge with ID ${judgeId} in available judges.`)
+      return Promise.resolve(null)
+    }
+
+    return api.put(`/judges/${judgeToAssign.documentId}`, {
       data: {
         events: {
           connect: [props.event.documentId],
         },
-        name: selectedJudgeUserData.username,
+        name: judgeToAssign.name,
       },
     })
+  })
 
-    if (res.status === 200) {
-      snackbar.showSnackbar('Judge assigned successfully', 'success')
+  try {
+    const results = await Promise.all(assignmentPromises)
+    const successfulAssignments = results.filter((res) => res && res.status === 200).length
+
+    if (successfulAssignments > 0) {
+      snackbar.showSnackbar(`${successfulAssignments} judge(s) assigned successfully`, 'success')
+    } else {
+      snackbar.showSnackbar('No judges were assigned. Please try again.', 'error')
     }
 
     await eventsStore.fetchEvent(props.event.id?.toString() || '')
     emit('judges-updated')
-    selectedJudge.value = null
+    selectedJudge.value = null // Clear selection after successful judge assignment
   } catch (e) {
-    snackbar.showSnackbar('Failed to assign judge.', 'error')
-    console.error('Could not assign judge', e)
+    snackbar.showSnackbar('Failed to assign one or more judges.', 'error')
+    console.error('Could not assign judges', e)
   }
 }
 
