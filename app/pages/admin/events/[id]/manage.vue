@@ -894,34 +894,20 @@ const fetchRankings = async () => {
     maleRankings.value = []
     femaleRankings.value = []
 
-    if (categoryId && (printGender.value === 'male' || printGender.value === 'both')) {
-      maleRankings.value = results.male.filter((p) => p.rank === 1).slice(0, 1)
-    }
-
-    if (categoryId && (printGender.value === 'female' || printGender.value === 'both')) {
-      femaleRankings.value = results.female.filter((p) => p.rank === 1).slice(0, 1)
-    }
-
-    // Handle Male Segment and Final Ranking
-    if (printGender.value === 'male' || printGender.value === 'both') {
-      if (printTitle.value === 'Final Event Ranking') {
+    if (printType.value === 'category') {
+      if (printGender.value === 'male' || printGender.value === 'both') {
+        maleRankings.value = results.male.filter((p) => p.rank === 1).slice(0, 3) // Slice until 3 to see possible ties at Rank 1
+      }
+      if (printGender.value === 'female' || printGender.value === 'both') {
+        femaleRankings.value = results.female.filter((p) => p.rank === 1).slice(0, 3)
+      }
+    } else if (printType.value === 'segment' || printType.value === 'final') {
+      if (printGender.value === 'male' || printGender.value === 'both') {
         maleRankings.value = results.male.slice(0, 5)
-        console.log('Male Rankings Final:', maleRankings.value)
       }
-      maleRankings.value = results.male.slice(0, 5)
-
-      console.log('Male Rankings Segment:', maleRankings.value)
-    }
-
-    // Handle Female Segment and Final Ranking
-    if (printGender.value === 'female' || printGender.value === 'both') {
-      if (printTitle.value === 'Final Event Ranking') {
+      if (printGender.value === 'female' || printGender.value === 'both') {
         femaleRankings.value = results.female.slice(0, 5)
-
-        console.log('Female Rankings Final:', femaleRankings.value)
       }
-      femaleRankings.value = results.female.slice(0, 5)
-      console.log('Female Rankings Segment:', femaleRankings.value)
     }
 
     // if (printGender.value === 'male' || printGender.value === 'both') {
