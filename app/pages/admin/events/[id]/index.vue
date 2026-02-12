@@ -74,104 +74,206 @@
     </v-row>
 
     <v-row>
-      <!-- Participants -->
-      <v-col
-        md="12"
-        cols="12"
-        class="d-flex"
-      >
-        <v-card class="w-100 me-1 px-4 py-2">
-          <v-card-title>Participants ({{ event?.participants?.length || 0 }})</v-card-title>
-          <v-text-field
-            v-model="participantSearch"
-            label="Search Participants"
-            variant="filled"
-            hide-details
-            class="mb-4"
-          ></v-text-field>
-
-          <v-tabs
-            v-model="activeTab"
-            class="mt-4"
+      <v-col cols="12">
+        <v-tabs
+          v-model="selectedSegmentTab"
+          show-arrows
+        >
+          <v-tab
+            v-for="segment in event?.segments"
+            :key="segment.documentId"
+            :value="segment.documentId"
           >
-            <v-tab value="male">Male ({{ maleParticipants.length }})</v-tab>
-            <v-tab value="female">Female ({{ femaleParticipants.length }})</v-tab>
-          </v-tabs>
+            {{ segment.name }}
+          </v-tab>
+          <v-tab
+            value="final-rankings"
+            @click="fetchFinalScores"
+          >
+            Final Rankings
+          </v-tab>
+        </v-tabs>
 
-          <v-window v-model="activeTab">
-            <v-window-item value="male">
-              <v-data-table
-                :headers="participantHeaders"
-                :items="maleParticipants"
-                class="flex-grow-1"
-                density="compact"
-                :hide-default-footer="hideFooterOnSmallScreens"
-              >
-                <template #item.name="{ item }">
-                  <div class="d-flex align-center py-2">
-                    <v-avatar
-                      v-if="item.headshot?.formats?.thumbnail?.url"
-                      :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
-                      icon="mdi-account"
-                      class="mr-3"
-                      size="40"
-                    />
+        <v-window v-model="selectedSegmentTab">
+          <v-window-item
+            v-for="segment in event?.segments"
+            :key="segment.documentId"
+            :value="segment.documentId"
+          >
+            <v-card class="mt-4">
+              <v-card-title>
+                {{ segment.name }} Scores
+                <v-btn
+                  :loading="eventsStore.isLoading"
+                  icon
+                  color="primary"
+                  variant="text"
+                  @click="fetchSegmentScores(segment.documentId)"
+                  class="ml-2"
+                >
+                  <v-icon>mdi-refresh</v-icon>
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                  >
+                    Refresh Scores
+                  </v-tooltip>
+                </v-btn>
+              </v-card-title>
+              <v-card-text>
+                <v-tabs
+                  v-model="activeGenderTab"
+                  class="mb-4"
+                >
+                  <v-tab value="male">Male ({{ maleSegmentResults.length }})</v-tab>
+                  <v-tab value="female">Female ({{ femaleSegmentResults.length }})</v-tab>
+                </v-tabs>
 
-                    <v-avatar
-                      v-else
-                      icon="mdi-account"
-                      class="mr-3"
-                      size="40"
-                    />
+                <v-window v-model="activeGenderTab">
+                  <v-window-item value="male">
+                    <v-data-table
+                      :headers="segmentHeaders"
+                      :items="maleSegmentResults"
+                      item-key="participant_number"
+                      class="elevation-1"
+                      :sort-by="[{ key: 'rank', order: 'asc' }]"
+                    >
+                      <template #[`item.headshot`]="{ item }">
+                        <v-avatar size="36px">
+                          <v-img
+                            v-if="item.headshot"
+                            :src="getStrapiUrl(item.headshot)"
+                          ></v-img>
+                          <v-icon v-else>mdi-account-circle</v-icon>
+                        </v-avatar>
+                      </template>
+                      <template
+                        v-for="category in segmentCategories"
+                        #[`item.category_score_${category.documentId}`]="{ item }"
+                        :key="`category-score-${category.documentId}-${item.participant_number}`"
+                      >
+                        {{ item.category_scores[category.name]?.averaged_score || '-' }}
+                      </template>
+                    </v-data-table>
+                  </v-window-item>
+                  <v-window-item value="female">
+                    <v-data-table
+                      :headers="segmentHeaders"
+                      :items="femaleSegmentResults"
+                      item-key="participant_number"
+                      class="elevation-1"
+                      :sort-by="[{ key: 'rank', order: 'asc' }]"
+                    >
+                      <template #[`item.headshot`]="{ item }">
+                        <v-avatar size="36px">
+                          <v-img
+                            v-if="item.headshot"
+                            :src="getStrapiUrl(item.headshot)"
+                          ></v-img>
+                          <v-icon v-else>mdi-account-circle</v-icon>
+                        </v-avatar>
+                      </template>
+                      <template
+                        v-for="category in segmentCategories"
+                        #[`item.category_score_${category.documentId}`]="{ item }"
+                        :key="`category-score-${category.documentId}-${item.participant_number}`"
+                      >
+                        {{ item.category_scores[category.name]?.averaged_score || '-' }}
+                      </template>
+                    </v-data-table>
+                  </v-window-item>
+                </v-window>
+              </v-card-text>
+            </v-card>
+          </v-window-item>
+          <v-window-item value="final-rankings">
+            <v-card class="mt-4">
+              <v-card-title>
+                Final Rankings
+                <v-btn
+                  :loading="eventsStore.isLoading"
+                  icon
+                  color="primary"
+                  variant="text"
+                  @click="fetchFinalScores"
+                  class="ml-2"
+                >
+                  <v-icon>mdi-refresh</v-icon>
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                  >
+                    Refresh Scores
+                  </v-tooltip>
+                </v-btn>
+              </v-card-title>
+              <v-card-text>
+                <v-tabs
+                  v-model="activeGenderTab"
+                  class="mb-4"
+                >
+                  <v-tab value="male">Male ({{ finalMaleResults.length }})</v-tab>
+                  <v-tab value="female">Female ({{ finalFemaleResults.length }})</v-tab>
+                </v-tabs>
 
-                    <div class="font-weight-bold">{{ item.name }}</div>
-                  </div>
-                </template>
-
-                <template #no-data>
-                  <div class="text-center pa-4 text-grey-darken-1">
-                    No male participants registered.
-                  </div>
-                </template>
-              </v-data-table>
-            </v-window-item>
-            <v-window-item value="female">
-              <v-data-table
-                :headers="participantHeaders"
-                :items="femaleParticipants"
-                class="flex-grow-1"
-                density="compact"
-                :hide-default-footer="hideFooterOnSmallScreens"
-              >
-                <template #item.name="{ item }">
-                  <div class="d-flex align-center py-2">
-                    <v-avatar
-                      v-if="item.headshot?.formats?.thumbnail?.url"
-                      :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
-                      icon="mdi-account"
-                      class="mr-3"
-                      size="40"
-                    />
-
-                    <v-avatar
-                      v-else
-                      icon="mdi-account"
-                      class="mr-3"
-                      size="40"
-                    />
-                    <div class="font-weight-bold">{{ item.name }}</div>
-                  </div>
-                </template>
-
-                <template #no-data>
-                  <div class="text-center pa-4 text-grey-darken-1">
-                    No female participants registered.
-                  </div>
-                </template>
-              </v-data-table>
-            </v-window-item>
-          </v-window>
-        </v-card>
+                <v-window v-model="activeGenderTab">
+                  <v-window-item value="male">
+                    <v-data-table
+                      :headers="finalRankingsHeaders"
+                      :items="finalMaleResults"
+                      item-key="participant_number"
+                      class="elevation-1"
+                      :sort-by="[{ key: 'rank', order: 'asc' }]"
+                    >
+                      <template #[`item.headshot`]="{ item }">
+                        <v-avatar size="36px">
+                          <v-img
+                            v-if="item.headshot"
+                            :src="getStrapiUrl(item.headshot)"
+                          ></v-img>
+                          <v-icon v-else>mdi-account-circle</v-icon>
+                        </v-avatar>
+                      </template>
+                      <template
+                        v-for="segment in finalSegments"
+                        #[`item.segment_score_${segment.documentId}`]="{ item }"
+                        :key="`segment-score-${segment.documentId}-${item.participant_number}`"
+                      >
+                        {{ item.segment_scores[segment.name]?.averaged_score || '-' }}
+                      </template>
+                    </v-data-table>
+                  </v-window-item>
+                  <v-window-item value="female">
+                    <v-data-table
+                      :headers="finalRankingsHeaders"
+                      :items="finalFemaleResults"
+                      item-key="participant_number"
+                      class="elevation-1"
+                      :sort-by="[{ key: 'rank', order: 'asc' }]"
+                    >
+                      <template #[`item.headshot`]="{ item }">
+                        <v-avatar size="36px">
+                          <v-img
+                            v-if="item.headshot"
+                            :src="getStrapiUrl(item.headshot)"
+                          ></v-img>
+                          <v-icon v-else>mdi-account-circle</v-icon>
+                        </v-avatar>
+                      </template>
+                      <template
+                        v-for="segment in finalSegments"
+                        #[`item.segment_score_${segment.documentId}`]="{ item }"
+                        :key="`segment-score-${segment.documentId}-${item.participant_number}`"
+                      >
+                        {{ item.segment_scores[segment.name]?.averaged_score || '-' }}
+                      </template>
+                    </v-data-table>
+                  </v-window-item>
+                </v-window>
+              </v-card-text>
+            </v-card>
+          </v-window-item>
+        </v-window>
       </v-col>
     </v-row>
 
@@ -282,6 +384,105 @@
 </template>
 
 <script setup lang="ts">
+import { useDisplay } from 'vuetify'
+
+interface DataTableHeader {
+  key: string
+  title: string
+  align?: 'start' | 'end' | 'center'
+  sortable?: boolean
+  class?: string
+  fixed?: 'end' | 'start' | boolean | undefined
+}
+
+// Define interfaces for the segment-specific API response
+interface CategoryScoreDetail {
+  averaged_score: number
+  raw_averaged_score: number
+}
+
+interface SegmentResultParticipant {
+  participant_number: number
+  name: string
+  department: string
+  gender: 'male' | 'female'
+  headshot: string
+  category_scores: {
+    [categoryName: string]: CategoryScoreDetail
+  }
+  averaged_score: number
+  raw_averaged_score: number
+  rank: number
+}
+
+interface CategoryDataFromSegmentApi {
+  documentId: string
+  name: string
+  weight: number
+}
+
+interface SegmentScoresApiResponse {
+  event: any // Assuming EventData structure
+  segment: {
+    documentId: string
+    name: string
+    order: number
+    weight: number
+  }
+  categories: CategoryDataFromSegmentApi[]
+  results: {
+    male: SegmentResultParticipant[]
+    female: SegmentResultParticipant[]
+  }
+}
+
+// Define interfaces for the final scores API response
+interface FinalAveragedScore {
+  averaged_score: number
+  raw_averaged_score: number
+}
+
+interface FinalSegmentScores {
+  [key: string]: FinalAveragedScore
+}
+
+interface FinalParticipant {
+  participant_number: number
+  name: string
+  department: string
+  gender: 'male' | 'female'
+  headshot: string
+  segment_scores: FinalSegmentScores
+  averaged_score: number
+  raw_averaged_score: number
+  rank: number
+}
+
+interface FinalEventScoresResponse {
+  event: {
+    documentId: string
+    name: string
+    description: string
+  }
+  segments: {
+    documentId: string
+    name: string
+    order: number
+    weight: number
+  }[]
+  results: {
+    male: FinalParticipant[]
+    female: FinalParticipant[]
+  }
+}
+
+// Re-defining JudgeData locally for consistency with new API structures, if not globally available
+interface JudgeData {
+  id: number
+  name: string
+  documentId: string
+}
+
 // event id index page
 definePageMeta({
   layout: 'admin-event',
@@ -293,10 +494,22 @@ const api = useStrapiApi()
 const snackbar = useSnackbar()
 
 const { smAndDown } = useDisplay()
-const hideFooterOnSmallScreens = computed(() => smAndDown.value)
 
 const eventId = route.params.id as string
 const event = computed(() => eventsStore.event)
+
+const selectedSegmentTab = ref<string | null>(null) // To control segment tabs
+const activeGenderTab = ref('male') // To control male/female tabs within a segment
+
+// For segment-specific scores
+const maleSegmentResults = ref<SegmentResultParticipant[]>([])
+const femaleSegmentResults = ref<SegmentResultParticipant[]>([])
+const segmentCategories = ref<CategoryDataFromSegmentApi[]>([]) // Categories for the selected segment
+
+// For final rankings
+const finalMaleResults = ref<FinalParticipant[]>([])
+const finalFemaleResults = ref<FinalParticipant[]>([])
+const finalSegments = ref<FinalEventScoresResponse['segments']>([])
 
 function getStrapiUrl(url: string) {
   const config = useRuntimeConfig()
@@ -305,7 +518,68 @@ function getStrapiUrl(url: string) {
 
 onMounted(async () => {
   await eventsStore.fetchEvent(eventId)
+  if (event.value?.segments && event.value.segments.length > 0) {
+    const firstSegmentWithId = event.value.segments.find((s) => s.documentId)
+    if (firstSegmentWithId) {
+      selectedSegmentTab.value = firstSegmentWithId.documentId
+    } else {
+      console.warn('No segment with documentId found to select initially.')
+    }
+  }
 })
+
+watch(selectedSegmentTab, (newTab) => {
+  if (!newTab) return
+  if (newTab === 'final-rankings') {
+    if (finalMaleResults.value.length === 0 && finalFemaleResults.value.length === 0) {
+      fetchFinalScores()
+    }
+  } else {
+    fetchSegmentScores(newTab)
+  }
+})
+
+const fetchSegmentScores = async (segmentDocumentId: string) => {
+  if (!event.value) {
+    snackbar.showSnackbar('Event data not available.', 'error')
+    return
+  }
+
+  eventsStore.isLoading = true
+  try {
+    const apiUrl = `/admin/events/${event.value.documentId}/segments/${segmentDocumentId}/scores`
+    const { data } = await api.get<SegmentScoresApiResponse>(apiUrl)
+    maleSegmentResults.value = data.results.male
+    femaleSegmentResults.value = data.results.female
+    segmentCategories.value = data.categories
+  } catch (e) {
+    snackbar.showSnackbar('Failed to fetch segment scores.', 'error')
+    console.error(e)
+  } finally {
+    eventsStore.isLoading = false
+  }
+}
+
+const fetchFinalScores = async () => {
+  if (!event.value) {
+    snackbar.showSnackbar('Event data not available.', 'error')
+    return
+  }
+
+  eventsStore.isLoading = true
+  try {
+    const apiUrl = `/admin/events/${event.value.documentId}/scores`
+    const { data } = await api.get<FinalEventScoresResponse>(apiUrl)
+    finalMaleResults.value = data.results.male
+    finalFemaleResults.value = data.results.female
+    finalSegments.value = data.segments
+  } catch (e) {
+    snackbar.showSnackbar('Failed to fetch final scores.', 'error')
+    console.error(e)
+  } finally {
+    eventsStore.isLoading = false
+  }
+}
 
 const deleteEvent = async () => {
   if (!event.value?.documentId) {
@@ -361,50 +635,118 @@ const totalSegmentWeight = computed(() =>
 function getScoringProgress(category: CategoryData, judges: JudgeData[], eventScores: ScoreData[]) {
   if (!judges || judges.length === 0) return 'No judges assigned'
 
-  // Filter scores for the current category
   const categoryScores = (eventScores || []).filter((s) => s.category?.id === category.id)
-
   const assignedJudgeIds = new Set(judges.map((j) => j.id))
   const judgesWhoScored = new Set(
     categoryScores.map((s: ScoreData) => s.judge?.id).filter((id) => id)
   )
-
   const scoredCount = [...judgesWhoScored].filter((id) => assignedJudgeIds.has(id)).length
 
   return `${scoredCount} of ${judges.length} judges have scored.`
 }
 
-// Participants Table
-const activeTab = ref('male')
-const participantSearch = ref('')
-const participantHeaders = [
-  { title: 'No.', value: 'number', sortable: true, width: '10' },
-  { title: 'Name', value: 'name', sortable: true },
-  { title: 'Department', value: 'department.name', sortable: true },
-  { title: 'Notes', value: 'notes', sortable: false },
-]
+const segmentHeaders = computed<DataTableHeader[]>(() => {
+  const staticHeaders: DataTableHeader[] = [
+    {
+      title: 'No.',
+      key: 'participant_number',
+      align: 'start',
+      sortable: true,
+      fixed: 'start',
+    },
+    { title: 'Headshot', key: 'headshot', align: 'center', sortable: false },
+    { title: 'Participant', key: 'name', align: 'start', sortable: true },
+    {
+      title: 'Department',
+      key: 'department',
+      align: 'start',
+      sortable: true,
+    },
+  ]
 
-const filteredParticipants = computed(() => {
-  if (!event.value?.participants) return []
+  const categoryScoreHeaders: DataTableHeader[] = segmentCategories.value.map((category) => ({
+    title: category.name,
+    key: `category_score_${category.documentId}`,
+    align: 'end',
+    sortable: true,
+  }))
 
-  let participants = event.value.participants
-
-  if (participantSearch.value) {
-    participants = participants.filter((p: ParticipantData) => {
-      const searchTerm = participantSearch.value.toLowerCase()
-      const searchableContent = [p.name, p.number, p.notes].join(' ').toLowerCase()
-      return searchableContent.includes(searchTerm)
-    })
-  }
-
-  return [...participants].sort((a, b) => a.number - b.number)
+  return [
+    ...staticHeaders,
+    ...categoryScoreHeaders,
+    {
+      title: 'Total Segment Score',
+      key: 'averaged_score',
+      align: 'end',
+      sortable: true,
+    },
+    { title: 'Rank', key: 'rank', align: 'end', sortable: true, fixed: 'end' },
+  ]
 })
 
-const maleParticipants = computed(() => {
-  return filteredParticipants.value.filter((p: ParticipantData) => p.gender === 'male')
-})
+const finalRankingsHeaders = computed<DataTableHeader[]>(() => {
+  const staticHeaders: DataTableHeader[] = [
+    {
+      title: 'No.',
+      key: 'participant_number',
+      align: 'start',
+      sortable: true,
+      fixed: 'start',
+    },
+    { title: 'Headshot', key: 'headshot', align: 'center', sortable: false },
+    { title: 'Participant', key: 'name', align: 'start', sortable: true },
+    {
+      title: 'Department',
+      key: 'department',
+      align: 'start',
+      sortable: true,
+    },
+  ]
 
-const femaleParticipants = computed(() => {
-  return filteredParticipants.value.filter((p: ParticipantData) => p.gender === 'female')
+  const segmentScoreHeaders: DataTableHeader[] = finalSegments.value.map((segment) => ({
+    title: `${segment.name} (${segment.weight * 100}%)`,
+    key: `segment_score_${segment.documentId}`,
+    align: 'end',
+    sortable: true,
+  }))
+
+  return [
+    ...staticHeaders,
+    ...segmentScoreHeaders,
+    {
+      title: 'Total Score',
+      key: 'averaged_score',
+      align: 'end',
+      sortable: true,
+    },
+
+    { title: 'Rank', key: 'rank', align: 'end', sortable: true, fixed: 'end' },
+  ]
 })
 </script>
+
+<style scoped>
+.v-data-table {
+  overflow-x: auto;
+}
+
+.min-w-60px {
+  min-width: 60px;
+}
+
+.min-w-80px {
+  min-width: 80px;
+}
+
+.min-w-100px {
+  min-width: 100px;
+}
+
+.min-w-120px {
+  min-width: 120px;
+}
+
+.min-w-150px {
+  min-width: 150px;
+}
+</style>
