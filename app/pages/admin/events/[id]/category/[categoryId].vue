@@ -120,18 +120,28 @@
             <v-data-table
               :headers="headers"
               :items="maleItems"
-              item-key="id"
+              item-key="participant_number"
               class="elevation-1"
               :sort-by="[{ key: 'rank', order: 'asc' }]"
             >
+              <template #[`item.headshot`]="{ item }">
+                <v-avatar size="36px">
+                  <v-img
+                    v-if="item.headshot"
+                    :src="getStrapiImageUrl(item.headshot)"
+                    @click="showImagePreview(item.headshot)"
+                  ></v-img>
+                  <v-icon v-else>mdi-account-circle</v-icon>
+                </v-avatar>
+              </template>
               <template
-                v-for="judge in judges"
-                #[`header.judge_${judge.id}`]="{ column }"
-                :key="`judge-header-male-${judge.id}`"
+                v-for="judge in allJudges"
+                #[`header.${getJudgeHeaderKey(judge.name)}`]="{ column }"
+                :key="`judge-header-male-${judge.documentId}`"
               >
                 <span
                   :class="{ 'active-judge-header': isJudgeActive(judge) }"
-                  class="font-weight-bold"
+                  class="font-weight-bold judge-col-header"
                 >
                   {{ column.title }}
                 </span>
@@ -142,18 +152,27 @@
             <v-data-table
               :headers="headers"
               :items="femaleItems"
-              item-key="id"
+              item-key="participant_number"
               class="elevation-1"
               :sort-by="[{ key: 'rank', order: 'asc' }]"
             >
+              <template #[`item.headshot`]="{ item }">
+                <v-avatar size="36px">
+                  <v-img
+                    v-if="item.headshot"
+                    :src="getStrapiImageUrl(item.headshot)"
+                  ></v-img>
+                  <v-icon v-else>mdi-account-circle</v-icon>
+                </v-avatar>
+              </template>
               <template
-                v-for="judge in judges"
-                #[`header.judge_${judge.id}`]="{ column }"
-                :key="`judge-header-female-${judge.id}`"
+                v-for="judge in allJudges"
+                #[`header.${getJudgeHeaderKey(judge.name)}`]="{ column }"
+                :key="`judge-header-female-${judge.documentId}`"
               >
                 <span
                   :class="{ 'active-judge-header': isJudgeActive(judge) }"
-                  class="font-weight-bold"
+                  class="font-weight-bold judge-col-header"
                 >
                   {{ column.title }}
                 </span>
@@ -173,6 +192,15 @@
       :event="event"
       style="position: fixed; left: -9999px; top: 0"
     />
+
+    <v-dialog
+      v-model="imagePreviewDialog"
+      max-width="500px"
+    >
+      <v-card>
+        <v-img :src="imagePreviewUrl" />
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -183,6 +211,37 @@ interface DataTableHeader {
   align?: 'start' | 'end' | 'center'
   sortable?: boolean
   class?: string
+  fixed?: 'end' | 'start' | boolean | undefined
+}
+
+interface RankedParticipant {
+  participant_number: number
+  name: string
+  department: string
+  gender: 'male' | 'female'
+  headshot: string
+  averaged_score: number
+  raw_averaged_score: number
+  rank: number
+  [key: `judge_${string}`]: number | null // Dynamic judge scores, e.g., 'judge_Judge_1': number | null
+}
+
+interface JudgeScoresApiResponse {
+  event: any // Assuming similar structure to existing event
+  activeJudges: {
+    documentId: string
+    name: string
+  }[]
+  results: {
+    male: RankedParticipant[]
+    female: RankedParticipant[]
+  }
+}
+
+interface JudgeData {
+  id: number
+  name: string
+  documentId: string
 }
 
 const route = useRoute()
@@ -195,14 +254,55 @@ const router = useRouter()
 const tab = ref('male')
 let refreshInterval: NodeJS.Timeout | null = null
 const printableRef = ref<any | null>(null)
-const maleRankings = ref<any[]>([])
-const femaleRankings = ref<any[]>([])
+const maleRankings = ref<RankedParticipant[]>([])
+const femaleRankings = ref<RankedParticipant[]>([])
 const printTitle = ref('')
 
+const maleItems = ref<RankedParticipant[]>([])
+const femaleItems = ref<RankedParticipant[]>([])
+const activeJudgesFromApi = ref<{ documentId: string; name: string }[]>([])
+
+const imagePreviewDialog = ref(false)
+const imagePreviewUrl = ref<string | undefined>('')
+
 const event = computed(() => eventsStore.event)
+const allJudges = computed(() => eventsStore.event?.judges || [])
+
+const config = useRuntimeConfig()
+const getStrapiImageUrl = (relativePath: string) => {
+  if (!relativePath) return ''
+  return `${config.public.strapiUrl}${relativePath}`
+}
+
+const showImagePreview = (url: string) => {
+  imagePreviewUrl.value = getStrapiImageUrl(url)
+  imagePreviewDialog.value = true
+}
+
+const getJudgeHeaderKey = (judgeName: string) => {
+  return `judge_${judgeName.replace(/\s/g, '_')}`
+}
 
 const fetchData = async () => {
-  await eventsStore.fetchEvent(eventId)
+  await eventsStore.fetchEvent(eventId) // Ensure event data is available
+  if (!event.value || !segment.value || !category.value) {
+    snackbar.showSnackbar('Failed to load event, segment or category data.', 'error')
+    return
+  }
+
+  const segmentDocumentId = segment.value.documentId
+  const categoryDocumentId = category.value.documentId
+
+  const apiUrl = `/admin/events/${event.value.documentId}/segments/${segmentDocumentId}/categories/${categoryDocumentId}/judge-scores`
+  try {
+    const { data } = await api.get<JudgeScoresApiResponse>(apiUrl)
+    maleItems.value = data.results.male
+    femaleItems.value = data.results.female
+    activeJudgesFromApi.value = data.activeJudges
+  } catch (e) {
+    snackbar.showSnackbar('Failed to fetch judge scores.', 'error')
+    console.error(e)
+  }
 }
 
 const deleteEvent = async () => {
@@ -268,150 +368,80 @@ const handlePrint = async () => {
     return
   }
 
-  const url = `/admin/events/${event.value.documentId}/segments/${segment.value.documentId}/categories/${category.value.documentId}/ranking`
+  maleRankings.value = maleItems.value.filter((p) => p.rank === 1).slice(0, 3)
+  femaleRankings.value = femaleItems.value.filter((p) => p.rank === 1).slice(0, 3)
   printTitle.value = `Category Ranking – ${category.value.name}`
 
-  try {
-    const { data } = await api.get(url)
-    const results: {
-      male: {
-        averaged_score: number
-        department: string
-        gender: 'male'
-        participant_number: number
-        name: string
-        rank: number
-      }[]
-      female: {
-        averaged_score: number
-        department: string
-        gender: 'female'
-        participant_number: number
-        name: string
-        rank: number
-      }[]
-    } = data.results
-
-    maleRankings.value = results.male.filter((p) => p.rank === 1).slice(0, 3)
-    femaleRankings.value = results.female.filter((p) => p.rank === 1).slice(0, 3)
-    if (!maleRankings.value.length && !femaleRankings.value.length) {
-      snackbar.showSnackbar('No ranking data found.', 'info')
-      return
-    }
-
-    await nextTick()
-    await printableRef.value?.generatePdf()
-  } catch (err) {
-    console.error(err)
-    snackbar.showSnackbar('Failed to fetch rankings for printing.', 'error')
-  }
-}
-
-const judges = computed(() => event.value?.judges || [])
-const participants = computed(() => event.value?.participants || [])
-const maleParticipants = computed(() => participants.value.filter((p) => p.gender === 'male'))
-const femaleParticipants = computed(() => participants.value.filter((p) => p.gender === 'female'))
-
-const getJudgeScore = (participantId: number, judgeId: number) => {
-  if (!event.value?.scores) return null
-  const score = event.value.scores.find(
-    (s) =>
-      s.participant?.id === participantId &&
-      s.judge?.id === judgeId &&
-      s.category?.id.toString() === categoryId.value
-  )
-  return score?.value || null
-}
-
-const getAverageScore = (participantId: number) => {
-  if (!event.value?.scores || !category.value) return '-'
-
-  // Filter judges to include only active judges for the current category
-  const activeJudgesForCategory = judges.value.filter((judge) =>
-    category.value?.active_judges?.some(
-      (activeJudge) => String(activeJudge.documentId) === String(judge.documentId)
-    )
-  )
-
-  if (activeJudgesForCategory.length === 0) {
-    return '-'
+  if (!maleRankings.value.length && !femaleRankings.value.length) {
+    snackbar.showSnackbar('No ranking data found.', 'info')
+    return
   }
 
-  const validScores = activeJudgesForCategory
-    .map((judge) => getJudgeScore(participantId, judge.id))
-    .filter((score) => score !== null) as number[]
-
-  if (validScores.length === 0) {
-    return '-'
-  }
-
-  const totalScore = validScores.reduce((total, score) => total + score, 0)
-  return (totalScore / activeJudgesForCategory.length).toFixed(3)
-}
-
-const getRank = (participant: ParticipantData, gender: 'male' | 'female') => {
-  const participantsByGender = gender === 'male' ? maleParticipants.value : femaleParticipants.value
-  const sortedParticipants = [...participantsByGender].sort((a, b) => {
-    return parseFloat(getAverageScore(b.id)) - parseFloat(getAverageScore(a.id))
-  })
-  const rank = sortedParticipants.findIndex((p) => p.id === participant.id) + 1
-  return rank
+  await nextTick()
+  await printableRef.value?.generatePdf()
 }
 
 const isJudgeActive = (judge: JudgeData) => {
-  return category.value?.active_judges?.some(
-    (activeJudge) => String(activeJudge.documentId) === String(judge.documentId)
+  return activeJudgesFromApi.value.some(
+    (activeApiJudge) => String(activeApiJudge.documentId) === String(judge.documentId)
   )
 }
 
 const headers = computed<DataTableHeader[]>(() => {
-  const judgeHeaders: DataTableHeader[] = judges.value
+  const staticHeaders: DataTableHeader[] = [
+    {
+      title: 'No.',
+      key: 'participant_number',
+      align: 'start',
+      sortable: true,
+      fixed: 'start',
+    },
+    { title: 'Headshot', key: 'headshot', align: 'center', sortable: false },
+    { title: 'Participant', key: 'name', align: 'start', sortable: true },
+    {
+      title: 'Department',
+      key: 'department',
+      align: 'start',
+      sortable: true,
+    },
+  ]
+
+  const judgeHeaders: DataTableHeader[] = allJudges.value
     .sort((a: JudgeData, b: JudgeData) => a.name.localeCompare(b.name))
     .map((judge) => {
+      const judgeKey = `judge_${judge.name.replace(/\s/g, '_')}`
       return {
         title: judge.name,
-        key: `judge_${judge.id}`,
+        key: judgeKey,
         align: 'end',
         sortable: true,
+        width: '300px',
       }
     })
 
   return [
-    { title: 'Rank', key: 'rank', align: 'start', sortable: true, order: 'asc' },
-    { title: 'Participant', key: 'name', align: 'start', sortable: true },
+    ...staticHeaders,
     ...judgeHeaders,
-    { title: 'Average', key: 'average', align: 'end', sortable: true },
+    {
+      title: 'Average',
+      key: 'averaged_score',
+      align: 'start',
+      sortable: true,
+      fixed: 'end',
+    },
+    { title: 'Rank', key: 'rank', align: 'end', sortable: true, fixed: 'end' },
   ]
 })
-
-const createTableItems = (gender: 'male' | 'female') => {
-  const participantsToProcess =
-    gender === 'male' ? maleParticipants.value : femaleParticipants.value
-  return participantsToProcess.map((participant) => {
-    const scores = judges.value.reduce(
-      (acc, judge) => {
-        acc[`judge_${judge.id}`] = getJudgeScore(participant.id, judge.id)
-        return acc
-      },
-      {} as Record<string, number>
-    )
-
-    return {
-      id: participant.id,
-      rank: getRank(participant, gender),
-      name: participant.name,
-      ...scores,
-      average: getAverageScore(participant.id),
-    }
-  })
-}
-
-const maleItems = computed(() => createTableItems('male'))
-const femaleItems = computed(() => createTableItems('female'))
 </script>
 
 <style scoped>
 .active-judge-header {
   color: green !important; /* Green text for the header */
+}
+.judge-col-header {
+  min-width: 120px;
+  max-width: 150px;
+  white-space: nowrap;
+  text-align: right;
 }
 </style>
