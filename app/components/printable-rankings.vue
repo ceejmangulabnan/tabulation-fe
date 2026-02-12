@@ -40,7 +40,7 @@
                 <td>{{ row.participant_number }}</td>
                 <td>{{ row.name }}</td>
                 <td>{{ row.department || '-' }}</td>
-                <td>{{ row.averaged_score.toFixed(3) }}</td>
+                <td>{{ row.averaged_score }}</td>
                 <td>{{ row.rank }}</td>
               </tr>
             </tbody>
@@ -71,7 +71,7 @@
                 <td>{{ row.participant_number }}</td>
                 <td>{{ row.name }}</td>
                 <td>{{ row.department || '-' }}</td>
-                <td>{{ row.averaged_score.toFixed(3) }}</td>
+                <td>{{ row.averaged_score }}</td>
                 <td>{{ row.rank }}</td>
               </tr>
             </tbody>
