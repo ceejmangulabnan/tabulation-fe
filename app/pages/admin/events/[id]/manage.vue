@@ -15,6 +15,35 @@
             </v-chip>
             <div class="d-flex flex-wrap ga-2 flex-shrink-0">
               <v-btn
+                icon
+                color="purple"
+                variant="text"
+                @click="showPrintDialog = true"
+              >
+                <v-icon size="28">mdi-printer</v-icon>
+                <v-tooltip
+                  activator="parent"
+                  location="bottom"
+                >
+                  Print Rankings
+                </v-tooltip>
+              </v-btn>
+              <v-btn
+                :loading="eventsStore.isLoading"
+                icon
+                color="primary"
+                variant="text"
+                @click="refreshEventData"
+              >
+                <v-icon size="28">mdi-refresh</v-icon>
+                <v-tooltip
+                  activator="parent"
+                  location="bottom"
+                >
+                  Refetch Scores
+                </v-tooltip>
+              </v-btn>
+              <v-btn
                 :to="`/admin/events/${eventId}/manage`"
                 icon
                 color="blue"
@@ -61,14 +90,19 @@
             </div>
           </header>
 
-          <div class="d-flex flex-column ga-1">
-            <h1 class="text-sm-h4 text-h5 mb-2 mb-sm-0 font-weight-bold">
-              {{ event?.name }}
-            </h1>
-            <p class="text-sm-body-1 text-subtitle-2">
-              {{ event?.description || 'No description provided.' }}
-            </p>
-          </div>
+          <NuxtLink
+            :to="`/admin/events/${eventId}`"
+            class="text-decoration-none text-high-emphasis hover-underline"
+          >
+            <div class="d-flex flex-column ga-1">
+              <h1 class="text-sm-h4 text-h5 mb-2 mb-sm-0 font-weight-bold">
+                {{ event?.name }}
+              </h1>
+              <p class="text-sm-body-1 text-subtitle-2">
+                {{ event?.description || 'No description provided.' }}
+              </p>
+            </div>
+          </NuxtLink>
         </div>
       </v-col>
     </v-row>
@@ -98,26 +132,7 @@
               clearable
               hide-details
             ></v-select>
-            <v-btn
-              variant="outlined"
-              color="primary"
-              @click="showPrintDialog = true"
-            >
-              Print Rankings
-            </v-btn>
-            <v-btn
-              variant="flat"
-              color="info"
-              class="ml-2"
-              @click="refreshEventData"
-              :loading="eventsStore.isLoading"
-            >
-              <v-icon
-                start
-                icon="mdi-refresh"
-              ></v-icon>
-              Refetch Scores
-            </v-btn>
+
 
             <v-tabs
               v-model="activeGenderTab"
@@ -971,5 +986,11 @@ watch(printType, (val) => {
 .pdf-content {
   font-family: 'Roboto', sans-serif;
   color: #333;
+}
+.hover-underline {
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
 }
 </style>

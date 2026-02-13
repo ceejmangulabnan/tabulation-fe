@@ -15,6 +15,35 @@
             </v-chip>
             <div class="d-flex flex-wrap ga-2 flex-shrink-0">
               <v-btn
+                icon
+                color="purple"
+                variant="text"
+                @click="showPrintDialog = true"
+              >
+                <v-icon size="28">mdi-printer</v-icon>
+                <v-tooltip
+                  activator="parent"
+                  location="bottom"
+                >
+                  Print Rankings
+                </v-tooltip>
+              </v-btn>
+              <v-btn
+                :loading="eventsStore.isLoading"
+                icon
+                color="primary"
+                variant="text"
+                @click="refreshEventData()"
+              >
+                <v-icon size="28">mdi-refresh</v-icon>
+                <v-tooltip
+                  activator="parent"
+                  location="bottom"
+                >
+                  Refresh Data
+                </v-tooltip>
+              </v-btn>
+              <v-btn
                 :to="`/admin/events/${eventId}/manage`"
                 icon
                 color="blue"
@@ -61,14 +90,19 @@
             </div>
           </header>
 
-          <div class="d-flex flex-column ga-1">
-            <h1 class="text-sm-h4 text-h5 mb-2 mb-sm-0 font-weight-bold">
-              {{ event?.name }}
-            </h1>
-            <p class="text-sm-body-1 text-subtitle-2">
-              {{ event?.description || 'No description provided.' }}
-            </p>
-          </div>
+          <NuxtLink
+            :to="`/admin/events/${eventId}`"
+            class="text-decoration-none text-high-emphasis hover-underline"
+          >
+            <div class="d-flex flex-column ga-1">
+              <h1 class="text-sm-h4 text-h5 mb-2 mb-sm-0 font-weight-bold">
+                {{ event?.name }}
+              </h1>
+              <p class="text-sm-body-1 text-subtitle-2">
+                {{ event?.description || 'No description provided.' }}
+              </p>
+            </div>
+          </NuxtLink>
         </div>
       </v-col>
     </v-row>
@@ -380,6 +414,80 @@
         </div>
       </v-col>
     </v-row>
+
+    <!-- Print Rankings Dialog -->
+    <v-dialog
+      v-model="showPrintDialog"
+      max-width="700px"
+    >
+      <v-card>
+        <v-card-title>Print Rankings</v-card-title>
+        <v-card-text>
+          <v-select
+            v-model="printType"
+            :items="[
+              { title: 'Per Segment', value: 'segment' },
+              { title: 'Per Category', value: 'category' },
+              { title: 'Final Ranking', value: 'final' },
+            ]"
+            label="Ranking Type"
+          />
+          <v-select
+            v-if="printType !== 'final'"
+            v-model="selectedSegmentTab"
+            :items="event?.segments"
+            item-title="name"
+            item-value="documentId"
+            label="Segment"
+            @update:model-value="printCategoryId = null"
+          />
+          <v-select
+            v-if="printType === 'category'"
+            v-model="printCategoryId"
+            :items="currentSegmentCategories"
+            item-title="title"
+            item-value="value"
+            label="Category"
+          />
+          <v-select
+            v-model="printGender"
+            :items="[
+              { title: 'Both', value: 'both' },
+              { title: 'Male', value: 'male' },
+              { title: 'Female', value: 'female' },
+            ]"
+            label="Gender"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            variant="text"
+            @click="showPrintDialog = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="primary"
+            @click="confirmPrint"
+          >
+            Print
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Printable Rankings Component (hidden, used for PDF only) -->
+    <PrintableRankings
+      v-if="event"
+      ref="printableRef"
+      :gender="printGender"
+      :male="maleRankings"
+      :female="femaleRankings"
+      :title="printTitle"
+      :event="event"
+      style="position: fixed; left: -9999px; top: 0"
+    />
   </v-container>
 </template>
 
@@ -518,24 +626,45 @@ function getStrapiUrl(url: string) {
 
 onMounted(async () => {
   await eventsStore.fetchEvent(eventId)
-  if (event.value?.segments && event.value.segments.length > 0) {
+
+  if (!event.value) {
+    snackbar.showSnackbar('Failed to load event data.', 'error')
+    return
+  }
+
+  // Determine initial tab and fetch data
+  if (event.value.segments && event.value.segments.length > 0) {
     const firstSegmentWithId = event.value.segments.find((s) => s.documentId)
     if (firstSegmentWithId) {
       selectedSegmentTab.value = firstSegmentWithId.documentId
+      // Manually trigger fetch for the initial segment, waiting for it to complete
+      await fetchSegmentScores(firstSegmentWithId.documentId)
     } else {
-      console.warn('No segment with documentId found to select initially.')
+      console.warn('No segment with documentId found to select initially. Defaulting to final rankings.')
+      selectedSegmentTab.value = 'final-rankings'
+      await fetchFinalScores() // Manually trigger fetch for final rankings
     }
+  } else {
+    // If no segments at all, default to final rankings
+    selectedSegmentTab.value = 'final-rankings'
+    await fetchFinalScores() // Manually trigger fetch for final rankings
   }
 })
 
-watch(selectedSegmentTab, (newTab) => {
+watch(selectedSegmentTab, async (newTab) => {
   if (!newTab) return
+
+  if (!eventsStore.event) {
+    console.warn('eventsStore.event is null when selectedSegmentTab changed. Deferring score fetch.')
+    return // Prevent fetching if event data is not available
+  }
+
   if (newTab === 'final-rankings') {
     if (finalMaleResults.value.length === 0 && finalFemaleResults.value.length === 0) {
-      fetchFinalScores()
+      await fetchFinalScores()
     }
   } else {
-    fetchSegmentScores(newTab)
+    await fetchSegmentScores(newTab)
   }
 })
 
@@ -723,6 +852,150 @@ const finalRankingsHeaders = computed<DataTableHeader[]>(() => {
     { title: 'Rank', key: 'rank', align: 'end', sortable: true, fixed: 'end' },
   ]
 })
+
+// Print functionality
+const showPrintDialog = ref<boolean>(false)
+const printableRef = ref<any | null>(null)
+const printType = ref<'segment' | 'category' | 'final'>('segment')
+const printCategoryId = ref<string | null>(null)
+const printGender = ref<'male' | 'female' | 'both'>('both')
+const maleRankings = ref<any[]>([])
+const femaleRankings = ref<any[]>([])
+const printTitle = ref('')
+
+const refreshEventData = async () => {
+  await eventsStore.fetchEvent(eventId)
+}
+
+const selectedSegment = computed(() => {
+  if (!event.value?.segments || !selectedSegmentTab.value || selectedSegmentTab.value === 'final-rankings') return null
+  return event.value.segments.find((s) => s.documentId === selectedSegmentTab.value) || null
+})
+
+const currentSegmentCategories = computed(() => {
+  if (!selectedSegment.value) return []
+  return (
+    selectedSegment.value.categories?.map((cat) => ({
+      title: cat.name,
+      value: cat.documentId,
+    })) || []
+  )
+})
+
+const fetchRankings = async () => {
+  let url = ''
+  const segmentId = selectedSegment.value?.documentId
+  const categoryId = printCategoryId.value
+
+  if (printType.value === 'category') {
+    if (!segmentId || !categoryId) {
+      snackbar.showSnackbar('Please select a segment and a category.', 'warning')
+      return false
+    }
+
+    url = `/admin/events/${event.value?.documentId}/segments/${segmentId}/categories/${categoryId}/ranking`
+
+    const categoryName = currentSegmentCategories.value?.find(
+      (c) => c.value === categoryId
+    )?.title
+    const categoryWeight = selectedSegment.value?.categories?.find(
+      (c) => c.documentId === categoryId
+    )?.weight
+
+    printTitle.value = `Category Ranking – ${categoryName} (${Number(categoryWeight) * 100}%)`
+  } else if (printType.value === 'segment') {
+    if (!segmentId) {
+      snackbar.showSnackbar('Please select a segment.', 'warning')
+      return false
+    }
+    url = `/admin/events/${event.value?.documentId}/segments/${segmentId}/ranking`
+    printTitle.value = `Segment Ranking – ${selectedSegment.value?.name} (${Number(selectedSegment.value?.weight || 0) * 100}%)`
+  } else if (printType.value === 'final') {
+    url = `/admin/events/${event.value?.documentId}/ranking`
+    printTitle.value = 'Final Event Ranking'
+  }
+
+  try {
+    const { data } = await api.get(url)
+    const results: {
+      male: {
+        averaged_score: number
+        department: string
+        gender: 'male'
+        participant_number: number
+        name: string
+        rank: number
+      }[]
+      female: {
+        averaged_score: number
+        department: string
+        gender: 'female'
+        participant_number: number
+        name: string
+        rank: number
+      }[]
+    } = data.results
+
+    maleRankings.value = []
+    femaleRankings.value = []
+
+    if (printType.value === 'category') {
+      if (printGender.value === 'male' || printGender.value === 'both') {
+        maleRankings.value = results.male.filter((p) => p.rank === 1).slice(0, 3) // Slice until 3 to see possible ties at Rank 1
+      }
+      if (printGender.value === 'female' || printGender.value === 'both') {
+        femaleRankings.value = results.female.filter((p) => p.rank === 1).slice(0, 3)
+      }
+    } else if (printType.value === 'segment' || printType.value === 'final') {
+      if (printGender.value === 'male' || printGender.value === 'both') {
+        maleRankings.value = results.male.slice(0, 5)
+      }
+      if (printGender.value === 'female' || printGender.value === 'both') {
+        femaleRankings.value = results.female.slice(0, 5)
+      }
+    }
+
+    if (!maleRankings.value.length && !femaleRankings.value.length) {
+      snackbar.showSnackbar('No ranking data found.', 'info')
+      return false
+    }
+
+    return true
+  } catch (err) {
+    console.error(err)
+    snackbar.showSnackbar('Failed to fetch rankings.', 'error')
+    return false
+  }
+}
+
+const confirmPrint = async () => {
+  const ok = await fetchRankings()
+  if (!ok) return
+
+  showPrintDialog.value = false
+  await nextTick()
+
+  await printableRef.value?.generatePdf()
+}
+
+watch(printType, (val) => {
+  if (val === 'segment') {
+    printCategoryId.value = null
+  } else if (val === 'final') {
+    selectedSegmentTab.value = 'final-rankings' // Ensure the final rankings tab is selected for printing
+    printCategoryId.value = null
+  }
+})
+
+watch(selectedSegmentTab, (newVal) => {
+  if (newVal === 'final-rankings') {
+    printType.value = 'final'
+  } else if (printType.value === 'final') {
+    printType.value = 'segment' // Default back to segment if changing from final tab
+  }
+  printCategoryId.value = null
+})
+
 </script>
 
 <style scoped>
@@ -748,5 +1021,11 @@ const finalRankingsHeaders = computed<DataTableHeader[]>(() => {
 
 .min-w-150px {
   min-width: 150px;
+}
+.hover-underline {
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
 }
 </style>

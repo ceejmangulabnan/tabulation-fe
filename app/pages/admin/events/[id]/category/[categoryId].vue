@@ -90,14 +90,19 @@
             </div>
           </header>
 
-          <div class="d-flex flex-column ga-1">
-            <h1 class="text-sm-h4 text-h5 mb-2 mb-sm-0 font-weight-bold">
-              {{ event?.name }}
-            </h1>
-            <p class="text-sm-body-1 text-subtitle-2">
-              {{ event?.description || 'No description provided.' }}
-            </p>
-          </div>
+          <NuxtLink
+            :to="`/admin/events/${eventId}`"
+            class="text-decoration-none text-high-emphasis hover-underline"
+          >
+            <div class="d-flex flex-column ga-1">
+              <h1 class="text-sm-h4 text-h5 mb-2 mb-sm-0 font-weight-bold">
+                {{ event?.name }}
+              </h1>
+              <p class="text-sm-body-1 text-subtitle-2">
+                {{ event?.description || 'No description provided.' }}
+              </p>
+            </div>
+          </NuxtLink>
         </div>
       </v-col>
     </v-row>
@@ -443,5 +448,11 @@ const headers = computed<DataTableHeader[]>(() => {
   max-width: 150px;
   white-space: nowrap;
   text-align: right;
+}
+.hover-underline {
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
 }
 </style>
