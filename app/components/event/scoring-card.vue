@@ -41,7 +41,7 @@
                     :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
                     icon="mdi-account"
                     class="mr-3"
-                    size="40"
+                    size="80"
                   />
                   <v-avatar
                     v-else

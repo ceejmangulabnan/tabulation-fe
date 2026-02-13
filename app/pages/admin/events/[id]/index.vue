@@ -169,14 +169,15 @@
                       :headers="segmentHeaders"
                       :items="maleSegmentResults"
                       item-key="participant_number"
-                      class="elevation-1"
+                      class="elevation-1 participant-table"
                       :sort-by="[{ key: 'rank', order: 'asc' }]"
                     >
                       <template #[`item.headshot`]="{ item }">
-                        <v-avatar size="36px">
+                        <v-avatar size="50px">
                           <v-img
                             v-if="item.headshot"
                             :src="getStrapiUrl(item.headshot)"
+                            @click="showImagePreview(item.headshot)"
                           ></v-img>
                           <v-icon v-else>mdi-account-circle</v-icon>
                         </v-avatar>
@@ -195,14 +196,15 @@
                       :headers="segmentHeaders"
                       :items="femaleSegmentResults"
                       item-key="participant_number"
-                      class="elevation-1"
+                      class="elevation-1 participant-table"
                       :sort-by="[{ key: 'rank', order: 'asc' }]"
                     >
                       <template #[`item.headshot`]="{ item }">
-                        <v-avatar size="36px">
+                        <v-avatar size="50px">
                           <v-img
                             v-if="item.headshot"
                             :src="getStrapiUrl(item.headshot)"
+                            @click="showImagePreview(item.headshot)"
                           ></v-img>
                           <v-icon v-else>mdi-account-circle</v-icon>
                         </v-avatar>
@@ -256,14 +258,15 @@
                       :headers="finalRankingsHeaders"
                       :items="finalMaleResults"
                       item-key="participant_number"
-                      class="elevation-1"
+                      class="elevation-1 participant-table"
                       :sort-by="[{ key: 'rank', order: 'asc' }]"
                     >
                       <template #[`item.headshot`]="{ item }">
-                        <v-avatar size="36px">
+                        <v-avatar size="50px">
                           <v-img
                             v-if="item.headshot"
                             :src="getStrapiUrl(item.headshot)"
+                            @click="showImagePreview(item.headshot)"
                           ></v-img>
                           <v-icon v-else>mdi-account-circle</v-icon>
                         </v-avatar>
@@ -282,14 +285,15 @@
                       :headers="finalRankingsHeaders"
                       :items="finalFemaleResults"
                       item-key="participant_number"
-                      class="elevation-1"
+                      class="elevation-1 participant-table"
                       :sort-by="[{ key: 'rank', order: 'asc' }]"
                     >
                       <template #[`item.headshot`]="{ item }">
-                        <v-avatar size="36px">
+                        <v-avatar size="50px">
                           <v-img
                             v-if="item.headshot"
                             :src="getStrapiUrl(item.headshot)"
+                            @click="showImagePreview(item.headshot)"
                           ></v-img>
                           <v-icon v-else>mdi-account-circle</v-icon>
                         </v-avatar>
@@ -487,6 +491,11 @@
       :title="printTitle"
       :event="event"
       style="position: fixed; left: -9999px; top: 0"
+    />
+
+    <ImagePreviewDialog
+      v-model="imagePreviewDialog"
+      :image-url="imagePreviewUrl"
     />
   </v-container>
 </template>
@@ -863,6 +872,14 @@ const maleRankings = ref<any[]>([])
 const femaleRankings = ref<any[]>([])
 const printTitle = ref('')
 
+const imagePreviewDialog = ref(false)
+const imagePreviewUrl = ref<string | undefined>('')
+
+const showImagePreview = (url: string) => {
+  imagePreviewUrl.value = getStrapiUrl(url)
+  imagePreviewDialog.value = true
+}
+
 const refreshEventData = async () => {
   await eventsStore.fetchEvent(eventId)
 }
@@ -1027,5 +1044,9 @@ watch(selectedSegmentTab, (newVal) => {
   &:hover {
     text-decoration: underline;
   }
+}
+.participant-table :deep(.v-data-table__td) {
+  font-size: 15px !important; /* Increase font size by 2px from default 13px */
+  height: 64px !important; /* Increase row height to accommodate larger avatar */
 }
 </style>

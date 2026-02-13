@@ -126,11 +126,11 @@
               :headers="headers"
               :items="maleItems"
               item-key="participant_number"
-              class="elevation-1"
+              class="elevation-1 participant-table"
               :sort-by="[{ key: 'rank', order: 'asc' }]"
             >
               <template #[`item.headshot`]="{ item }">
-                <v-avatar size="36px">
+                <v-avatar size="50px">
                   <v-img
                     v-if="item.headshot"
                     :src="getStrapiImageUrl(item.headshot)"
@@ -158,14 +158,16 @@
               :headers="headers"
               :items="femaleItems"
               item-key="participant_number"
-              class="elevation-1"
+              class="elevation-1 participant-table"
               :sort-by="[{ key: 'rank', order: 'asc' }]"
+              density="default"
             >
               <template #[`item.headshot`]="{ item }">
-                <v-avatar size="36px">
+                <v-avatar size="50px">
                   <v-img
                     v-if="item.headshot"
                     :src="getStrapiImageUrl(item.headshot)"
+                    @click="showImagePreview(item.headshot)"
                   ></v-img>
                   <v-icon v-else>mdi-account-circle</v-icon>
                 </v-avatar>
@@ -198,14 +200,10 @@
       style="position: fixed; left: -9999px; top: 0"
     />
 
-    <v-dialog
+    <ImagePreviewDialog
       v-model="imagePreviewDialog"
-      max-width="500px"
-    >
-      <v-card>
-        <v-img :src="imagePreviewUrl" />
-      </v-card>
-    </v-dialog>
+      :image-url="imagePreviewUrl"
+    />
   </v-container>
 </template>
 
@@ -454,5 +452,9 @@ const headers = computed<DataTableHeader[]>(() => {
   &:hover {
     text-decoration: underline;
   }
+}
+.participant-table :deep(.v-data-table__td) {
+  font-size: 15px !important; /* Increase font size by 2px from default 13px */
+  height: 64px !important; /* Increase row height to accommodate larger avatar */
 }
 </style>

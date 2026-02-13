@@ -476,14 +476,10 @@
       </v-window-item>
     </v-window>
 
-    <v-dialog
+    <ImagePreviewDialog
       v-model="imagePreviewDialog"
-      max-width="500px"
-    >
-      <v-card>
-        <v-img :src="imagePreviewUrl" />
-      </v-card>
-    </v-dialog>
+      :image-url="imagePreviewUrl"
+    />
 
     <!-- Print Rankings Dialog -->
     <v-dialog
