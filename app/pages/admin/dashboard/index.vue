@@ -12,7 +12,7 @@ definePageMeta({
       <p class="text-subtitle">Overview of your pageant system and pending actions</p>
     </div>
     <AdminEventList />
-    <AdminEventRequestTable />
-    <AdminQuickActions />
+    <!-- <AdminEventRequestTable /> -->
+    <!-- <AdminQuickActions /> -->
   </div>
 </template>
