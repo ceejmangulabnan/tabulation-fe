@@ -37,6 +37,18 @@
         <v-card class="pa-4">
           <v-card-title class="d-flex justify-space-between text-h5">
             <span>Participant Scores</span>
+            <v-btn
+              color="primary"
+              @click="showScoringDialog = true"
+              :disabled="
+                !event ||
+                !judgeId ||
+                !activeSegmentTab ||
+                currentSegment?.segment_status !== 'active'
+              "
+            >
+              Score {{ currentSegmentName }}
+            </v-btn>
           </v-card-title>
           <v-card-text>
             <v-tabs
@@ -80,34 +92,100 @@
                 </v-chip>
               </v-tab>
             </v-tabs>
-
             <v-window v-model="activeSegmentTab">
               <div
                 v-if="!segmentsForTabs || segmentsForTabs.length < 1"
-                class="text-center"
+                class="text-center pa-4"
               >
-                No segments found.
+                No segments found or selected.
               </div>
               <v-window-item
                 v-for="segment in segmentsForTabs"
                 :key="segment.id"
                 :value="segment.id"
               >
+                <!-- Read-only EventScoringCard for main view -->
                 <EventScoringCard
-                  v-if="event && judgeId"
+                  v-if="event && judgeId && segment"
                   :isAdmin="false"
                   :segment="segment"
                   :event="event"
                   :participants="participants"
                   :judgeId="judgeId"
-                  @scores-submitted="refreshEvent"
+                  :readonly="true"
                 />
+                <p
+                  v-if="currentSegment?.segment_status === 'closed'"
+                  class="text-error pa-4 text-center"
+                >
+                  This segment is closed. You can no longer submit scores.
+                </p>
+                <p
+                  v-if="currentSegment?.segment_status === 'inactive'"
+                  class="text-warning pa-4 text-center"
+                >
+                  This segment is inactive. You cannot submit scores yet.
+                </p>
               </v-window-item>
             </v-window>
           </v-card-text>
         </v-card>
       </v-col>
     </v-row>
+
+    <!-- Scoring Dialog -->
+    <v-dialog
+      v-model="showScoringDialog"
+      :scrim="false"
+      persistent
+      max-width="900px"
+    >
+      <v-card>
+        <v-toolbar
+          dark
+          color="primary"
+        >
+          <v-btn
+            icon
+            dark
+            @click="closeScoringDialog"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+          <v-toolbar-title>
+            Score Event: {{ event?.name }} - {{ currentSegmentName }}
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn
+              variant="text"
+              dark
+              @click="closeScoringDialog"
+            >
+              Close
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <v-card-text>
+          <EventScoringCard
+            v-if="event && judgeId && currentSegment"
+            :isAdmin="false"
+            :segment="currentSegment"
+            :event="event"
+            :participants="participants"
+            :judgeId="judgeId"
+            @scores-submitted="handleScoresSubmitted"
+            @cancel-scoring="closeScoringDialog"
+          />
+          <div
+            v-else
+            class="text-center pa-4"
+          >
+            No active segment selected for scoring.
+          </div>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -129,6 +207,17 @@ const event = computed(() => eventsStore.event)
 const judgeId = computed(() => authStore.user?.judge?.documentId)
 
 const activeSegmentTab = ref<number | null>(null)
+const showScoringDialog = ref(false)
+
+const currentSegment = computed(() => {
+  return segmentsForTabs.value.find((s) => s.id === activeSegmentTab.value)
+})
+
+const currentSegmentName = computed(() => currentSegment.value?.name || 'N/A')
+
+function closeScoringDialog() {
+  showScoringDialog.value = false
+}
 
 async function refreshEvent() {
   await eventsStore.fetchEvent(eventId)
@@ -157,6 +246,19 @@ async function refreshEvent() {
       scores,
     }
   })
+
+  // Ensure activeSegmentTab is set if it's null or undefined
+  if (
+    (activeSegmentTab.value === null || activeSegmentTab.value === undefined) &&
+    segmentsForTabs.value.length > 0
+  ) {
+    activeSegmentTab.value = segmentsForTabs.value[0]?.id || null
+  }
+}
+
+async function handleScoresSubmitted() {
+  await refreshEvent()
+  closeScoringDialog()
 }
 
 onMounted(async () => {

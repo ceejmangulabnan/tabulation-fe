@@ -77,7 +77,11 @@
                 #[`item.category_${category.documentId}`]="{ item }"
               >
                 <div class="my-2">
+                  <span v-if="props.readonly">
+                    {{ item.scores[category.documentId] ?? '-' }}
+                  </span>
                   <v-text-field
+                    v-else
                     v-model.number="item.scores[category.documentId]"
                     class="flex-shrink-0 score-input"
                     type="number"
@@ -193,7 +197,12 @@
                         </v-icon>
                         {{ category.name }} ({{ (category.weight * 100).toFixed(0) }}%)
                       </div>
-                      <div>
+                      <div v-if="props.readonly">
+                        <span class="ml-auto font-weight-bold text-subtitle-1">
+                          {{ item.scores[category.documentId] ?? '-' }}
+                        </span>
+                      </div>
+                      <div v-else>
                         <v-text-field
                           align="end"
                           class="ml-auto flex-shrink-0 score-input"
@@ -230,7 +239,7 @@
         </v-window-item>
       </v-window>
     </v-card-text>
-    <v-card-actions>
+    <v-card-actions v-if="!props.readonly">
       <v-spacer />
       <v-btn
         v-if="segment.segment_status !== 'closed'"
@@ -241,6 +250,12 @@
         :loading="isLoading"
       >
         Submit Scores for {{ segment.name }}
+      </v-btn>
+      <v-btn
+        variant="text"
+        @click="$emit('cancel-scoring')"
+      >
+        Cancel
       </v-btn>
     </v-card-actions>
   </v-card>
@@ -271,9 +286,10 @@ const props = defineProps<{
   event: EventData
   participants: ParticipantWithScores[]
   judgeId: string
+  readonly?: boolean // New prop
 }>()
 
-const emit = defineEmits(['scores-submitted'])
+const emit = defineEmits(['scores-submitted', 'cancel-scoring'])
 
 function getScoreRules(maxScore: number) {
   return [
@@ -310,7 +326,6 @@ function getStrapiUrl(url: string) {
 const genders = [
   { key: 'male', label: 'Male' },
   { key: 'female', label: 'Female' },
-  { key: 'other', label: 'Other' },
 ]
 
 // Filter scoreable categories based on locked value and active_judges
