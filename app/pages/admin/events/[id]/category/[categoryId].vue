@@ -370,7 +370,7 @@ const handlePrint = async () => {
 
   maleRankings.value = maleItems.value.filter((p) => p.rank === 1).slice(0, 3)
   femaleRankings.value = femaleItems.value.filter((p) => p.rank === 1).slice(0, 3)
-  printTitle.value = `Category Ranking – ${category.value.name}`
+  printTitle.value = `Category Ranking – ${category.value.name} (${Number(category.value.weight) * 100}%)`
 
   if (!maleRankings.value.length && !femaleRankings.value.length) {
     snackbar.showSnackbar('No ranking data found.', 'info')

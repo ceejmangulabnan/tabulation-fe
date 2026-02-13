@@ -855,15 +855,18 @@ const fetchRankings = async () => {
     const categoryName = selectedSegment.value?.categories?.find(
       (c) => c.documentId === categoryId
     )?.name
+    const categoryWeight = selectedSegment.value?.categories?.find(
+      (c) => c.documentId === categoryId
+    )?.weight
 
-    printTitle.value = `Category Ranking – ${categoryName}`
+    printTitle.value = `Category Ranking – ${categoryName} (${Number(categoryWeight) * 100}%)`
   } else if (printType.value === 'segment') {
     if (!segmentId) {
       showSnackbar('Please select a segment.', 'warning')
       return false
     }
     url = `/admin/events/${event.value?.documentId}/segments/${segmentId}/ranking`
-    printTitle.value = `Segment Ranking – ${selectedSegment.value?.name}`
+    printTitle.value = `Segment Ranking – ${selectedSegment.value?.name} (${Number(selectedSegment.value?.weight || 0) * 100}%)`
   } else if (printType.value === 'final') {
     url = `/admin/events/${event.value?.documentId}/ranking`
     printTitle.value = 'Final Event Ranking'
