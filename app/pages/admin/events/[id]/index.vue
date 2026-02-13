@@ -13,7 +13,10 @@
             >
               {{ event?.event_status.toUpperCase() }}
             </v-chip>
-            <div class="d-flex flex-wrap ga-2 flex-shrink-0">
+            <div
+              v-if="!smAndDown"
+              class="d-flex flex-wrap ga-2 flex-shrink-0"
+            >
               <v-btn
                 icon
                 color="purple"
@@ -87,6 +90,53 @@
                   Delete Event
                 </v-tooltip>
               </v-btn>
+            </div>
+            <div v-else>
+              <v-menu>
+                <template #activator="{ props }">
+                  <v-btn
+                    icon
+                    v-bind="props"
+                  >
+                    <v-icon>mdi-dots-vertical</v-icon>
+                  </v-btn>
+                </template>
+                <v-list>
+                  <v-list-item @click="showPrintDialog = true">
+                    <template #prepend>
+                      <v-icon color="purple">mdi-printer</v-icon>
+                    </template>
+                    <v-list-item-title>Print Rankings</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item
+                    :loading="eventsStore.isLoading"
+                    @click="refreshEventData()"
+                  >
+                    <template #prepend>
+                      <v-icon color="primary">mdi-refresh</v-icon>
+                    </template>
+                    <v-list-item-title>Refresh Data</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item :to="`/admin/events/${eventId}/manage`">
+                    <template #prepend>
+                      <v-icon color="blue">mdi-cog</v-icon>
+                    </template>
+                    <v-list-item-title>Manage Event</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item :to="`/admin/events/${eventId}/setup`">
+                    <template #prepend>
+                      <v-icon color="green">mdi-pencil</v-icon>
+                    </template>
+                    <v-list-item-title>Setup Event</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="deleteEvent">
+                    <template #prepend>
+                      <v-icon color="red">mdi-delete</v-icon>
+                    </template>
+                    <v-list-item-title>Delete Event</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
             </div>
           </header>
 
@@ -803,7 +853,7 @@ const segmentHeaders = computed<DataTableHeader[]>(() => {
   ]
 
   const categoryScoreHeaders: DataTableHeader[] = segmentCategories.value.map((category) => ({
-    title: category.name,
+    title: `${category.name} (${category.weight * 100}%)`,
     key: `category_score_${category.documentId}`,
     align: 'end',
     sortable: true,
