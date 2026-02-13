@@ -86,12 +86,13 @@
     <v-main :class="`${theme.current === 'light' ? 'bg-grey-lighten-4' : ''}`">
       <Snackbar />
       <v-container fluid>
-                  <div class="d-flex align-center mb-4">
-                    <v-btn
-                      icon="mdi-arrow-left"
-                      variant="text"
-                      @click="router.back()"
-                    ></v-btn>          <v-breadcrumbs
+        <div class="d-flex align-center mb-4">
+          <v-btn
+            icon="mdi-arrow-left"
+            variant="text"
+            @click="router.back()"
+          ></v-btn>
+          <v-breadcrumbs
             :items="breadcrumbs"
             class="pa-0 d-flex flex-wrap"
           ></v-breadcrumbs>

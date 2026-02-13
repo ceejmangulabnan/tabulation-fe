@@ -2,23 +2,33 @@
   <v-container>
     <v-row v-if="event">
       <v-col cols="12">
-        <header class="d-flex flex-column ga-sm-4 align-start ga-1 flex-sm-row mb-8">
-          <v-chip
-            :color="statusColor"
-            size="large"
-            class="font-weight-bold flex-shrink-0"
+        <div class="d-flex justify-space-between align-top mb-4 flex-wrap ga-2">
+          <header
+            class="d-flex ml-n1 justify-space-between w-100 ga-sm-3 align-center ga-1 flex-shrink-1"
           >
-            {{ event?.event_status.toUpperCase() }}
-          </v-chip>
-          <div>
-            <h1 class="text-h4 mb-2 mb-sm-0">
-              {{ event?.name }}
-            </h1>
-            <p>
-              {{ event?.description || 'No description provided.' }}
-            </p>
-          </div>
-        </header>
+            <v-chip
+              :color="statusColor"
+              size="large"
+              class="font-weight-bold flex-shrink-0"
+            >
+              {{ event?.event_status.toUpperCase() }}
+            </v-chip>
+          </header>
+
+          <NuxtLink
+            :to="`/judge/events/${eventId}`"
+            class="text-decoration-none text-high-emphasis hover-underline"
+          >
+            <div class="d-flex flex-column ga-1">
+              <h1 class="text-sm-h4 text-h5 mb-2 mb-sm-0 font-weight-bold">
+                {{ event?.name }}
+              </h1>
+              <p class="text-sm-body-1 text-subtitle-2">
+                {{ event?.description || 'No description provided.' }}
+              </p>
+            </div>
+          </NuxtLink>
+        </div>
       </v-col>
     </v-row>
 

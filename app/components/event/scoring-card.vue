@@ -42,6 +42,7 @@
                     icon="mdi-account"
                     class="mr-3"
                     size="80"
+                    @click="showImagePreview(item.headshot.url)"
                   />
                   <v-avatar
                     v-else
@@ -145,6 +146,7 @@
                         icon="mdi-account"
                         class="mr-3"
                         size="40"
+                        @click="showImagePreview(item.headshot.url)"
                       />
                       <v-avatar
                         v-else
@@ -242,11 +244,26 @@
       </v-btn>
     </v-card-actions>
   </v-card>
+
+  <ImagePreviewDialog
+    v-model="imagePreviewDialog"
+    :image-url="imagePreviewUrl"
+  />
 </template>
 
 <script setup lang="ts">
+import ImagePreviewDialog from '~/components/ImagePreviewDialog.vue'
+
 type ParticipantScoreMap = Record<string, number | null | undefined>
 type ParticipantWithScores = Omit<ParticipantData, 'scores'> & { scores: ParticipantScoreMap }
+
+const imagePreviewDialog = ref(false)
+const imagePreviewUrl = ref<string | undefined>('')
+
+const showImagePreview = (url: string) => {
+  imagePreviewUrl.value = getStrapiUrl(url)
+  imagePreviewDialog.value = true
+}
 
 const props = defineProps<{
   isAdmin: boolean
