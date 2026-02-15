@@ -139,6 +139,33 @@
                   <v-icon v-else>mdi-account-circle</v-icon>
                 </v-avatar>
               </template>
+              <template #[`item.name`]="{ item }">
+                <div class="d-flex align-center py-2">
+                  <v-avatar
+                    v-if="item.headshot"
+                    :src="getStrapiImageUrl(item.headshot)"
+                    class="mr-3"
+                    size="40"
+                    @click="showImagePreview(item.headshot)"
+                  />
+                  <v-avatar
+                    v-else
+                    icon="mdi-account"
+                    class="mr-3"
+                    size="40"
+                  />
+                  <div class="font-weight-bold">{{ item.name }}</div>
+                  <v-chip
+                    v-if="item.participant_status === 'eliminated'"
+                    color="red"
+                    class="ml-2"
+                    size="small"
+                    label
+                  >
+                    Eliminated
+                  </v-chip>
+                </div>
+              </template>
               <template
                 v-for="judge in allJudges"
                 #[`header.${getJudgeHeaderKey(judge.name)}`]="{ column }"
@@ -171,6 +198,33 @@
                   ></v-img>
                   <v-icon v-else>mdi-account-circle</v-icon>
                 </v-avatar>
+              </template>
+              <template #[`item.name`]="{ item }">
+                <div class="d-flex align-center py-2">
+                  <v-avatar
+                    v-if="item.headshot"
+                    :src="getStrapiImageUrl(item.headshot)"
+                    class="mr-3"
+                    size="40"
+                    @click="showImagePreview(item.headshot)"
+                  />
+                  <v-avatar
+                    v-else
+                    icon="mdi-account"
+                    class="mr-3"
+                    size="40"
+                  />
+                  <div class="font-weight-bold">{{ item.name }}</div>
+                  <v-chip
+                    v-if="item.participant_status === 'eliminated'"
+                    color="red"
+                    class="ml-2"
+                    size="small"
+                    label
+                  >
+                    Eliminated
+                  </v-chip>
+                </div>
               </template>
               <template
                 v-for="judge in allJudges"
@@ -226,6 +280,7 @@ interface RankedParticipant {
   averaged_score: number
   raw_averaged_score: number
   rank: number
+  participant_status?: string // NEW
   [key: `judge_${string}`]: number | null // Dynamic judge scores, e.g., 'judge_Judge_1': number | null
 }
 

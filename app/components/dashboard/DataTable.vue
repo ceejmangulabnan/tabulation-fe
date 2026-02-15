@@ -15,6 +15,33 @@
           ></v-img>
         </div>
       </template>
+      <template #[`item.name`]="{ item }">
+        <div class="d-flex align-center py-2">
+          <v-avatar
+            v-if="item.headshot"
+            :src="`${baseApiUrl}${item.headshot.url}`"
+            class="mr-3"
+            size="40"
+            @click="openDialog(item.headshot.url)"
+          />
+          <v-avatar
+            v-else
+            icon="mdi-account"
+            class="mr-3"
+            size="40"
+          />
+          <div class="font-weight-bold">{{ item.name }}</div>
+          <v-chip
+            v-if="item.participant_status === 'eliminated'"
+            color="red"
+            class="ml-2"
+            size="small"
+            label
+          >
+            Eliminated
+          </v-chip>
+        </div>
+      </template>
     </v-data-table>
 
     <v-dialog

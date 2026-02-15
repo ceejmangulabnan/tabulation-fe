@@ -52,11 +52,7 @@
                   />
                   <div class="font-weight-bold">{{ item.name }}</div>
                   <v-chip
-                    v-if="
-                      segment.segment_status === 'closed' &&
-                      item.participant_status === 'eliminated' &&
-                      item.eliminated_at_segment?.id === segment.id
-                    "
+                    v-if="item.participant_status === 'eliminated'"
                     color="red"
                     class="ml-2"
                     size="small"
@@ -168,11 +164,7 @@
                       </div>
                     </div>
                     <v-chip
-                      v-if="
-                        segment.segment_status === 'closed' &&
-                        item.participant_status === 'eliminated' &&
-                        item.eliminated_at_segment?.id === segment.id
-                      "
+                      v-if="item.participant_status === 'eliminated'"
                       color="red"
                       class="mt-1 ml-4"
                       label
@@ -389,7 +381,6 @@ function getParticipantsByGender(gender: string, segment: SegmentData) {
     })
   }
   return genderFiltered
-    .filter((p) => p.participant_status !== 'eliminated')
     .sort((a, b) => a.number - b.number)
 }
 

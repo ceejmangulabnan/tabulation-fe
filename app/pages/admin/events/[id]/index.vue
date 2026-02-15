@@ -232,6 +232,18 @@
                           <v-icon v-else>mdi-account-circle</v-icon>
                         </v-avatar>
                       </template>
+                      <template #[`item.name`]="{ item }">
+                        <div class="font-weight-bold">{{ item.name }}</div>
+                        <v-chip
+                          v-if="item.participant_status === 'eliminated'"
+                          color="red"
+                          class="ml-2"
+                          size="small"
+                          label
+                        >
+                          Eliminated
+                        </v-chip>
+                      </template>
                       <template
                         v-for="category in segmentCategories"
                         #[`item.category_score_${category.documentId}`]="{ item }"
@@ -258,6 +270,18 @@
                           ></v-img>
                           <v-icon v-else>mdi-account-circle</v-icon>
                         </v-avatar>
+                      </template>
+                      <template #[`item.name`]="{ item }">
+                        <div class="font-weight-bold">{{ item.name }}</div>
+                        <v-chip
+                          v-if="item.participant_status === 'eliminated'"
+                          color="red"
+                          class="ml-2"
+                          size="small"
+                          label
+                        >
+                          Eliminated
+                        </v-chip>
                       </template>
                       <template
                         v-for="category in segmentCategories"
@@ -580,6 +604,7 @@ interface SegmentResultParticipant {
   averaged_score: number
   raw_averaged_score: number
   rank: number
+  participant_status?: string // NEW
 }
 
 interface CategoryDataFromSegmentApi {
