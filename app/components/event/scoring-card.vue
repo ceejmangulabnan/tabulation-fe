@@ -50,16 +50,16 @@
                     class="mr-3"
                     size="40"
                   />
-                  <div class="font-weight-bold">{{ item.name }}</div>
                   <v-chip
                     v-if="item.participant_status === 'eliminated'"
                     color="red"
-                    class="ml-2"
+                    class="mr-2"
                     size="small"
                     label
                   >
-                    Eliminated
+                    E
                   </v-chip>
+                  <div class="font-weight-bold">{{ item.name }}</div>
                 </div>
               </template>
 
@@ -93,7 +93,8 @@
                     :readonly="
                       category.locked ||
                       segment.segment_status === 'closed' ||
-                      segment.segment_status === 'inactive'
+                      segment.segment_status === 'inactive' ||
+                      item.participant_status === 'eliminated'
                     "
                     @keydown="blockInvalidKeys"
                   />
@@ -169,7 +170,7 @@
                       class="mt-1 ml-4"
                       label
                     >
-                      Eliminated
+                      E
                     </v-chip>
                   </v-card-title>
                   <v-card-text>
@@ -212,7 +213,8 @@
                           :readonly="
                             category.locked ||
                             segment.segment_status === 'closed' ||
-                            segment.segment_status === 'inactive'
+                            segment.segment_status === 'inactive' ||
+                            item.participant_status === 'eliminated'
                           "
                         />
                       </div>
@@ -234,20 +236,20 @@
     <v-card-actions v-if="!props.readonly">
       <v-spacer />
       <v-btn
+        variant="text"
+        @click="$emit('cancel-scoring')"
+      >
+        Cancel
+      </v-btn>
+      <v-btn
         v-if="segment.segment_status !== 'closed'"
-        color="primary"
+        color="green"
         variant="flat"
         class="text-wrap"
         @click="submitScores(segment)"
         :loading="isLoading"
       >
         Submit Scores for {{ segment.name }}
-      </v-btn>
-      <v-btn
-        variant="text"
-        @click="$emit('cancel-scoring')"
-      >
-        Cancel
       </v-btn>
     </v-card-actions>
   </v-card>
@@ -259,8 +261,6 @@
 </template>
 
 <script setup lang="ts">
-import ImagePreviewDialog from '~/components/ImagePreviewDialog.vue'
-
 type ParticipantScoreMap = Record<string, number | null | undefined>
 type ParticipantWithScores = Omit<ParticipantData, 'scores'> & { scores: ParticipantScoreMap }
 
@@ -278,7 +278,7 @@ const props = defineProps<{
   event: EventData
   participants: ParticipantWithScores[]
   judgeId: string
-  readonly?: boolean // New prop
+  readonly?: boolean
 }>()
 
 const emit = defineEmits(['scores-submitted', 'cancel-scoring'])
@@ -380,8 +380,7 @@ function getParticipantsByGender(gender: string, segment: SegmentData) {
       return scoreB - scoreA
     })
   }
-  return genderFiltered
-    .sort((a, b) => a.number - b.number)
+  return genderFiltered.sort((a, b) => a.number - b.number)
 }
 
 function calculateTotalScore(participant: ParticipantWithScores, segment: SegmentData): string {

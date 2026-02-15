@@ -183,7 +183,6 @@
               hide-details
             ></v-select>
 
-
             <v-tabs
               v-model="activeGenderTab"
               class="mt-4"
@@ -197,6 +196,7 @@
                 <v-data-table
                   :headers="scoreTableHeaders"
                   :items="maleParticipantsData"
+                  :loading="isFetchingSegmentRanking"
                   item-value="id"
                   show-expand
                   class="elevation-1"
@@ -216,16 +216,16 @@
                         class="mr-3"
                         size="40"
                       />
-                      <div class="font-weight-bold">{{ item.name }}</div>
                       <v-chip
                         v-if="item.isEliminated"
                         color="red"
-                        class="ml-2"
+                        class="mr-2"
                         size="small"
                         label
                       >
-                        Eliminated
+                        E
                       </v-chip>
+                      <div class="font-weight-bold">{{ item.name }}</div>
                     </div>
                   </template>
 
@@ -233,8 +233,8 @@
                     {{ value || 'N/A' }}
                   </template>
 
-                  <template #item.totalSegmentScorePercent="{ value }">
-                    <strong class="text-h6">{{ value }}%</strong>
+                  <template #item.averaged_score="{ value }">
+                    <strong class="text-h6">{{ value }}</strong>
                   </template>
 
                   <template #expanded-row="{ columns, item }">
@@ -269,10 +269,21 @@
                                 <v-expansion-panel-text>
                                   <v-list density="compact">
                                     <v-list-item
-                                      v-for="judge in event?.judges"
+                                      v-for="judge in event?.judges.sort(
+                                        (a: JudgeData, b: JudgeData) => a.name.localeCompare(b.name)
+                                      )"
                                       :key="judge.id"
                                     >
-                                      <v-list-item-title>{{ judge.name }}</v-list-item-title>
+                                      <v-list-item-title
+                                        :class="{
+                                          'active-judge-item': isJudgeActiveForCategory(
+                                            judge.documentId,
+                                            cat.documentId
+                                          ),
+                                        }"
+                                      >
+                                        {{ judge.name }}
+                                      </v-list-item-title>
                                       <template #append>
                                         <strong class="ml-4">
                                           {{
@@ -300,6 +311,7 @@
                 <v-data-table
                   :headers="scoreTableHeaders"
                   :items="femaleParticipantsData"
+                  :loading="isFetchingSegmentRanking"
                   item-value="id"
                   show-expand
                   class="elevation-1"
@@ -319,16 +331,16 @@
                         class="mr-3"
                         size="40"
                       />
-                      <div class="font-weight-bold">{{ item.name }}</div>
                       <v-chip
                         v-if="item.isEliminated"
                         color="red"
-                        class="ml-2"
+                        class="mr-2"
                         size="small"
                         label
                       >
-                        Eliminated
+                        E
                       </v-chip>
+                      <div class="font-weight-bold">{{ item.name }}</div>
                     </div>
                   </template>
 
@@ -336,8 +348,8 @@
                     {{ value || 'N/A' }}
                   </template>
 
-                  <template #item.totalSegmentScorePercent="{ value }">
-                    <strong class="text-h6">{{ value }}%</strong>
+                  <template #item.averaged_score="{ value }">
+                    <strong class="text-h6">{{ value }}</strong>
                   </template>
 
                   <template #expanded-row="{ columns, item }">
@@ -372,10 +384,21 @@
                                 <v-expansion-panel-text>
                                   <v-list density="compact">
                                     <v-list-item
-                                      v-for="judge in event?.judges"
+                                      v-for="judge in event?.judges.sort(
+                                        (a: JudgeData, b: JudgeData) => a.name.localeCompare(b.name)
+                                      )"
                                       :key="judge.id"
                                     >
-                                      <v-list-item-title>{{ judge.name }}</v-list-item-title>
+                                      <v-list-item-title
+                                        :class="{
+                                          'active-judge-item': isJudgeActiveForCategory(
+                                            judge.documentId,
+                                            cat.documentId
+                                          ),
+                                        }"
+                                      >
+                                        {{ judge.name }}
+                                      </v-list-item-title>
                                       <template #append>
                                         <strong class="ml-4">
                                           {{
@@ -707,7 +730,7 @@ onMounted(async () => {
   await eventsStore.fetchEvent(eventId)
 })
 
-const activeTab = ref('scores')
+const activeTab = ref('view-scores')
 
 onUnmounted(() => {
   // Added onUnmounted hook to clear interval
@@ -721,7 +744,8 @@ watch(activeTab, (newTab, oldTab) => {
   if (newTab === 'view-scores') {
     // Start auto-refetch when entering 'view-scores' tab
     refetchInterval.value = setInterval(() => {
-      refreshEventData()
+      refreshEventData() // Re-fetch event data to ensure scores are up-to-date for judge activity check
+      fetchSegmentRanking()
     }, 10000) // 10 seconds
   } else if (oldTab === 'view-scores' && refetchInterval.value) {
     // Clear interval when leaving 'view-scores' tab
@@ -767,6 +791,15 @@ const showImagePreview = (url: string) => {
   imagePreviewDialog.value = true
 }
 
+function isJudgeActiveForCategory(judgeDocumentId: string, categoryDocumentId: string): boolean {
+  return (event.value?.scores || []).some(
+    (score: ScoreData) =>
+      score.judge?.documentId === judgeDocumentId &&
+      score.category?.documentId === categoryDocumentId &&
+      score.value !== null
+  )
+}
+
 function getParticipantScoreForCategoryByJudge(
   participantId: string,
   categoryId: string,
@@ -793,54 +826,55 @@ function getParticipantCategoryAverage(participantId: string, category: any) {
   return sum / categoryScores.length
 }
 
-function getParticipantSegmentScore(participant: any, segment: any) {
-  if (!segment?.categories) return 0
-
-  const rawSegmentTotal = segment.categories.reduce((acc: number, cat: any) => {
-    const avgCategoryScore = getParticipantCategoryAverage(participant.documentId, cat)
-    return acc + avgCategoryScore
-  }, 0)
-
-  let finalSegmentScore = rawSegmentTotal
-
-  if (segment.scoring_mode === 'normalized') {
-    finalSegmentScore = rawSegmentTotal * segment.weight
-  }
-
-  return finalSegmentScore
-}
-
 const scoreTableHeaders = computed(() => [
   { title: 'No.', key: 'number', sortable: true, width: '60px' },
   { title: 'Name', key: 'name', sortable: true },
   { title: 'Department', key: 'department.name', sortable: true },
-  { title: 'Total Score', key: 'totalSegmentScorePercent', sortable: true },
+  { title: 'Average Score', key: 'averaged_score', sortable: true },
+  { title: 'Rank', key: 'rank', sortable: true },
   { title: '', key: 'data-table-expand' },
 ])
 
-const participantsWithScores = computed(() => {
-  if (!event.value?.participants || !selectedSegment.value) return []
-
-  return event.value.participants.map((p: any) => {
-    const segmentScore = getParticipantSegmentScore(p, selectedSegment.value)
-    return {
-      ...p,
-      totalSegmentScorePercent: segmentScore.toFixed(3),
-      isEliminated: p.participant_status === 'eliminated',
-    }
-  })
-})
-
 const maleParticipantsData = computed(() => {
-  return participantsWithScores.value
-    .filter((p) => p.gender === 'male')
-    .sort((a, b) => parseFloat(b.totalSegmentScorePercent) - parseFloat(a.totalSegmentScorePercent))
+  if (!event.value?.participants) return []
+
+  const maleParticipants = event.value.participants.filter((p) => p.gender === 'male')
+
+  return maleParticipants
+    .map((p) => {
+      const rankingData = segmentRanking.value.male.find((r) => r.participant_number === p.number)
+      return {
+        ...p,
+        averaged_score: rankingData ? rankingData.averaged_score : 'N/A',
+        rank: rankingData ? rankingData.rank : 'N/A',
+        isEliminated: p.participant_status === 'eliminated',
+      }
+    })
+    .sort((a, b) => {
+      if (a.rank === 'N/A' || b.rank === 'N/A' || a.rank === b.rank) return 0
+      return Number(a.rank) - Number(b.rank)
+    })
 })
 
 const femaleParticipantsData = computed(() => {
-  return participantsWithScores.value
-    .filter((p) => p.gender === 'female')
-    .sort((a, b) => parseFloat(b.totalSegmentScorePercent) - parseFloat(a.totalSegmentScorePercent))
+  if (!event.value?.participants) return []
+
+  const femaleParticipants = event.value.participants.filter((p) => p.gender === 'female')
+
+  return femaleParticipants
+    .map((p) => {
+      const rankingData = segmentRanking.value.female.find((r) => r.participant_number === p.number)
+      return {
+        ...p,
+        averaged_score: rankingData ? rankingData.averaged_score : 'N/A',
+        rank: rankingData ? rankingData.rank : 'N/A',
+        isEliminated: p.participant_status === 'eliminated',
+      }
+    })
+    .sort((a, b) => {
+      if (a.rank === 'N/A' || b.rank === 'N/A' || a.rank === b.rank) return 0
+      return Number(a.rank) - Number(b.rank)
+    })
 })
 
 function handleStatusChange(segmentId: number, newStatus: SegmentData['segment_status']) {
@@ -977,14 +1011,6 @@ const fetchRankings = async () => {
       }
     }
 
-    // if (printGender.value === 'male' || printGender.value === 'both') {
-    //   maleRankings.value = results.male
-    // }
-    //
-    // if (printGender.value === 'female' || printGender.value === 'both') {
-    //   femaleRankings.value = results.female
-    // }
-
     if (!maleRankings.value.length && !femaleRankings.value.length) {
       showSnackbar('No ranking data found.', 'info')
       return false
@@ -1010,6 +1036,43 @@ const confirmPrint = async () => {
   await printableRef.value?.generatePdf()
 }
 
+interface SegmentRanking {
+  averaged_score: number
+  department: string
+  gender: 'male' | 'female'
+  participant_number: number
+  name: string
+  rank: number
+}
+
+const segmentRanking = ref<{
+  male: SegmentRanking[]
+  female: SegmentRanking[]
+}>({ male: [], female: [] })
+
+const isFetchingSegmentRanking = ref(false)
+
+async function fetchSegmentRanking() {
+  if (!selectedSegmentId.value || !event.value?.documentId) {
+    segmentRanking.value = { male: [], female: [] }
+    return
+  }
+  isFetchingSegmentRanking.value = true
+  try {
+    const url = `/admin/events/${event.value.documentId}/segments/${selectedSegmentId.value}/scores`
+    const { data } = await api.get(url)
+    segmentRanking.value = data.results
+  } catch (error) {
+    console.error('Failed to fetch segment ranking:', error)
+    showSnackbar('Failed to fetch segment ranking.', 'error')
+    segmentRanking.value = { male: [], female: [] }
+  } finally {
+    isFetchingSegmentRanking.value = false
+  }
+}
+
+watch(selectedSegmentId, fetchSegmentRanking, { immediate: true })
+
 // Initialize selectedSegmentId if segments are available
 watch(
   () => event.value?.segments,
@@ -1032,6 +1095,10 @@ watch(printType, (val) => {
 </script>
 
 <style scoped>
+.active-judge-item {
+  color: green;
+  font-weight: bold;
+}
 .pdf-content {
   font-family: 'Roboto', sans-serif;
   color: #333;
