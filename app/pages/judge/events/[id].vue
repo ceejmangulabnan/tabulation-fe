@@ -38,13 +38,14 @@
           <v-card-title class="d-flex justify-space-between text-h5">
             <span>Participant Scores</span>
             <v-btn
-              color="primary"
+              color="green"
               @click="showScoringDialog = true"
               :disabled="
                 !event ||
                 !judgeId ||
                 !activeSegmentTab ||
-                currentSegment?.segment_status !== 'active'
+                currentSegment?.segment_status !== 'active' ||
+                allSegmentsClosed // New condition to disable scoring if all segments are closed
               "
             >
               Score {{ currentSegmentName }}
@@ -91,6 +92,13 @@
                   Inactive
                 </v-chip>
               </v-tab>
+              <v-tab
+                v-if="allSegmentsClosed"
+                value="final-rankings"
+                @click="fetchFinalScores"
+              >
+                Final Rankings
+              </v-tab>
             </v-tabs>
             <v-window v-model="activeSegmentTab">
               <div
@@ -127,6 +135,127 @@
                   This segment is inactive. You cannot submit scores yet.
                 </p>
               </v-window-item>
+              <v-window-item
+                v-if="allSegmentsClosed"
+                value="final-rankings"
+              >
+                <v-card class="mt-4">
+                  <v-card-title>
+                    Final Rankings
+                    <v-btn
+                      :loading="eventsStore.isLoading"
+                      icon
+                      color="primary"
+                      variant="text"
+                      @click="fetchFinalScores"
+                      class="ml-2"
+                    >
+                      <v-icon>mdi-refresh</v-icon>
+                      <v-tooltip
+                        activator="parent"
+                        location="bottom"
+                      >
+                        Refresh Scores
+                      </v-tooltip>
+                    </v-btn>
+                  </v-card-title>
+                  <v-card-text>
+                    <v-tabs
+                      v-model="activeGenderTab"
+                      class="mb-4"
+                    >
+                      <v-tab value="male">Male ({{ finalMaleResults.length }})</v-tab>
+                      <v-tab value="female">Female ({{ finalFemaleResults.length }})</v-tab>
+                    </v-tabs>
+
+                    <v-window v-model="activeGenderTab">
+                      <v-window-item value="male">
+                        <v-data-table
+                          :headers="finalRankingsHeaders"
+                          :items="finalMaleResults"
+                          item-key="participant_number"
+                          class="elevation-1 participant-table"
+                          :sort-by="[{ key: 'rank', order: 'asc' }]"
+                        >
+                          <template #[`item.headshot`]="{ item }">
+                            <v-avatar size="50px">
+                              <v-img
+                                v-if="item.headshot"
+                                :src="getStrapiUrl(item.headshot)"
+                                @click="showImagePreview(item.headshot)"
+                              ></v-img>
+                              <v-icon v-else>mdi-account-circle</v-icon>
+                            </v-avatar>
+                          </template>
+                          <template #[`item.name`]="{ item }">
+                            <div class="d-flex align-center py-2">
+                              <v-chip
+                                v-if="item.isEliminated"
+                                color="red"
+                                class="mr-2"
+                                size="small"
+                                label
+                              >
+                                E
+                              </v-chip>
+                              <div class="font-weight-bold">{{ item.name }}</div>
+                            </div>
+                          </template>
+
+                          <template
+                            v-for="segment in finalSegments"
+                            #[`item.segment_score_${segment.documentId}`]="{ item }"
+                            :key="`segment-score-${segment.documentId}-${item.participant_number}`"
+                          >
+                            {{ item.segment_scores[segment.name]?.averaged_score || '-' }}
+                          </template>
+                        </v-data-table>
+                      </v-window-item>
+                      <v-window-item value="female">
+                        <v-data-table
+                          :headers="finalRankingsHeaders"
+                          :items="finalFemaleResults"
+                          item-key="participant_number"
+                          class="elevation-1 participant-table"
+                          :sort-by="[{ key: 'rank', order: 'asc' }]"
+                        >
+                          <template #[`item.headshot`]="{ item }">
+                            <v-avatar size="50px">
+                              <v-img
+                                v-if="item.headshot"
+                                :src="getStrapiUrl(item.headshot)"
+                                @click="showImagePreview(item.headshot)"
+                              ></v-img>
+                              <v-icon v-else>mdi-account-circle</v-icon>
+                            </v-avatar>
+                          </template>
+                          <template #[`item.name`]="{ item }">
+                            <div class="d-flex align-center py-2">
+                              <v-chip
+                                v-if="item.isEliminated"
+                                color="red"
+                                class="mr-2"
+                                size="small"
+                                label
+                              >
+                                E
+                              </v-chip>
+                              <div class="font-weight-bold">{{ item.name }}</div>
+                            </div>
+                          </template>
+                          <template
+                            v-for="segment in finalSegments"
+                            #[`item.segment_score_${segment.documentId}`]="{ item }"
+                            :key="`segment-score-${segment.documentId}-${item.participant_number}`"
+                          >
+                            {{ item.segment_scores[segment.name]?.averaged_score || '-' }}
+                          </template>
+                        </v-data-table>
+                      </v-window-item>
+                    </v-window>
+                  </v-card-text>
+                </v-card>
+              </v-window-item>
             </v-window>
           </v-card-text>
         </v-card>
@@ -143,8 +272,13 @@
       <v-card>
         <v-toolbar
           dark
-          color="primary"
+          color="green"
         >
+          <v-toolbar-title>
+            Score Event: {{ event?.name }} - {{ currentSegmentName }}
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+
           <v-btn
             icon
             dark
@@ -152,19 +286,6 @@
           >
             <v-icon>mdi-close</v-icon>
           </v-btn>
-          <v-toolbar-title>
-            Score Event: {{ event?.name }} - {{ currentSegmentName }}
-          </v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn
-              variant="text"
-              dark
-              @click="closeScoringDialog"
-            >
-              Close
-            </v-btn>
-          </v-toolbar-items>
         </v-toolbar>
         <v-card-text>
           <EventScoringCard
@@ -195,9 +316,61 @@ definePageMeta({
   layout: 'judge',
 })
 
+interface DataTableHeader {
+  key: string
+  title: string
+  align?: 'start' | 'end' | 'center'
+  sortable?: boolean
+  class?: string
+  fixed?: 'end' | 'start' | boolean | undefined
+}
+
+// Define interfaces for the final scores API response (copied from admin/events/[id]/index.vue)
+interface FinalAveragedScore {
+  averaged_score: number
+  raw_averaged_score: number
+}
+
+interface FinalSegmentScores {
+  [key: string]: FinalAveragedScore
+}
+
+interface FinalParticipant {
+  isEliminated: boolean
+  participant_number: number
+  name: string
+  department: string
+  gender: 'male' | 'female'
+  headshot: string
+  segment_scores: FinalSegmentScores
+  averaged_score: number
+  raw_averaged_score: number
+  rank: number
+}
+
+interface FinalEventScoresResponse {
+  event: {
+    documentId: string
+    name: string
+    description: string
+  }
+  segments: {
+    documentId: string
+    name: string
+    order: number
+    weight: number
+  }[]
+  results: {
+    male: FinalParticipant[]
+    female: FinalParticipant[]
+  }
+}
+
 const route = useRoute()
 const eventsStore = useEventsStore()
 const authStore = useAuthStore()
+const api = useStrapiApi()
+const { showSnackbar } = useSnackbar()
 
 type ParticipantScoreMap = Record<string, number | null | undefined>
 type ParticipantWithScores = Omit<ParticipantData, 'scores'> & { scores: ParticipantScoreMap }
@@ -206,17 +379,102 @@ const eventId = route.params.id as string
 const event = computed(() => eventsStore.event)
 const judgeId = computed(() => authStore.user?.judge?.documentId)
 
-const activeSegmentTab = ref<number | null>(null)
+const activeSegmentTab = ref<number | string | null>(null) // Allow string for 'final-rankings'
+const activeGenderTab = ref('male') // <-- Re-added
 const showScoringDialog = ref(false)
 
+const imagePreviewDialog = ref(false) // <-- Re-added
+const imagePreviewUrl = ref<string | undefined>('') // <-- Re-added
+
+function getStrapiUrl(url: string) {
+  const config = useRuntimeConfig()
+  return `${config.public.strapiUrl}${url}`
+} // <-- Re-added
+
+const showImagePreview = (url: string) => {
+  imagePreviewUrl.value = getStrapiUrl(url)
+  imagePreviewDialog.value = true
+} // <-- Re-added
+
 const currentSegment = computed(() => {
-  return segmentsForTabs.value.find((s) => s.id === activeSegmentTab.value)
+  // Check if activeSegmentTab is a number (segment ID)
+  if (typeof activeSegmentTab.value === 'number') {
+    return segmentsForTabs.value.find((s) => s.id === activeSegmentTab.value)
+  }
+  return null // If 'final-rankings' or null, return null for currentSegment
 })
 
 const currentSegmentName = computed(() => currentSegment.value?.name || 'N/A')
 
 function closeScoringDialog() {
   showScoringDialog.value = false
+}
+
+// Refs for final rankings data
+const finalMaleResults = ref<FinalParticipant[]>([])
+const finalFemaleResults = ref<FinalParticipant[]>([])
+const finalSegments = ref<FinalEventScoresResponse['segments']>([])
+
+const finalRankingsHeaders = computed<DataTableHeader[]>(() => {
+  const staticHeaders: DataTableHeader[] = [
+    {
+      title: 'No.',
+      key: 'participant_number',
+      align: 'start',
+      sortable: true,
+      fixed: 'start',
+    },
+    { title: 'Headshot', key: 'headshot', align: 'center', sortable: false },
+    { title: 'Participant', key: 'name', align: 'start', sortable: true },
+    {
+      title: 'Department',
+      key: 'department',
+      align: 'start',
+      sortable: true,
+    },
+  ]
+
+  const segmentScoreHeaders: DataTableHeader[] = finalSegments.value.map((segment) => ({
+    title: `${segment.name} (${segment.weight * 100}%)`,
+    key: `segment_score_${segment.documentId}`,
+    align: 'end',
+    sortable: true,
+  }))
+
+  return [
+    ...staticHeaders,
+    ...segmentScoreHeaders,
+    {
+      title: 'Total Score',
+      key: 'averaged_score',
+      align: 'end',
+      sortable: true,
+    },
+
+    { title: 'Rank', key: 'rank', align: 'end', sortable: true, fixed: 'end' },
+  ]
+})
+
+async function fetchFinalScores() {
+  if (!event.value) {
+    showSnackbar('Event data not available.', 'error')
+    return
+  }
+
+  eventsStore.isLoading = true
+  try {
+    // Retain the /judge prefix as per user's earlier instruction
+    const apiUrl = `/judge/events/${event.value.documentId}/scores`
+    const { data } = await api.get<FinalEventScoresResponse>(apiUrl)
+    finalMaleResults.value = data.results.male
+    finalFemaleResults.value = data.results.female
+    finalSegments.value = data.segments
+  } catch (e) {
+    showSnackbar('Failed to fetch final scores.', 'error')
+    console.error(e)
+  } finally {
+    eventsStore.isLoading = false
+  }
 }
 
 async function refreshEvent() {
@@ -247,12 +505,21 @@ async function refreshEvent() {
     }
   })
 
-  // Ensure activeSegmentTab is set if it's null or undefined
-  if (
-    (activeSegmentTab.value === null || activeSegmentTab.value === undefined) &&
-    segmentsForTabs.value.length > 0
-  ) {
-    activeSegmentTab.value = segmentsForTabs.value[0]?.id || null
+  // Determine if all segments are closed and set initial tab
+  if (allSegmentsClosed.value) {
+    await fetchFinalScores()
+    activeSegmentTab.value = 'final-rankings'
+  } else if (segmentsForTabs.value.length > 0) {
+    // If not all segments are closed, but the current tab is 'final-rankings', switch to first segment
+    if (activeSegmentTab.value === 'final-rankings') {
+      activeSegmentTab.value = segmentsForTabs.value[0]?.id || null
+    }
+    // If activeSegmentTab is still null or undefined, set it to the first segment
+    else if (activeSegmentTab.value === null || activeSegmentTab.value === undefined) {
+      activeSegmentTab.value = segmentsForTabs.value[0]?.id || null
+    }
+  } else {
+    activeSegmentTab.value = null
   }
 }
 
@@ -263,10 +530,6 @@ async function handleScoresSubmitted() {
 
 onMounted(async () => {
   await refreshEvent()
-
-  if (segmentsForTabs.value.length > 0) {
-    activeSegmentTab.value = segmentsForTabs.value[0]?.id || null
-  }
 })
 
 const statusColor = computed(() => {
@@ -282,6 +545,13 @@ const statusColor = computed(() => {
     default:
       return 'grey'
   }
+})
+
+const allSegmentsClosed = computed(() => {
+  if (!event.value?.segments || event.value.segments.length === 0) {
+    return false
+  }
+  return event.value.segments.every((s) => s.segment_status === 'closed')
 })
 
 const segmentsForTabs = computed(() => {
@@ -301,9 +571,3 @@ const segmentsForTabs = computed(() => {
 
 const participants = ref<ParticipantWithScores[]>([])
 </script>
-
-<style lang="css" scoped>
-.score-input {
-  min-width: 100px;
-}
-</style>
