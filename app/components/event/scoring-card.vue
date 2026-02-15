@@ -403,7 +403,6 @@ function calculateTotalScore(participant: ParticipantWithScores, segment: Segmen
 
   if (segment.scoring_mode === 'normalized') {
     finalSegmentScore = rawSegmentTotal * segment.weight
-    console.log('Final Segment Score:', finalSegmentScore)
   }
 
   // raw_category → no multiplication

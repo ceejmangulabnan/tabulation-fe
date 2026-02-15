@@ -36,10 +36,7 @@
       :temporary="!display.mdAndUp.value"
     >
       <v-list>
-        <v-list-item
-          :subtitle="authStore.user?.email"
-          :title="authStore.user?.username"
-        ></v-list-item>
+        <v-list-item :title="authStore.user?.username"></v-list-item>
       </v-list>
 
       <v-divider></v-divider>

@@ -1,25 +1,25 @@
-import { useAuthStore } from '~/stores/auth'
-
-// export default defineNuxtRouteMiddleware((to) => {
-//   const authStore = useAuthStore()
-//
-//   if (!authStore.isAuthenticated) {
-//     console.log('From Auth Middleware:', authStore.isAuthenticated)
-//     // Prevent redirect loop if already on the login page
-//     if (to.path == '/') {
-//       return
-//     }
-//     if (to.path !== '/auth') {
-//       return navigateTo('/auth')
-//     }
-//   }
-// })
-
 export default defineNuxtRouteMiddleware((to) => {
   const authStore = useAuthStore()
 
-  if (!authStore.isAuthenticated) return
+  // Define public pages that do not require authentication
+  const publicPages = ['/', '/auth']
+  const authRequired = !publicPages.includes(to.path)
 
+  // If authentication is required for the route and the user is not authenticated
+  if (authRequired && !authStore.isAuthenticated) {
+    // Redirect to the authentication page
+    return navigateTo('/auth')
+  }
+
+  // If the user is not authenticated and the current page is public,
+  // or if the user is authenticated, continue processing role-based redirects.
+  // This check also prevents unnecessary further execution if not authenticated
+  // but on a public page.
+  if (!authStore.isAuthenticated) {
+    return // Allow access to public pages if not authenticated
+  }
+
+  // From here, we know the user is authenticated. Proceed with role-based redirects.
   const role = authStore.user?.userRole
 
   if (to.path.startsWith('/admin') && role === 'judge') {

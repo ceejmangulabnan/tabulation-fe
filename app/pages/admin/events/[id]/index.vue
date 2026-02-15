@@ -349,6 +349,21 @@
                           <v-icon v-else>mdi-account-circle</v-icon>
                         </v-avatar>
                       </template>
+                      <template #[`item.name`]="{ item }">
+                        <div class="d-flex align-center py-2">
+                          <v-chip
+                            v-if="item.isEliminated"
+                            color="red"
+                            class="mr-2"
+                            size="small"
+                            label
+                          >
+                            E
+                          </v-chip>
+                          <div class="font-weight-bold">{{ item.name }}</div>
+                        </div>
+                      </template>
+
                       <template
                         v-for="segment in finalSegments"
                         #[`item.segment_score_${segment.documentId}`]="{ item }"
@@ -375,6 +390,20 @@
                           ></v-img>
                           <v-icon v-else>mdi-account-circle</v-icon>
                         </v-avatar>
+                      </template>
+                      <template #[`item.name`]="{ item }">
+                        <div class="d-flex align-center py-2">
+                          <v-chip
+                            v-if="item.isEliminated"
+                            color="red"
+                            class="mr-2"
+                            size="small"
+                            label
+                          >
+                            E
+                          </v-chip>
+                          <div class="font-weight-bold">{{ item.name }}</div>
+                        </div>
                       </template>
                       <template
                         v-for="segment in finalSegments"

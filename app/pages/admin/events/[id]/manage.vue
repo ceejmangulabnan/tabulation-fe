@@ -651,7 +651,6 @@ const pendingSegmentChanges = ref<{ [key: number]: SegmentData['segment_status']
 const printType = ref<'segment' | 'category' | 'final'>('segment')
 const printCategoryId = ref<string | null>(null)
 const printGender = ref<'male' | 'female' | 'both'>('both')
-console.log('printCategoryId', printCategoryId.value)
 
 const maleRankings = ref<any[]>([])
 const femaleRankings = ref<any[]>([])
