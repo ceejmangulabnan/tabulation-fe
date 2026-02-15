@@ -141,29 +141,16 @@
               </template>
               <template #[`item.name`]="{ item }">
                 <div class="d-flex align-center py-2">
-                  <v-avatar
-                    v-if="item.headshot"
-                    :src="getStrapiImageUrl(item.headshot)"
-                    class="mr-3"
-                    size="40"
-                    @click="showImagePreview(item.headshot)"
-                  />
-                  <v-avatar
-                    v-else
-                    icon="mdi-account"
-                    class="mr-3"
-                    size="40"
-                  />
-                  <div class="font-weight-bold">{{ item.name }}</div>
                   <v-chip
-                    v-if="item.participant_status === 'eliminated'"
+                    v-if="item.isEliminated"
                     color="red"
-                    class="ml-2"
+                    class="mr-2"
                     size="small"
                     label
                   >
-                    Eliminated
+                    E
                   </v-chip>
+                  <div class="font-weight-bold">{{ item.name }}</div>
                 </div>
               </template>
               <template
@@ -201,29 +188,16 @@
               </template>
               <template #[`item.name`]="{ item }">
                 <div class="d-flex align-center py-2">
-                  <v-avatar
-                    v-if="item.headshot"
-                    :src="getStrapiImageUrl(item.headshot)"
-                    class="mr-3"
-                    size="40"
-                    @click="showImagePreview(item.headshot)"
-                  />
-                  <v-avatar
-                    v-else
-                    icon="mdi-account"
-                    class="mr-3"
-                    size="40"
-                  />
-                  <div class="font-weight-bold">{{ item.name }}</div>
                   <v-chip
-                    v-if="item.participant_status === 'eliminated'"
+                    v-if="item.isEliminated"
                     color="red"
-                    class="ml-2"
+                    class="mr-2"
                     size="small"
                     label
                   >
-                    Eliminated
+                    E
                   </v-chip>
+                  <div class="font-weight-bold">{{ item.name }}</div>
                 </div>
               </template>
               <template
@@ -272,6 +246,7 @@ interface DataTableHeader {
 }
 
 interface RankedParticipant {
+  isEliminated: boolean
   participant_number: number
   name: string
   department: string

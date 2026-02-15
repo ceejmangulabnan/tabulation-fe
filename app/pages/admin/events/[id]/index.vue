@@ -233,16 +233,18 @@
                         </v-avatar>
                       </template>
                       <template #[`item.name`]="{ item }">
-                        <div class="font-weight-bold">{{ item.name }}</div>
-                        <v-chip
-                          v-if="item.participant_status === 'eliminated'"
-                          color="red"
-                          class="ml-2"
-                          size="small"
-                          label
-                        >
-                          Eliminated
-                        </v-chip>
+                        <div class="d-flex align-center py-2">
+                          <v-chip
+                            v-if="item.isEliminated"
+                            color="red"
+                            class="mr-2"
+                            size="small"
+                            label
+                          >
+                            E
+                          </v-chip>
+                          <div class="font-weight-bold">{{ item.name }}</div>
+                        </div>
                       </template>
                       <template
                         v-for="category in segmentCategories"
@@ -272,16 +274,18 @@
                         </v-avatar>
                       </template>
                       <template #[`item.name`]="{ item }">
-                        <div class="font-weight-bold">{{ item.name }}</div>
-                        <v-chip
-                          v-if="item.participant_status === 'eliminated'"
-                          color="red"
-                          class="ml-2"
-                          size="small"
-                          label
-                        >
-                          Eliminated
-                        </v-chip>
+                        <div class="d-flex align-center py-2">
+                          <v-chip
+                            v-if="item.isEliminated"
+                            color="red"
+                            class="mr-2"
+                            size="small"
+                            label
+                          >
+                            E
+                          </v-chip>
+                          <div class="font-weight-bold">{{ item.name }}</div>
+                        </div>
                       </template>
                       <template
                         v-for="category in segmentCategories"
@@ -593,6 +597,7 @@ interface CategoryScoreDetail {
 }
 
 interface SegmentResultParticipant {
+  isEliminated: boolean
   participant_number: number
   name: string
   department: string
@@ -639,6 +644,7 @@ interface FinalSegmentScores {
 }
 
 interface FinalParticipant {
+  isEliminated: boolean
   participant_number: number
   name: string
   department: string
@@ -724,7 +730,9 @@ onMounted(async () => {
       // Manually trigger fetch for the initial segment, waiting for it to complete
       await fetchSegmentScores(firstSegmentWithId.documentId)
     } else {
-      console.warn('No segment with documentId found to select initially. Defaulting to final rankings.')
+      console.warn(
+        'No segment with documentId found to select initially. Defaulting to final rankings.'
+      )
       selectedSegmentTab.value = 'final-rankings'
       await fetchFinalScores() // Manually trigger fetch for final rankings
     }
@@ -739,7 +747,9 @@ watch(selectedSegmentTab, async (newTab) => {
   if (!newTab) return
 
   if (!eventsStore.event) {
-    console.warn('eventsStore.event is null when selectedSegmentTab changed. Deferring score fetch.')
+    console.warn(
+      'eventsStore.event is null when selectedSegmentTab changed. Deferring score fetch.'
+    )
     return // Prevent fetching if event data is not available
   }
 
@@ -960,7 +970,12 @@ const refreshEventData = async () => {
 }
 
 const selectedSegment = computed(() => {
-  if (!event.value?.segments || !selectedSegmentTab.value || selectedSegmentTab.value === 'final-rankings') return null
+  if (
+    !event.value?.segments ||
+    !selectedSegmentTab.value ||
+    selectedSegmentTab.value === 'final-rankings'
+  )
+    return null
   return event.value.segments.find((s) => s.documentId === selectedSegmentTab.value) || null
 })
 
@@ -987,9 +1002,7 @@ const fetchRankings = async () => {
 
     url = `/admin/events/${event.value?.documentId}/segments/${segmentId}/categories/${categoryId}/ranking`
 
-    const categoryName = currentSegmentCategories.value?.find(
-      (c) => c.value === categoryId
-    )?.title
+    const categoryName = currentSegmentCategories.value?.find((c) => c.value === categoryId)?.title
     const categoryWeight = selectedSegment.value?.categories?.find(
       (c) => c.documentId === categoryId
     )?.weight
@@ -1087,7 +1100,6 @@ watch(selectedSegmentTab, (newVal) => {
   }
   printCategoryId.value = null
 })
-
 </script>
 
 <style scoped>
