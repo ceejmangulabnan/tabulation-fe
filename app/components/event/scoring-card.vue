@@ -28,7 +28,7 @@
               :headers="getTableHeaders(segment)"
               :items="getParticipantsByGender(gender.key, segment)"
               item-value="id"
-              class="elevation-1"
+              class="elevation-1 text-body-1"
               :loading="isLoading"
               :readonly="
                 segment.segment_status === 'inactive' || segment.segment_status === 'closed'
@@ -281,7 +281,7 @@ const props = defineProps<{
   readonly?: boolean
 }>()
 
-const emit = defineEmits(['scores-submitted', 'cancel-scoring'])
+const emit = defineEmits(['scores-submitted', 'cancel-scoring', 'refetch-event'])
 
 function getScoreRules(maxScore: number) {
   return [
@@ -358,7 +358,7 @@ function getTableHeaders(segment: SegmentData) {
       title: `${category.name} (${category.weight * 100}%)`,
       value: `category_${category.documentId}`,
       sortable: false,
-      locked: category.locked, // Add locked property to header
+      locked: category.locked,
     })) || []
 
   return [
@@ -519,6 +519,7 @@ async function submitScores(segment: SegmentData) {
     const errorMessage =
       error.response?.data?.error?.message || 'Failed to submit some scores. Please try again.'
     showSnackbar(errorMessage, 'error')
+    emit('refetch-event')
   } finally {
     isLoading.value = false
   }

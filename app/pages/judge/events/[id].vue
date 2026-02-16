@@ -114,9 +114,9 @@
               >
                 <!-- Read-only EventScoringCard for main view -->
                 <EventScoringCard
-                  v-if="event && judgeId && segment"
+                  v-if="event && judgeId && currentSegment"
                   :isAdmin="false"
-                  :segment="segment"
+                  :segment="currentSegment"
                   :event="event"
                   :participants="participants"
                   :judgeId="judgeId"
@@ -265,7 +265,7 @@
     <!-- Scoring Dialog -->
     <v-dialog
       v-model="showScoringDialog"
-      :scrim="false"
+      :scrim="true"
       persistent
       max-width="900px"
     >
@@ -297,6 +297,7 @@
             :judgeId="judgeId"
             @scores-submitted="handleScoresSubmitted"
             @cancel-scoring="closeScoringDialog"
+            @refetch-event="eventsStore.fetchEvent(eventId)"
           />
           <div
             v-else
@@ -380,21 +381,21 @@ const event = computed(() => eventsStore.event)
 const judgeId = computed(() => authStore.user?.judge?.documentId)
 
 const activeSegmentTab = ref<number | string | null>(null) // Allow string for 'final-rankings'
-const activeGenderTab = ref('male') // <-- Re-added
+const activeGenderTab = ref('male')
 const showScoringDialog = ref(false)
 
-const imagePreviewDialog = ref(false) // <-- Re-added
-const imagePreviewUrl = ref<string | undefined>('') // <-- Re-added
+const imagePreviewDialog = ref(false)
+const imagePreviewUrl = ref<string | undefined>('')
 
 function getStrapiUrl(url: string) {
   const config = useRuntimeConfig()
   return `${config.public.strapiUrl}${url}`
-} // <-- Re-added
+}
 
 const showImagePreview = (url: string) => {
   imagePreviewUrl.value = getStrapiUrl(url)
   imagePreviewDialog.value = true
-} // <-- Re-added
+}
 
 const currentSegment = computed(() => {
   // Check if activeSegmentTab is a number (segment ID)
@@ -571,3 +572,4 @@ const segmentsForTabs = computed(() => {
 
 const participants = ref<ParticipantWithScores[]>([])
 </script>
+

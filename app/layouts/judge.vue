@@ -51,7 +51,7 @@
             Home
           </v-list-item-title>
         </v-list-item>
-        <v-list-item to="/admin/dashboard">
+        <v-list-item to="/judge/dashboard">
           <v-list-item-title>
             <v-icon
               icon="mdi-view-dashboard"
@@ -60,7 +60,7 @@
             Dashboard
           </v-list-item-title>
         </v-list-item>
-        <v-list-item to="/admin/events">
+        <v-list-item to="/judge/events">
           <v-list-item-title>
             <v-icon
               icon="mdi-calendar"
