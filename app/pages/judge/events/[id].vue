@@ -529,8 +529,43 @@ async function handleScoresSubmitted() {
   closeScoringDialog()
 }
 
+// Start auto-refresh logic
+const refreshTimer = ref<NodeJS.Timeout | null>(null);
+
+const startAutoRefresh = () => {
+  stopAutoRefresh(); // Clear any existing timer first
+  refreshTimer.value = setTimeout(async () => {
+    // Only refresh if the scoring dialog is NOT open
+    if (!showScoringDialog.value) {
+      console.log('Auto-refreshing event data...');
+      await refreshEvent();
+    }
+    startAutoRefresh(); // Restart the timer for the next interval
+  }, 10000); // 10 seconds
+};
+
+const stopAutoRefresh = () => {
+  if (refreshTimer.value) {
+    clearTimeout(refreshTimer.value);
+    refreshTimer.value = null;
+  }
+};
+
+watch(showScoringDialog, (newValue) => {
+  if (newValue) {
+    stopAutoRefresh(); // Stop when dialog opens
+  } else {
+    startAutoRefresh(); // Restart when dialog closes
+  }
+});
+
 onMounted(async () => {
   await refreshEvent()
+  startAutoRefresh() // Start auto-refresh after initial load
+})
+
+onUnmounted(() => {
+  stopAutoRefresh() // Stop auto-refresh when component is unmounted
 })
 
 const statusColor = computed(() => {
