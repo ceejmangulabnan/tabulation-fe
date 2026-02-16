@@ -189,7 +189,7 @@ defineExpose({ generatePdf })
 }
 
 .bottom-margin {
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
 }
 
 /* HEADER */
@@ -204,8 +204,8 @@ defineExpose({ generatePdf })
 }
 
 .logo-large {
-  width: 300px;
-  margin: -1rem 0;
+  width: 350px;
+  margin: -1.2rem 0;
 }
 
 .header-text {
