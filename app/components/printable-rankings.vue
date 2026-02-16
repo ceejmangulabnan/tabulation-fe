@@ -82,7 +82,7 @@
 
     <!-- PAGE 2 -->
     <section class="page">
-      <div class="content center">
+      <div class="content center bottom-margin">
         <h1 class="event-org-large">St. Nicolas College of Business and Technology</h1>
 
         <img
@@ -188,6 +188,10 @@ defineExpose({ generatePdf })
   text-align: center;
 }
 
+.bottom-margin {
+  margin-bottom: 2rem;
+}
+
 /* HEADER */
 .header {
   display: flex;
@@ -200,7 +204,8 @@ defineExpose({ generatePdf })
 }
 
 .logo-large {
-  width: 200px;
+  width: 300px;
+  margin: -1rem 0;
 }
 
 .header-text {
