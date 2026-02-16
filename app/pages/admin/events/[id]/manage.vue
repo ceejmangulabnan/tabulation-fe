@@ -791,12 +791,37 @@ const showImagePreview = (url: string) => {
 }
 
 function isJudgeActiveForCategory(judgeDocumentId: string, categoryDocumentId: string): boolean {
-  return (event.value?.scores || []).some(
-    (score: ScoreData) =>
-      score.judge?.documentId === judgeDocumentId &&
-      score.category?.documentId === categoryDocumentId &&
-      score.value !== null
+  const category = selectedSegment.value?.categories?.find(
+    (cat) => cat.documentId === categoryDocumentId
   )
+
+  if (!category?.active_judges) return false
+
+  return category.active_judges.some((judge: JudgeData) => judge.documentId === judgeDocumentId)
+}
+
+function getParticipantCategoryAverage(participantId: string, category: any) {
+  // Get only scores from active judges
+  const activeJudgeIds = new Set(
+    (category.active_judges || []).map((judge: JudgeData) => judge.documentId)
+  )
+
+  const categoryScores = event.value?.scores?.filter(
+    (s: any) =>
+      s.category?.documentId === category.documentId &&
+      s.participant?.documentId === participantId &&
+      s.value !== null &&
+      activeJudgeIds.has(s.judge?.documentId) // Only include active judges
+  )
+  const totalActiveJudges = category.active_judges?.length || 0
+
+  if (totalActiveJudges === 0) return 0
+
+  if (!categoryScores || categoryScores.length === 0) return 0
+  const sum = categoryScores.reduce((acc, s) => acc + s.value, 0)
+  // const catAvg = Number(sum / totalActiveJudges).toFixed(2)
+  // return catAvg
+  return sum / totalActiveJudges
 }
 
 function getParticipantScoreForCategoryByJudge(
@@ -812,18 +837,18 @@ function getParticipantScoreForCategoryByJudge(
   )
   return score ? score.value : '–'
 }
-
-function getParticipantCategoryAverage(participantId: string, category: any) {
-  const categoryScores = event.value?.scores?.filter(
-    (s: any) =>
-      s.category?.documentId === category.documentId &&
-      s.participant?.documentId === participantId &&
-      s.value !== null
-  )
-  if (!categoryScores || categoryScores.length === 0) return 0
-  const sum = categoryScores.reduce((acc, s) => acc + s.value, 0)
-  return sum / categoryScores.length
-}
+//
+// function getParticipantCategoryAverage(participantId: string, category: any) {
+//   const categoryScores = event.value?.scores?.filter(
+//     (s: any) =>
+//       s.category?.documentId === category.documentId &&
+//       s.participant?.documentId === participantId &&
+//       s.value !== null
+//   )
+//   if (!categoryScores || categoryScores.length === 0) return 0
+//   const sum = categoryScores.reduce((acc, s) => acc + s.value, 0)
+//   return sum / categoryScores.length
+// }
 
 const scoreTableHeaders = computed(() => [
   { title: 'No.', key: 'number', sortable: true, width: '60px' },
