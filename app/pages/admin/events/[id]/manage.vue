@@ -158,6 +158,7 @@
     </v-row>
 
     <v-tabs
+      color="green"
       v-model="activeTab"
       class="my-4"
     >
@@ -184,6 +185,7 @@
             ></v-select>
 
             <v-tabs
+              color="green"
               v-model="activeGenderTab"
               class="mt-4"
             >

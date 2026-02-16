@@ -161,6 +161,7 @@
       <v-col cols="12">
         <v-tabs
           v-model="selectedSegmentTab"
+          color="green"
           show-arrows
         >
           <v-tab
@@ -206,6 +207,7 @@
               </v-card-title>
               <v-card-text>
                 <v-tabs
+                  color="green"
                   v-model="activeGenderTab"
                   class="mb-4"
                 >
@@ -323,6 +325,7 @@
               </v-card-title>
               <v-card-text>
                 <v-tabs
+                  color="green"
                   v-model="activeGenderTab"
                   class="mb-4"
                 >

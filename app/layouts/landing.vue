@@ -25,12 +25,14 @@
           <v-btn
             to="/auth"
             variant="tonal"
+            active-class="selected-btn"
           >
             Login
           </v-btn>
           <v-btn
             to="/auth?initialTab=Sign%20Up"
             variant="text"
+            active-class="selected-btn"
           >
             Sign Up
           </v-btn>
@@ -85,5 +87,9 @@ a:hover,
 a:active {
   text-decoration: none;
   color: inherit;
+}
+
+.selected-btn {
+  color: #4CAF50 !important; /* Green color */
 }
 </style>

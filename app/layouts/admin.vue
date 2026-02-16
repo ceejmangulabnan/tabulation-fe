@@ -36,13 +36,22 @@
       :temporary="!display.mdAndUp.value"
     >
       <v-list>
-        <v-list-item :title="authStore.user?.username"></v-list-item>
+        <v-list-item class="d-inline-flex">
+          Welcome,
+          <span class="text-body-1 font-weight-bold text-green">
+            {{ authStore.user?.username }}
+          </span>
+          <span>!</span>
+        </v-list-item>
       </v-list>
 
       <v-divider></v-divider>
 
       <v-list>
-        <v-list-item to="/">
+        <v-list-item
+          to="/"
+          active-class="selected-tab"
+        >
           <v-list-item-title>
             <v-icon
               icon="mdi-home"
@@ -51,7 +60,10 @@
             Home
           </v-list-item-title>
         </v-list-item>
-        <v-list-item to="/admin/dashboard">
+        <v-list-item
+          to="/admin/dashboard"
+          active-class="selected-tab"
+        >
           <v-list-item-title>
             <v-icon
               icon="mdi-view-dashboard"
@@ -60,7 +72,10 @@
             Dashboard
           </v-list-item-title>
         </v-list-item>
-        <v-list-item to="/admin/events">
+        <v-list-item
+          to="/admin/events"
+          active-class="selected-tab"
+        >
           <v-list-item-title>
             <v-icon
               icon="mdi-calendar"
@@ -156,5 +171,10 @@ a:hover,
 a:active {
   text-decoration: none;
   color: inherit;
+}
+
+.selected-tab .v-list-item-title,
+.selected-tab .v-icon {
+  color: #4caf50 !important; /* Green color */
 }
 </style>

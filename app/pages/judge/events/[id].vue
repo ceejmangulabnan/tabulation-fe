@@ -55,6 +55,7 @@
             <v-tabs
               v-model="activeSegmentTab"
               background-color="primary"
+              color="green"
               show-arrows
               dark
             >
@@ -161,6 +162,7 @@
                   </v-card-title>
                   <v-card-text>
                     <v-tabs
+                      color="green"
                       v-model="activeGenderTab"
                       class="mb-4"
                     >

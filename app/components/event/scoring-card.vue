@@ -4,6 +4,7 @@
       <v-tabs
         v-model="activeGenderTab"
         background-color="secondary"
+        color="green"
         show-arrows
         dark
       >

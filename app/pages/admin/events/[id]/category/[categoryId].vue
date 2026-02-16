@@ -113,6 +113,7 @@
           {{ category?.name }} - {{ (category?.weight || 0) * 100 }}%
         </h1>
         <v-tabs
+          color="green"
           v-model="tab"
           class="mb-4"
         >
