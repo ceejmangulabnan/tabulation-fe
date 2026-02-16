@@ -43,13 +43,31 @@
 
       <v-list>
         <v-list-item to="/">
-          <v-list-item-title>Home</v-list-item-title>
+          <v-list-item-title>
+            <v-icon
+              icon="mdi-home"
+              class="mr-2"
+            ></v-icon>
+            Home
+          </v-list-item-title>
         </v-list-item>
-        <v-list-item :to="`/${authStore.user?.userRole}/dashboard`">
-          <v-list-item-title>Dashboard</v-list-item-title>
+        <v-list-item to="/admin/dashboard">
+          <v-list-item-title>
+            <v-icon
+              icon="mdi-view-dashboard"
+              class="mr-2"
+            ></v-icon>
+            Dashboard
+          </v-list-item-title>
         </v-list-item>
-        <v-list-item :to="`/${authStore.user?.userRole}/events`">
-          <v-list-item-title>Events</v-list-item-title>
+        <v-list-item to="/admin/events">
+          <v-list-item-title>
+            <v-icon
+              icon="mdi-calendar"
+              class="mr-2"
+            ></v-icon>
+            Events
+          </v-list-item-title>
         </v-list-item>
       </v-list>
       <template #append>

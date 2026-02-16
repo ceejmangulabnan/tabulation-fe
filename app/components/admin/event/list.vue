@@ -3,7 +3,7 @@
     <div class="d-flex justify-space-between align-center w-100 mb-4">
       <h2 class="text-h5">All Events</h2>
       <v-btn
-        color="primary"
+        color="green"
         prepend-icon="mdi-plus"
         @click="showCreateDialog = true"
       >

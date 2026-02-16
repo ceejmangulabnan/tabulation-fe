@@ -166,52 +166,53 @@
       <div v-else>
         <div class="text-h6">Male Participants</div>
         <v-list lines="two">
-                      <v-list-item
-                        v-for="participant in maleParticipants"
-                        :key="participant.id"
-                        :title="participant.name"
-                        :subtitle="`#${participant.number}`"
-                      >
-                        <template #prepend>
-                          <v-avatar
-                            v-if="participant.headshot"
-                            @click="showImagePreview(participant.headshot.url)"
-                          >
-                            <v-img :src="getStrapiUrl(participant.headshot.formats.thumbnail.url)" />
-                          </v-avatar>
-                          <v-avatar v-else>
-                            <v-icon>mdi-account</v-icon>
-                          </v-avatar>
-                        </template>
-                        <template #title>
-                          <div class="d-flex align-center">
-                            <span>{{ participant.name }}</span>
-                            <v-chip
-                              v-if="participant.participant_status === 'eliminated'"
-                              color="red"
-                              class="ml-2"
-                              size="small"
-                              label
-                            >
-                              Eliminated
-                            </v-chip>
-                          </div>
-                        </template>
-                        <template #append>
-                          <v-icon
-                            class="mr-2"
-                            @click="showParticipantDialog(participant as ParticipantData)"
-                          >
-                            mdi-pencil
-                          </v-icon>
-                          <v-icon
-                            color="error"
-                            @click="deleteParticipant(participant as ParticipantData)"
-                          >
-                            mdi-delete
-                          </v-icon>
-                        </template>
-                      </v-list-item>          <v-list-item v-if="maleParticipants.length === 0">
+          <v-list-item
+            v-for="participant in maleParticipants"
+            :key="participant.id"
+            :title="participant.name"
+            :subtitle="`#${participant.number}`"
+          >
+            <template #prepend>
+              <v-avatar
+                v-if="participant.headshot"
+                @click="showImagePreview(participant.headshot.url)"
+              >
+                <v-img :src="getStrapiUrl(participant.headshot.formats.thumbnail.url)" />
+              </v-avatar>
+              <v-avatar v-else>
+                <v-icon>mdi-account</v-icon>
+              </v-avatar>
+            </template>
+            <template #title>
+              <div class="d-flex align-center">
+                <span>{{ participant.name }}</span>
+                <v-chip
+                  v-if="participant.participant_status === 'eliminated'"
+                  color="red"
+                  class="ml-2"
+                  size="small"
+                  label
+                >
+                  Eliminated
+                </v-chip>
+              </div>
+            </template>
+            <template #append>
+              <v-icon
+                class="mr-2"
+                @click="showParticipantDialog(participant as ParticipantData)"
+              >
+                mdi-pencil
+              </v-icon>
+              <v-icon
+                color="error"
+                @click="deleteParticipant(participant as ParticipantData)"
+              >
+                mdi-delete
+              </v-icon>
+            </template>
+          </v-list-item>
+          <v-list-item v-if="maleParticipants.length === 0">
             <v-list-item-title class="text-center text-grey-darken-2">
               No Male Participants
             </v-list-item-title>
@@ -220,52 +221,53 @@
 
         <div class="text-h6 mt-4">Female Participants</div>
         <v-list lines="two">
-                      <v-list-item
-                        v-for="participant in femaleParticipants"
-                        :key="participant.id"
-                        :title="participant.name"
-                        :subtitle="`#${participant.number}`"
-                      >
-                        <template #prepend>
-                          <v-avatar
-                            v-if="participant.headshot"
-                            @click="showImagePreview(participant.headshot.url)"
-                          >
-                            <v-img :src="getStrapiUrl(participant.headshot.formats.thumbnail.url)" />
-                          </v-avatar>
-                          <v-avatar v-else>
-                            <v-icon>mdi-account</v-icon>
-                          </v-avatar>
-                        </template>
-                        <template #title>
-                          <div class="d-flex align-center">
-                            <span>{{ participant.name }}</span>
-                            <v-chip
-                              v-if="participant.participant_status === 'eliminated'"
-                              color="red"
-                              class="ml-2"
-                              size="small"
-                              label
-                            >
-                              Eliminated
-                            </v-chip>
-                          </div>
-                        </template>
-                        <template #append>
-                          <v-icon
-                            class="mr-2"
-                            @click="showParticipantDialog(participant as ParticipantData)"
-                          >
-                            mdi-pencil
-                          </v-icon>
-                          <v-icon
-                            color="error"
-                            @click="deleteParticipant(participant as ParticipantData)"
-                          >
-                            mdi-delete
-                          </v-icon>
-                        </template>
-                      </v-list-item>          <v-list-item v-if="femaleParticipants.length === 0">
+          <v-list-item
+            v-for="participant in femaleParticipants"
+            :key="participant.id"
+            :title="participant.name"
+            :subtitle="`#${participant.number}`"
+          >
+            <template #prepend>
+              <v-avatar
+                v-if="participant.headshot"
+                @click="showImagePreview(participant.headshot.url)"
+              >
+                <v-img :src="getStrapiUrl(participant.headshot.formats.thumbnail.url)" />
+              </v-avatar>
+              <v-avatar v-else>
+                <v-icon>mdi-account</v-icon>
+              </v-avatar>
+            </template>
+            <template #title>
+              <div class="d-flex align-center">
+                <span>{{ participant.name }}</span>
+                <v-chip
+                  v-if="participant.participant_status === 'eliminated'"
+                  color="red"
+                  class="ml-2"
+                  size="small"
+                  label
+                >
+                  Eliminated
+                </v-chip>
+              </div>
+            </template>
+            <template #append>
+              <v-icon
+                class="mr-2"
+                @click="showParticipantDialog(participant as ParticipantData)"
+              >
+                mdi-pencil
+              </v-icon>
+              <v-icon
+                color="error"
+                @click="deleteParticipant(participant as ParticipantData)"
+              >
+                mdi-delete
+              </v-icon>
+            </template>
+          </v-list-item>
+          <v-list-item v-if="femaleParticipants.length === 0">
             <v-list-item-title class="text-center text-grey-darken-2">
               No Female Participants
             </v-list-item-title>
@@ -348,14 +350,15 @@
           <v-card-actions>
             <v-spacer />
             <v-btn
-              color="blue darken-1"
+              color="green"
               @click="participantDialog = false"
             >
               Cancel
             </v-btn>
             <v-btn
-              color="blue darken-1"
+              color="green"
               type="submit"
+              variant="tonal"
             >
               Save
             </v-btn>
@@ -481,6 +484,17 @@ const saveParticipant = async () => {
       notes: editedParticipant.value.notes,
       participant_status: 'active',
       event: props.event.id,
+    }
+
+    // If it's an existing participant and no new headshot is uploaded and not explicitly cleared,
+    // retain the existing headshot ID.
+    if (
+      editedParticipant.value.documentId &&
+      editedParticipant.value.headshot &&
+      !headshotFile.value &&
+      !headshotCleared.value
+    ) {
+      participantData.headshot = editedParticipant.value.headshot.id
     }
 
     if (!participantData.name || !participantData.number || !participantData.gender) {

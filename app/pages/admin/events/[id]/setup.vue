@@ -337,23 +337,48 @@ const totalSegmentWeight = computed(() =>
   (event.value.segments || []).reduce((sum: number, s: SegmentData) => sum + s.weight * 100, 0)
 )
 
-const calculateTotalCategoryWeight = (segment: SegmentData) => {
-  return (segment.categories || []).reduce((sum, c) => sum + c.weight * 100, 0)
+// Helper function to validate categories within a segment based on scoring mode
+const validateSegmentCategoriesForActivation = (segment: SegmentData): boolean => {
+  if (!segment.categories || segment.categories.length === 0) {
+    return false // A segment must have categories to be valid for activation
+  }
+
+  const totalCategoryWeight = segment.categories.reduce((sum, c) => sum + (c.weight || 0) * 100, 0)
+
+  if (segment.scoring_mode === 'normalized') {
+    return Math.round(totalCategoryWeight) === 100
+  } else if (segment.scoring_mode === 'raw_category') {
+    return Math.round(totalCategoryWeight) === Math.round((segment.weight || 0) * 100)
+  }
+  return false // Unknown scoring modes are considered invalid for activation
 }
 
 // --- Activation ---
 const canActivate = computed(() => {
-  const segmentsValid =
-    Math.round(totalSegmentWeight.value) === 100 && (event.value.segments || []).length > 0
+  const segments = event.value.segments || []
 
-  const allCategoriesValid =
-    (event.value.segments || []).length > 0 &&
-    (event.value.segments || []).every((s: SegmentData) => {
-      const totalCatWeight = calculateTotalCategoryWeight(s)
-      return Math.round(totalCatWeight) === 100 && (s.categories || []).length > 0
-    })
+  // 1. Check if there are any segments
+  if (segments.length === 0) {
+    return false
+  }
 
-  return segmentsValid && allCategoriesValid && event.value.event_status !== 'active'
+  // 2. Validate total segment weight
+  const segmentsValid = Math.round(totalSegmentWeight.value) === 100
+  if (!segmentsValid) {
+    return false
+  }
+
+  // 3. Validate categories within each segment using the new helper
+  const allCategoriesValid = segments.every((s: SegmentData) => {
+    return validateSegmentCategoriesForActivation(s)
+  })
+
+  if (!allCategoriesValid) {
+    return false
+  }
+
+  // 4. Ensure event is not already active
+  return event.value.event_status !== 'active'
 })
 
 const activateEvent = async () => {
@@ -371,6 +396,7 @@ const activateEvent = async () => {
     if (res.status === 200) {
       snackbar.showSnackbar(`${event.value.name} is now active`, 'success')
     }
+    await eventsStore.fetchEvent(eventId)
   } catch (error) {
     snackbar.showSnackbar(`Failed to activate ${event.value.name}`, 'error')
     console.error('Error activating event:', error)

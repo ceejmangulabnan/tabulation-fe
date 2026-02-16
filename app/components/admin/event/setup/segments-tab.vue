@@ -103,7 +103,7 @@
                 <v-btn
                   v-if="smAndDown"
                   density="compact"
-                  color="primary"
+                  color="green"
                   icon="mdi-plus"
                   @click="showCategoryDialog(null, item.documentid)"
                 />
@@ -111,7 +111,7 @@
                 <v-btn
                   v-else
                   prepend-icon="mdi-plus"
-                  color="primary"
+                  color="green"
                   @click="showCategoryDialog(null, item.documentId)"
                 >
                   Add category
@@ -239,7 +239,7 @@
               <span>Categories for {{ segment.name }}</span>
               <v-btn
                 density="compact"
-                color="primary"
+                color="green"
                 icon="mdi-plus"
                 @click="showCategoryDialog(null, segment.documentId)"
               />
@@ -357,14 +357,15 @@
           <v-card-actions>
             <v-spacer />
             <v-btn
-              color="blue darken-1"
+              color="green darken-1"
               @click="segmentDialog = false"
             >
               Cancel
             </v-btn>
             <v-btn
-              color="blue darken-1"
+              color="green"
               type="submit"
+              variant="tonal"
             >
               Save
             </v-btn>
@@ -410,27 +411,28 @@
             <v-switch
               v-model="editedCategory.active"
               label="Active"
-              color="primary"
+              color="green"
               hide-details
             />
             <v-switch
               v-model="editedCategory.locked"
               label="Locked"
-              color="primary"
+              color="green"
               hide-details
             />
           </v-card-text>
           <v-card-actions>
             <v-spacer />
             <v-btn
-              color="blue darken-1"
+              color="green"
               @click="categoryDialog = false"
             >
               Cancel
             </v-btn>
             <v-btn
-              color="blue darken-1"
+              color="green"
               type="submit"
+              variant="tonal"
             >
               Save
             </v-btn>
@@ -540,6 +542,24 @@ const totalSegmentWeight = computed(() =>
 
 const calculateTotalCategoryWeight = (segment: SegmentData) => {
   return (segment.categories || []).reduce((sum, c) => sum + c.weight * 100, 0)
+}
+
+const validateSegmentCategories = (segment: SegmentData): boolean => {
+  if (!segment.categories || segment.categories.length === 0) {
+    // If a segment has no categories, it cannot be valid for scoring purposes based on these rules.
+    return false
+  }
+
+  const totalCategoryWeight = segment.categories.reduce((sum, c) => sum + (c.weight || 0) * 100, 0)
+
+  if (segment.scoring_mode === 'normalized') {
+    return totalCategoryWeight === 100
+  } else if (segment.scoring_mode === 'raw_category') {
+    // Assuming segment.weight is stored as 0.0-1.0 and categories are also 0.0-1.0
+    return totalCategoryWeight === (segment.weight || 0) * 100
+  }
+  // If scoring_mode is neither normalized nor raw_category, it's considered valid for this specific validation.
+  return true
 }
 
 // Segment Dialog
