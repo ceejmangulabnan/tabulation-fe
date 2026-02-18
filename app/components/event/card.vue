@@ -5,20 +5,22 @@
     @click="router.push(`/${userRole}/events/${event.id}`)"
   >
     <v-card-item>
-      <v-card-title class="d-flex align-center justify-space-between">
-        <h1 class="text-h6 font-weight-bold">
+      <v-card-title
+        class="d-flex align-start justify-space-between flex-wrap-reverse flex-lg-nowrap"
+      >
+        <h1 class="text-h6 font-weight-bold text-wrap ml-1">
           {{ event?.name }}
         </h1>
         <v-chip
           :color="statusColor"
           size="large"
-          class="font-weight-bold flex-shrink-0"
+          class="font-weight-bold flex-shrink-0 negative-ml"
         >
           {{ event?.event_status.toUpperCase() }}
         </v-chip>
       </v-card-title>
     </v-card-item>
-    <v-card-text>
+    <v-card-text class="ml-1">
       <p>{{ event.description }}</p>
     </v-card-text>
     <v-spacer></v-spacer>
@@ -26,6 +28,7 @@
       <v-btn
         variant="flat"
         color="green"
+        class="ml-2"
       >
         {{ userRole === 'admin' ? 'Edit Event' : 'View Details' }}
       </v-btn>
@@ -56,3 +59,9 @@ const statusColor = computed(() => {
   }
 })
 </script>
+
+<style lang="css">
+.negative-ml {
+  margin-bottom: 6px;
+}
+</style>
