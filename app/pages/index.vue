@@ -1,9 +1,6 @@
 <template>
   <div :class="theme.current === 'light' ? 'text-white' : 'text-white'">
     <div class="text-center d-flex flex-column align-center">
-      <!-- Colors to convert to black in logo svg -->
-      <!-- f9fbca ff9fbca f7f8c6 -->
-
       <!-- <div class="d-flex flex-column my-4 my-md-8 ga-4"> -->
       <v-img
         :width="imageWidth"
@@ -55,20 +52,19 @@ const theme = useThemeStore()
 const { name } = useDisplay()
 
 const imageWidth = computed(() => {
-  // Adjust these values as needed for your design
   switch (name.value) {
     case 'xs':
-      return '90vw' // For extra small screens, use 90% of the viewport width
+      return '90vw'
     case 'sm':
-      return '80vw' // For small screens, use 80% of the viewport width
+      return '80vw'
     case 'md':
-      return 800 // For medium screens, set a fixed width
+      return 800
     case 'lg':
-      return 800 // For large screens
+      return 800
     case 'xl':
-      return 1400 // For extra large screens
+      return 1400
     default:
-      return '100%' // Fallback for other cases
+      return '100%'
   }
 })
 
