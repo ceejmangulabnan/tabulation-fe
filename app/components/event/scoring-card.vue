@@ -23,7 +23,7 @@
           :key="gender.key"
           :value="gender.key"
         >
-          <v-form>
+          <v-form @submit.prevent="submitScores(segment)">
             <v-data-table
               v-if="!smAndDown"
               :headers="getTableHeaders(segment)"
@@ -244,10 +244,10 @@
       </v-btn>
       <v-btn
         v-if="segment.segment_status !== 'closed'"
+        type="submit"
         color="green"
         variant="flat"
         class="text-wrap"
-        @click="submitScores(segment)"
         :loading="isLoading"
       >
         Submit Scores for {{ segment.name }}

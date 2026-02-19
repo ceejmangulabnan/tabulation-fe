@@ -87,22 +87,22 @@
 
         <v-divider></v-divider>
 
-        <v-list
-          v-if="categories.length"
-          density="compact"
-        >
-          <v-list-subheader>Categories</v-list-subheader>
-
-          <v-list-item
-            v-for="cat in categories"
-            :key="cat.id"
-            :to="`/admin/events/${eventId}/category/${cat.id}`"
-            active-class="selected-tab"
-          >
-            <v-list-item-title>
-              {{ cat.name }}
-            </v-list-item-title>
-          </v-list-item>
+        <v-list>
+          <v-list-subheader class="text-body-1 font-weight-bold">Event Segments</v-list-subheader>
+          <template v-for="segment in segmentedCategories">
+            <v-list-subheader>{{ segment.name }}</v-list-subheader>
+            <v-list-item
+              v-for="cat in segment.categories"
+              :key="cat.id"
+              :to="`/admin/events/${eventId}/category/${cat.id}`"
+              active-class="selected-tab"
+              :class="{ 'text-blue': !cat.active }"
+            >
+              <v-list-item-title>
+                {{ cat.name }}
+              </v-list-item-title>
+            </v-list-item>
+          </template>
         </v-list>
       </v-list>
       <template #append>
@@ -158,16 +158,20 @@ watch(
   { immediate: true }
 )
 
-const categories = computed(() => {
+const segmentedCategories = computed(() => {
   if (!event.value?.segments) return []
 
-  return event.value.segments.flatMap((segment) =>
-    segment.categories.map((cat) => ({
-      id: cat.id,
-      name: cat.name,
-      slug: cat.name.toLowerCase().replace(/\s+/g, '-'),
+  return event.value.segments
+    .sort((a, b) => a.order - b.order)
+    .map((segment) => ({
+      name: segment.name,
+      categories: segment.categories.map((cat) => ({
+        id: cat.id,
+        name: cat.name,
+        slug: cat.name.toLowerCase().replace(/\s+/g, '-'),
+        active: cat.active,
+      })),
     }))
-  )
 })
 
 const breadcrumbs = computed(() => {

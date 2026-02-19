@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <v-row>
       <v-col cols="12">
         <div class="d-flex justify-space-between align-top mb-4 flex-wrap ga-2">
@@ -459,11 +459,10 @@ const headers = computed<DataTableHeader[]>(() => {
     {
       title: 'Average',
       key: 'averaged_score',
-      align: 'start',
+      align: 'end',
       sortable: true,
-      fixed: 'end',
     },
-    { title: 'Rank', key: 'rank', align: 'end', sortable: true, fixed: 'end' },
+    { title: 'Rank', key: 'rank', align: 'center', sortable: true, fixed: 'end' },
   ]
 })
 </script>
@@ -485,7 +484,7 @@ const headers = computed<DataTableHeader[]>(() => {
   }
 }
 .participant-table :deep(.v-data-table__td) {
-  font-size: 15px !important; /* Increase font size by 2px from default 13px */
-  height: 64px !important; /* Increase row height to accommodate larger avatar */
+  font-size: 15px !important;
+  height: 64px !important;
 }
 </style>

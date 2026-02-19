@@ -6,7 +6,7 @@
   >
     <v-card-item>
       <v-card-title
-        class="d-flex align-start justify-space-between flex-wrap-reverse flex-lg-nowrap"
+        class="d-flex ga-2 align-start justify-space-between flex-wrap-reverse flex-lg-nowrap"
       >
         <h1 class="text-h6 font-weight-bold text-wrap ml-1">
           {{ event?.name }}
