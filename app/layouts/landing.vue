@@ -3,47 +3,6 @@
     :theme="theme.current"
     :class="theme.current === 'light' && 'light-bg'"
   >
-    <v-app-bar :class="theme.current === 'light' ? 'glassmorphism-light' : 'glassmorphism-dark'">
-      <v-app-bar-title>
-        <NuxtLink
-          to="/"
-          class=""
-        >
-          <div class="d-flex align-center ga-2">
-            <v-img
-              src="/logo.png"
-              max-width="80px"
-            ></v-img>
-
-            <p class="font-weight-bold text-2xl">SNC Tabulation</p>
-          </div>
-        </NuxtLink>
-      </v-app-bar-title>
-
-      <template #append>
-        <div class="d-flex align-center ga-3 px-4">
-          <v-btn
-            to="/auth"
-            variant="tonal"
-            active-class="selected-btn"
-          >
-            Login
-          </v-btn>
-          <v-btn
-            to="/auth?initialTab=Sign%20Up"
-            variant="text"
-            active-class="selected-btn"
-          >
-            Sign Up
-          </v-btn>
-          <v-icon
-            class="ml-4"
-            :icon="theme.current == 'light' ? 'mdi-weather-night' : 'mdi-white-balance-sunny'"
-            @click="theme.toggle()"
-          />
-        </div>
-      </template>
-    </v-app-bar>
     <v-main
       class="d-flex align-center justify-center"
       style="min-height: 100vh"
@@ -90,6 +49,6 @@ a:active {
 }
 
 .selected-btn {
-  color: #4CAF50 !important; /* Green color */
+  color: #4caf50 !important; /* Green color */
 }
 </style>
