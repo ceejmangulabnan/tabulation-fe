@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <v-row>
       <v-col cols="12">
         <div class="d-flex justify-space-between align-top mb-4 flex-wrap ga-2">

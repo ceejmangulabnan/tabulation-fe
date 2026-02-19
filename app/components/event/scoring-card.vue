@@ -230,29 +230,30 @@
                 </v-card>
               </v-list-item>
             </v-list>
+
+            <v-card-actions v-if="!props.readonly">
+              <v-spacer />
+              <v-btn
+                variant="text"
+                @click="$emit('cancel-scoring')"
+              >
+                Cancel
+              </v-btn>
+              <v-btn
+                v-if="segment.segment_status !== 'closed'"
+                type="submit"
+                color="green"
+                variant="flat"
+                class="text-wrap"
+                :loading="isLoading"
+              >
+                Submit Scores for {{ segment.name }}
+              </v-btn>
+            </v-card-actions>
           </v-form>
         </v-window-item>
       </v-window>
     </v-card-text>
-    <v-card-actions v-if="!props.readonly">
-      <v-spacer />
-      <v-btn
-        variant="text"
-        @click="$emit('cancel-scoring')"
-      >
-        Cancel
-      </v-btn>
-      <v-btn
-        v-if="segment.segment_status !== 'closed'"
-        type="submit"
-        color="green"
-        variant="flat"
-        class="text-wrap"
-        :loading="isLoading"
-      >
-        Submit Scores for {{ segment.name }}
-      </v-btn>
-    </v-card-actions>
   </v-card>
 
   <ImagePreviewDialog

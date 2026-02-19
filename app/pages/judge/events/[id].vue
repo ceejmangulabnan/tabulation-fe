@@ -528,18 +528,18 @@ async function refreshEvent() {
 
 async function handleScoresSubmitted() {
   await refreshEvent()
-  closeScoringDialog()
 }
 
 // Start auto-refresh logic
 const refreshTimer = ref<NodeJS.Timeout | null>(null)
 
 const startAutoRefresh = () => {
+  console.log('startAutoRefresh: Current eventId', eventId.value)
   stopAutoRefresh() // Clear any existing timer first
   refreshTimer.value = setTimeout(async () => {
     // Only refresh if the scoring dialog is NOT open
     if (!showScoringDialog.value) {
-      console.log('Auto-refreshing event data...')
+      console.log('Auto-refreshing event data for eventId', eventId.value)
       await refreshEvent()
     }
     startAutoRefresh() // Restart the timer for the next interval
@@ -547,6 +547,7 @@ const startAutoRefresh = () => {
 }
 
 const stopAutoRefresh = () => {
+  console.log('stopAutoRefresh: Stopping timer for eventId', eventId.value)
   if (refreshTimer.value) {
     clearTimeout(refreshTimer.value)
     refreshTimer.value = null
@@ -561,12 +562,27 @@ watch(showScoringDialog, (newValue) => {
   }
 })
 
+watch(
+  eventId,
+  async (id) => {
+    console.log('eventId watcher: id changed to', id)
+    if (!id) return
+    stopAutoRefresh() // Stop any ongoing refresh for the previous event
+    await eventsStore.fetchEvent(id)
+    startAutoRefresh() // Start refresh for the new event
+    console.log('eventId watcher: auto-refresh started for id', id)
+  },
+  { immediate: true }
+)
+
 onMounted(async () => {
+  console.log('onMounted: Component mounted, initial eventId', eventId.value)
   await refreshEvent()
   startAutoRefresh() // Start auto-refresh after initial load
 })
 
 onUnmounted(() => {
+  console.log('onUnmounted: Component unmounted, eventId was', eventId.value)
   stopAutoRefresh() // Stop auto-refresh when component is unmounted
 })
 
