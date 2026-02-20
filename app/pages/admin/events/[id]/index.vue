@@ -237,7 +237,10 @@
                       <template #[`item.name`]="{ item }">
                         <div class="d-flex align-center py-2">
                           <v-chip
-                            v-if="item.isEliminated"
+                            v-if="
+                              item.isEliminated &&
+                              item.eliminated_at_segment?.documentId === segment.documentId
+                            "
                             color="red"
                             class="mr-2"
                             size="small"
@@ -278,7 +281,10 @@
                       <template #[`item.name`]="{ item }">
                         <div class="d-flex align-center py-2">
                           <v-chip
-                            v-if="item.isEliminated"
+                            v-if="
+                              item.isEliminated &&
+                              item.eliminated_at_segment?.documentId === segment.documentId
+                            "
                             color="red"
                             class="mr-2"
                             size="small"
@@ -629,6 +635,7 @@ interface CategoryScoreDetail {
 }
 
 interface SegmentResultParticipant {
+  eliminated_at_segment: SegmentData
   isEliminated: boolean
   participant_number: number
   name: string
@@ -676,6 +683,7 @@ interface FinalSegmentScores {
 }
 
 interface FinalParticipant {
+  eliminated_at_segment?: SegmentData
   isEliminated: boolean
   participant_number: number
   name: string
@@ -686,6 +694,7 @@ interface FinalParticipant {
   averaged_score: number
   raw_averaged_score: number
   rank: number
+  participant_status?: string
 }
 
 interface FinalEventScoresResponse {
@@ -804,8 +813,15 @@ const fetchSegmentScores = async (segmentDocumentId: string) => {
   try {
     const apiUrl = `/admin/events/${event.value.documentId}/segments/${segmentDocumentId}/scores`
     const { data } = await api.get<SegmentScoresApiResponse>(apiUrl)
-    maleSegmentResults.value = data.results.male
-    femaleSegmentResults.value = data.results.female
+    const segment = data.segment
+    maleSegmentResults.value = data.results.male.filter((p) => {
+      if (!p.eliminated_at_segment) return true
+      return p.eliminated_at_segment.order >= segment.order
+    })
+    femaleSegmentResults.value = data.results.female.filter((p) => {
+      if (!p.eliminated_at_segment) return true
+      return p.eliminated_at_segment.order >= segment.order
+    })
     segmentCategories.value = data.categories
   } catch (e) {
     snackbar.showSnackbar('Failed to fetch segment scores.', 'error')
@@ -825,8 +841,8 @@ const fetchFinalScores = async () => {
   try {
     const apiUrl = `/admin/events/${event.value.documentId}/scores`
     const { data } = await api.get<FinalEventScoresResponse>(apiUrl)
-    finalMaleResults.value = data.results.male
-    finalFemaleResults.value = data.results.female
+    finalMaleResults.value = data.results.male.filter((p) => !p.isEliminated)
+    finalFemaleResults.value = data.results.female.filter((p) => !p.isEliminated)
     finalSegments.value = data.segments
   } catch (e) {
     snackbar.showSnackbar('Failed to fetch final scores.', 'error')

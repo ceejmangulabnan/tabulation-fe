@@ -339,6 +339,7 @@ interface FinalSegmentScores {
 }
 
 interface FinalParticipant {
+  eliminated_at_segment?: SegmentData
   isEliminated: boolean
   participant_number: number
   name: string
@@ -349,6 +350,7 @@ interface FinalParticipant {
   averaged_score: number
   raw_averaged_score: number
   rank: number
+  participant_status?: string
 }
 
 interface FinalEventScoresResponse {
@@ -469,8 +471,8 @@ async function fetchFinalScores() {
     // Retain the /judge prefix as per user's earlier instruction
     const apiUrl = `/judge/events/${event.value.documentId}/scores`
     const { data } = await api.get<FinalEventScoresResponse>(apiUrl)
-    finalMaleResults.value = data.results.male
-    finalFemaleResults.value = data.results.female
+    finalMaleResults.value = data.results.male.filter((p) => !p.isEliminated)
+    finalFemaleResults.value = data.results.female.filter((p) => !p.isEliminated)
     finalSegments.value = data.segments
   } catch (e) {
     showSnackbar('Failed to fetch final scores.', 'error')

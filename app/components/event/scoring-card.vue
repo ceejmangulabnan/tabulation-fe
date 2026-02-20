@@ -105,7 +105,10 @@
                 </div>
               </template>
 
-              <template #item.total_score="{ item }">
+              <template
+                #item.total_score="{ item }"
+                v-if="isAdmin"
+              >
                 <div class="font-weight-bold">
                   {{ calculateTotalScore(item, segment) }}
                 </div>
@@ -363,6 +366,12 @@ function getActiveCategories(segment: SegmentData) {
 }
 
 function getTableHeaders(segment: SegmentData) {
+  const staticHeaders = [
+    { title: 'No.', value: 'number', sortable: true, width: '10' },
+    { title: 'Name', value: 'name', sortable: true, width: '250' },
+    { title: 'Department', value: 'department', sortable: true },
+  ]
+
   const categoryHeaders =
     getActiveCategories(segment).map((category: CategoryData) => ({
       title: `${category.name} (${category.weight * 100}%)`,
@@ -371,13 +380,19 @@ function getTableHeaders(segment: SegmentData) {
       locked: category.locked,
     })) || []
 
-  return [
-    { title: 'No.', value: 'number', sortable: true, width: '10' },
-    { title: 'Name', value: 'name', sortable: true, width: '250' },
-    { title: 'Department', value: 'department', sortable: true },
-    ...categoryHeaders,
-    { title: 'Total Score', value: 'total_score', align: 'center', sortable: false, width: '120' },
-  ]
+  const totalScoreHeaders = {
+    title: 'Total Score',
+    value: 'total_score',
+    align: 'center',
+    sortable: false,
+    width: '120',
+  }
+
+  if (props.isAdmin) {
+    return [...staticHeaders, ...categoryHeaders, totalScoreHeaders]
+  }
+
+  return [...staticHeaders, ...categoryHeaders]
 }
 
 function getParticipantsByGender(gender: string, segment: SegmentData) {
