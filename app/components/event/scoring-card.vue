@@ -52,7 +52,10 @@
                     size="40"
                   />
                   <v-chip
-                    v-if="item.participant_status === 'eliminated'"
+                    v-if="
+                      item.participant_status === 'eliminated' &&
+                      item.eliminated_at_segment?.documentId === segment.documentId
+                    "
                     color="red"
                     class="mr-2"
                     size="small"
@@ -166,7 +169,10 @@
                       </div>
                     </div>
                     <v-chip
-                      v-if="item.participant_status === 'eliminated'"
+                      v-if="
+                        item.participant_status === 'eliminated' &&
+                        item.eliminated_at_segment?.documentId === segment.documentId
+                      "
                       color="red"
                       class="mt-1 ml-4"
                       label
@@ -284,6 +290,8 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['scores-submitted', 'cancel-scoring', 'refetch-event'])
+console.log('Segment in event card props', props.segment)
+console.log('Participants in event card props', props.participants)
 
 function getScoreRules(maxScore: number) {
   return [
@@ -368,12 +376,16 @@ function getTableHeaders(segment: SegmentData) {
     { title: 'Name', value: 'name', sortable: true, width: '250' },
     { title: 'Department', value: 'department', sortable: true },
     ...categoryHeaders,
-    { title: 'Total Score', value: 'total_score', sortable: false, width: '120' },
+    { title: 'Total Score', value: 'total_score', align: 'center', sortable: false, width: '120' },
   ]
 }
 
 function getParticipantsByGender(gender: string, segment: SegmentData) {
-  const genderFiltered = props.participants.filter((p) => p.gender === gender)
+  let genderFiltered = props.participants.filter((p) => p.gender === gender)
+
+  if (segment.segment_status !== 'closed') {
+    genderFiltered = genderFiltered.filter((p) => p.participant_status !== 'eliminated')
+  }
 
   if (segment.segment_status === 'closed') {
     return genderFiltered.sort((a, b) => {

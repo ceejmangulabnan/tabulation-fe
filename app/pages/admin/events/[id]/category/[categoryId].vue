@@ -128,7 +128,6 @@
               :items="maleItems"
               item-key="participant_number"
               class="elevation-1 participant-table"
-              :sort-by="[{ key: 'rank', order: 'asc' }]"
             >
               <template #[`item.headshot`]="{ item }">
                 <v-avatar size="50px">
@@ -174,7 +173,6 @@
               :items="femaleItems"
               item-key="participant_number"
               class="elevation-1 participant-table"
-              :sort-by="[{ key: 'rank', order: 'asc' }]"
               density="default"
             >
               <template #[`item.headshot`]="{ item }">
@@ -330,8 +328,10 @@ const fetchData = async () => {
   const apiUrl = `/admin/events/${event.value.documentId}/segments/${segmentDocumentId}/categories/${categoryDocumentId}/judge-scores`
   try {
     const { data } = await api.get<JudgeScoresApiResponse>(apiUrl)
-    maleItems.value = data.results.male
-    femaleItems.value = data.results.female
+    maleItems.value = data.results.male.sort((a, b) => a.participant_number - b.participant_number)
+    femaleItems.value = data.results.female.sort(
+      (a, b) => a.participant_number - b.participant_number
+    )
     activeJudgesFromApi.value = data.activeJudges
   } catch (e) {
     snackbar.showSnackbar('Failed to fetch judge scores.', 'error')
