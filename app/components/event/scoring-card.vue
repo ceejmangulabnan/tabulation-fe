@@ -398,9 +398,13 @@ function getTableHeaders(segment: SegmentData) {
 function getParticipantsByGender(gender: string, segment: SegmentData) {
   let genderFiltered = props.participants.filter((p) => p.gender === gender)
 
-  if (segment.segment_status !== 'closed') {
-    genderFiltered = genderFiltered.filter((p) => p.participant_status !== 'eliminated')
-  }
+  // Filter out participants eliminated in previous segments
+  genderFiltered = genderFiltered.filter((p) => {
+    if (p.participant_status === 'eliminated' && p.eliminated_at_segment) {
+      return p.eliminated_at_segment.order >= segment.order
+    }
+    return true
+  })
 
   if (segment.segment_status === 'closed') {
     return genderFiltered.sort((a, b) => {

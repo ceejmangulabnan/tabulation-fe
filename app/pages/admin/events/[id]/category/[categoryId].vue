@@ -142,7 +142,10 @@
               <template #[`item.name`]="{ item }">
                 <div class="d-flex align-center py-2">
                   <v-chip
-                    v-if="item.isEliminated"
+                    v-if="
+                      item.isEliminated &&
+                      item.eliminated_at_segment?.documentId === segment?.documentId
+                    "
                     color="red"
                     class="mr-2"
                     size="small"
@@ -188,7 +191,10 @@
               <template #[`item.name`]="{ item }">
                 <div class="d-flex align-center py-2">
                   <v-chip
-                    v-if="item.isEliminated"
+                    v-if="
+                      item.isEliminated &&
+                      item.eliminated_at_segment?.documentId === segment?.documentId
+                    "
                     color="red"
                     class="mr-2"
                     size="small"
@@ -245,6 +251,7 @@ interface DataTableHeader {
 }
 
 interface RankedParticipant {
+  eliminated_at_segment: SegmentData
   isEliminated: boolean
   participant_number: number
   name: string
@@ -328,10 +335,18 @@ const fetchData = async () => {
   const apiUrl = `/admin/events/${event.value.documentId}/segments/${segmentDocumentId}/categories/${categoryDocumentId}/judge-scores`
   try {
     const { data } = await api.get<JudgeScoresApiResponse>(apiUrl)
-    maleItems.value = data.results.male.sort((a, b) => a.participant_number - b.participant_number)
-    femaleItems.value = data.results.female.sort(
-      (a, b) => a.participant_number - b.participant_number
-    )
+
+    const filterAndSort = (participants: RankedParticipant[]) => {
+      return participants
+        .filter((p) => {
+          if (!p.eliminated_at_segment) return true
+          return segment.value ? p.eliminated_at_segment.order >= segment.value.order : true
+        })
+        .sort((a, b) => a.participant_number - b.participant_number)
+    }
+
+    maleItems.value = filterAndSort(data.results.male)
+    femaleItems.value = filterAndSort(data.results.female)
     activeJudgesFromApi.value = data.activeJudges
   } catch (e) {
     snackbar.showSnackbar('Failed to fetch judge scores.', 'error')
