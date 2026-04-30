@@ -37,6 +37,7 @@
         class="mt-4 flex-grow-0"
         type="submit"
         variant="elevated"
+        color="green"
         block
         :loading="authStore.isLoading"
       >

@@ -15,7 +15,7 @@
             </v-chip>
             <div
               v-if="!smAndDown"
-              class="d-flex flex-wrap ga-2 flex-shrink-0"
+              class="d-flex flex-wrap flex-shrink-0"
             >
               <v-btn
                 icon
@@ -145,10 +145,10 @@
             class="text-decoration-none text-high-emphasis hover-underline"
           >
             <div class="d-flex flex-column ga-1">
-              <h1 class="text-sm-h4 text-h5 mb-2 mb-sm-0 font-weight-bold">
+              <h1 class="text-sm-h4 text-h5 mb-2 mb-sm-0 my-0 font-weight-bold">
                 {{ event?.name }}
               </h1>
-              <p class="text-sm-body-1 text-subtitle-2">
+              <p class="text-sm-body-1 text-subtitle-2 my-0">
                 {{ event?.description || 'No description provided.' }}
               </p>
             </div>
@@ -940,6 +940,9 @@ const segmentHeaders = computed<DataTableHeader[]>(() => {
     key: `category_score_${category.documentId}`,
     align: 'end',
     sortable: true,
+    headerProps: {
+      class: 'text-truncate',
+    },
   }))
 
   return [
@@ -950,6 +953,9 @@ const segmentHeaders = computed<DataTableHeader[]>(() => {
       key: 'averaged_score',
       align: 'end',
       sortable: true,
+      headerProps: {
+        class: 'text-truncate text-green',
+      },
     },
     { title: 'Rank', key: 'rank', align: 'end', sortable: true, fixed: 'end' },
   ]

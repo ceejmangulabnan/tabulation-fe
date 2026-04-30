@@ -88,9 +88,9 @@ if (initialTab && tabs.includes(initialTab as Tab)) {
 
 const theme = useThemeStore()
 const isDark = computed(() => theme.current === 'dark')
-const activeColor = computed(() => (isDark.value ? 'white' : 'black'))
+const activeColor = computed(() => (isDark.value ? 'white' : 'green'))
 const inactiveColor = computed(() => (isDark.value ? 'grey-lighten-1' : 'grey-darken-1'))
-const underlineColor = computed(() => (isDark.value ? 'white' : 'black'))
+const underlineColor = computed(() => (isDark.value ? 'white' : 'green'))
 
 function onAuthSuccess() {
   navigateTo('/admin/dashboard')
