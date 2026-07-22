@@ -133,5 +133,5 @@ export interface SegmentData extends StrapiPopulatedItem {
   eliminated_participants: ParticipantData[]
   advancement_type: 'all' | 'top_n' | 'threshold' | 'manual'
   advancement_value: number | null
-  scoring_mode: 'normalized' | 'raw_category'
+  scoring_mode: 'normalized' | 'raw_category' | 'ranking'
 }

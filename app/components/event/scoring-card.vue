@@ -87,12 +87,14 @@
                     type="number"
                     variant="outlined"
                     density="compact"
-                    :rules="getScoreRules(category.weight * 100)"
+                    :rules="isRankingMode
+                      ? [...getRankRules(activeParticipantCount), ...getRankDuplicateRule(category.documentId, item.documentId)]
+                      : getScoreRules(category.weight * 100)"
                     validate-on="input"
-                    min="0"
-                    :max="category.weight * 100"
+                    :min="isRankingMode ? 1 : 0"
+                    :max="isRankingMode ? activeParticipantCount : category.weight * 100"
                     step="1"
-                    maxlength="4"
+                    :maxlength="isRankingMode ? String(activeParticipantCount).length : 4"
                     style="max-width: 80px"
                     :readonly="
                       category.locked ||
@@ -198,7 +200,7 @@
                         >
                           mdi-lock
                         </v-icon>
-                        {{ category.name }} ({{ (category.weight * 100).toFixed(0) }}%)
+                        {{ category.name }}<template v-if="!isRankingMode"> ({{ (category.weight * 100).toFixed(0) }}%)</template>
                       </div>
                       <div v-if="props.readonly">
                         <span class="ml-auto font-weight-bold text-subtitle-1">
@@ -213,12 +215,14 @@
                           type="number"
                           variant="outlined"
                           density="compact"
-                          :rules="getScoreRules(category.weight * 100)"
+                          :rules="isRankingMode
+                            ? [...getRankRules(activeParticipantCount), ...getRankDuplicateRule(category.documentId, item.documentId)]
+                            : getScoreRules(category.weight * 100)"
                           validate-on="input"
-                          min="0"
-                          :max="category.weight * 100"
+                          :min="isRankingMode ? 1 : 0"
+                          :max="isRankingMode ? activeParticipantCount : category.weight * 100"
                           step="1"
-                          maxlength="4"
+                          :maxlength="isRankingMode ? String(activeParticipantCount).length : 4"
                           style="max-width: 80px"
                           :readonly="
                             category.locked ||
@@ -233,7 +237,7 @@
                   <v-card-actions>
                     <v-spacer />
                     <span class="font-weight-bold text-sm-subtitle-1 text-body-1">
-                      Segment Score: {{ calculateTotalScore(item, segment) }} / 100
+                      {{ isRankingMode ? 'Avg Rank' : 'Segment Score' }}: {{ calculateTotalScore(item, segment) }}{{ isRankingMode ? '' : ' / 100' }}
                     </span>
                   </v-card-actions>
                 </v-card>
@@ -313,6 +317,39 @@ function getScoreRules(maxScore: number) {
   ]
 }
 
+function getRankRules(maxRank: number) {
+  return [
+    (v: number | string | null | undefined) => {
+      if (v === null || v === undefined || v === '') return true
+      const str = String(v)
+      if (!/^\d+$/.test(str)) {
+        return 'Rank must be a whole number'
+      }
+      const num = Number(str)
+      if (num < 1 || num > maxRank) {
+        return `Rank must be from 1 to ${maxRank}`
+      }
+      return true
+    },
+  ]
+}
+
+function getRankDuplicateRule(categoryDocId: string, participantDocId: string) {
+  return [
+    (v: any) => {
+      if (v === null || v === undefined || v === '') return true
+      const num = Number(v)
+      const otherHasSameRank = props.participants.some(
+        (p) =>
+          p.documentId !== participantDocId &&
+          p.participant_status === 'active' &&
+          Number(p.scores[categoryDocId]) === num,
+      )
+      return !otherHasSameRank || 'Rank already assigned to another participant'
+    },
+  ]
+}
+
 const { smAndDown } = useDisplay()
 const { showSnackbar } = useSnackbar()
 const api = useStrapiApi()
@@ -322,6 +359,12 @@ const isLoading = ref<boolean>(false)
 const formRefs = ref<Record<string, HTMLFormElement | null>>({})
 
 const activeGenderTab = ref<string>('male')
+
+const activeParticipantCount = computed(() => {
+  return props.participants.filter((p) => p.participant_status === 'active').length
+})
+
+const isRankingMode = computed(() => props.segment.scoring_mode === 'ranking')
 
 function getStrapiUrl(url: string) {
   const config = useRuntimeConfig()
@@ -374,14 +417,16 @@ function getTableHeaders(segment: SegmentData) {
 
   const categoryHeaders =
     getActiveCategories(segment).map((category: CategoryData) => ({
-      title: `${category.name} (${category.weight * 100}%)`,
+      title: isRankingMode.value
+        ? category.name
+        : `${category.name} (${category.weight * 100}%)`,
       value: `category_${category.documentId}`,
       sortable: false,
       locked: category.locked,
     })) || []
 
   const totalScoreHeaders = {
-    title: 'Total Score',
+    title: isRankingMode.value ? 'Avg Rank' : 'Total Score',
     value: 'total_score',
     align: 'center',
     sortable: false,
@@ -410,13 +455,29 @@ function getParticipantsByGender(gender: string, segment: SegmentData) {
     return genderFiltered.sort((a, b) => {
       const scoreA = parseFloat(calculateTotalScore(a, segment))
       const scoreB = parseFloat(calculateTotalScore(b, segment))
-      return scoreB - scoreA
+      return segment.scoring_mode === 'ranking' ? scoreA - scoreB : scoreB - scoreA
     })
   }
   return genderFiltered.sort((a, b) => a.number - b.number)
 }
 
 function calculateTotalScore(participant: ParticipantWithScores, segment: SegmentData): string {
+  if (segment.scoring_mode === 'ranking') {
+    const activeCats = getActiveCategories(segment)
+    let totalRank = 0
+    let rankedCount = 0
+    for (const category of activeCats) {
+      const value = participant.scores[category.documentId]
+      if (value === null || value === undefined || String(value) === '') continue
+      const rank = Number(value)
+      if (Number.isNaN(rank)) continue
+      totalRank += rank
+      rankedCount++
+    }
+    if (rankedCount === 0) return '-'
+    return (totalRank / rankedCount).toFixed(2)
+  }
+
   // sum category scores directly (they are already weighted)
   const rawSegmentTotal = getActiveCategories(segment).reduce((acc, category) => {
     const value = participant.scores[category.documentId]

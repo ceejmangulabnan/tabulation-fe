@@ -349,6 +349,8 @@ const validateSegmentCategoriesForActivation = (segment: SegmentData): boolean =
     return Math.round(totalCategoryWeight) === 100
   } else if (segment.scoring_mode === 'raw_category') {
     return Math.round(totalCategoryWeight) === Math.round((segment.weight || 0) * 100)
+  } else if (segment.scoring_mode === 'ranking') {
+    return true
   }
   return false // Unknown scoring modes are considered invalid for activation
 }

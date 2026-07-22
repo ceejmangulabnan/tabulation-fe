@@ -694,6 +694,7 @@ interface FinalParticipant {
   averaged_score: number
   raw_averaged_score: number
   rank: number
+  ranking_score?: number
   participant_status?: string
 }
 
@@ -708,6 +709,7 @@ interface FinalEventScoresResponse {
     name: string
     order: number
     weight: number
+    scoring_mode?: string
   }[]
   results: {
     male: FinalParticipant[]
@@ -981,7 +983,7 @@ const finalRankingsHeaders = computed<DataTableHeader[]>(() => {
   ]
 
   const segmentScoreHeaders: DataTableHeader[] = finalSegments.value.map((segment) => ({
-    title: `${segment.name} (${segment.weight * 100}%)`,
+    title: segment.scoring_mode === 'ranking' ? segment.name : `${segment.name} (${segment.weight * 100}%)`,
     key: `segment_score_${segment.documentId}`,
     align: 'end',
     sortable: true,

@@ -350,7 +350,7 @@
 
             <v-select
               v-model="editedSegment.scoring_mode"
-              :items="['normalized', 'raw_category']"
+              :items="['normalized', 'raw_category', 'ranking']"
               label="Scoring Mode"
             />
           </v-card-text>
@@ -557,9 +557,10 @@ const validateSegmentCategories = (segment: SegmentData): boolean => {
   } else if (segment.scoring_mode === 'raw_category') {
     // Assuming segment.weight is stored as 0.0-1.0 and categories are also 0.0-1.0
     return totalCategoryWeight === (segment.weight || 0) * 100
+  } else if (segment.scoring_mode === 'ranking') {
+    return true
   }
-  // If scoring_mode is neither normalized nor raw_category, it's considered valid for this specific validation.
-  return true
+  return false
 }
 
 // Segment Dialog
