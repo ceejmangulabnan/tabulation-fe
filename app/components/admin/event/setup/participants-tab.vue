@@ -28,6 +28,7 @@
           :items="maleParticipants"
           no-data-text="No male participants yet"
           :sort-by="[{ key: 'number', order: 'asc' }]"
+          :items-per-page="25"
           hide-default-footer
         >
           <template #headers="{ columns, getSortIcon, isSorted, toggleSort }">
@@ -98,13 +99,14 @@
           :items="femaleParticipants"
           no-data-text="No female participants yet"
           :sort-by="[{ key: 'number', order: 'asc' }]"
+          :items-per-page="25"
           hide-default-footer
         >
           <template #headers="{ columns, getSortIcon, isSorted, toggleSort }">
             <tr>
               <template
                 v-for="column in columns"
-                ::key="column.key"
+                :key="column.key"
               >
                 <th @click="toggleSort(column)">
                   <div class="font-weight-bold d-flex cursor-pointer">

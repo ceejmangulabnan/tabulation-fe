@@ -209,7 +209,23 @@
                             #[`item.segment_score_${segment.documentId}`]="{ item }"
                             :key="`segment-score-${segment.documentId}-${item.participant_number}`"
                           >
-                            {{ item.segment_scores[segment.name]?.averaged_score || '-' }}
+                            <template
+                              v-if="
+                                segment.scoring_mode === 'ranking' &&
+                                item.segment_scores[segment.name]?.averaged_score != null
+                              "
+                            >
+                              {{
+                                displaySegmentAvgRank(
+                                  item.segment_scores[segment.name]!.averaged_score!,
+                                  event?.segments?.find((s) => s.documentId === segment.documentId)
+                                    ?.categories?.length || 0
+                                ).toFixed(2)
+                              }}
+                            </template>
+                            <template v-else>
+                              {{ item.segment_scores[segment.name]?.averaged_score || '-' }}
+                            </template>
                           </template>
                         </v-data-table>
                       </v-window-item>
@@ -250,7 +266,23 @@
                             #[`item.segment_score_${segment.documentId}`]="{ item }"
                             :key="`segment-score-${segment.documentId}-${item.participant_number}`"
                           >
-                            {{ item.segment_scores[segment.name]?.averaged_score || '-' }}
+                            <template
+                              v-if="
+                                segment.scoring_mode === 'ranking' &&
+                                item.segment_scores[segment.name]?.averaged_score != null
+                              "
+                            >
+                              {{
+                                displaySegmentAvgRank(
+                                  item.segment_scores[segment.name]!.averaged_score!,
+                                  event?.segments?.find((s) => s.documentId === segment.documentId)
+                                    ?.categories?.length || 0
+                                ).toFixed(2)
+                              }}
+                            </template>
+                            <template v-else>
+                              {{ item.segment_scores[segment.name]?.averaged_score || '-' }}
+                            </template>
                           </template>
                         </v-data-table>
                       </v-window-item>
@@ -382,9 +414,13 @@ const { showSnackbar } = useSnackbar()
 type ParticipantScoreMap = Record<string, number | null | undefined>
 type ParticipantWithScores = Omit<ParticipantData, 'scores'> & { scores: ParticipantScoreMap }
 
-const eventId = route.params.id as string
+const participants = ref<ParticipantWithScores[]>([])
+
+const eventId = computed(() => route.params.id as string)
 const event = computed(() => eventsStore.event)
 const judgeId = computed(() => authStore.user?.judge?.documentId)
+
+const { displaySegmentAvgRank } = useRankingDisplay(participants)
 
 const activeSegmentTab = ref<number | string | null>(null) // Allow string for 'final-rankings'
 const activeGenderTab = ref('male')
@@ -488,7 +524,7 @@ async function fetchFinalScores() {
 }
 
 async function refreshEvent() {
-  await eventsStore.fetchEvent(eventId)
+  await eventsStore.fetchEvent(eventId.value)
   const currentEvent = eventsStore.event
   if (!currentEvent?.participants || !judgeId.value) {
     participants.value = []
@@ -538,7 +574,7 @@ async function handleScoresSubmitted() {
 }
 
 // Start auto-refresh logic
-const refreshTimer = ref<NodeJS.Timeout | null>(null)
+const refreshTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 
 const startAutoRefresh = () => {
   console.log('startAutoRefresh: Current eventId', eventId.value)
@@ -629,6 +665,4 @@ const segmentsForTabs = computed(() => {
     )
     .sort((a, b) => order.indexOf(a.segment_status) - order.indexOf(b.segment_status))
 })
-
-const participants = ref<ParticipantWithScores[]>([])
 </script>

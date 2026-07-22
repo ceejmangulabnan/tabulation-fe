@@ -26,6 +26,19 @@
           v-model="formData.description"
           label="Description"
         />
+
+        <v-select
+          v-model="formData.final_scoring_mode"
+          label="Final Scoring Mode"
+          :items="[
+            { title: 'Combine All Segments', value: 'combine_all' },
+            { title: 'Last Segment Only', value: 'last_segment_only' },
+          ]"
+          item-title="title"
+          item-value="value"
+          hint="How final scores are calculated across segments"
+          persistent-hint
+        />
       </v-card-text>
       <v-card-actions>
         <v-spacer />
@@ -82,6 +95,7 @@ const handleSave = async () => {
       data: {
         name: formData.value.name,
         description: formData.value.description,
+        final_scoring_mode: formData.value.final_scoring_mode,
       },
     })
     snackbar.showSnackbar('Event updated successfully.', 'success')

@@ -223,6 +223,7 @@ const event = computed<Partial<EventData>>(() =>
         name: '',
         description: '',
         event_status: 'draft',
+        final_scoring_mode: 'combine_all',
         segments: [],
         judges: [],
         participants: [],
@@ -364,10 +365,13 @@ const canActivate = computed(() => {
     return false
   }
 
-  // 2. Validate total segment weight
-  const segmentsValid = Math.round(totalSegmentWeight.value) === 100
-  if (!segmentsValid) {
-    return false
+  // 2. Validate total segment weight (skip for last_segment_only mode)
+  const finalScoringMode = event.value.final_scoring_mode || 'combine_all'
+  if (finalScoringMode === 'combine_all') {
+    const segmentsValid = Math.round(totalSegmentWeight.value) === 100
+    if (!segmentsValid) {
+      return false
+    }
   }
 
   // 3. Validate categories within each segment using the new helper

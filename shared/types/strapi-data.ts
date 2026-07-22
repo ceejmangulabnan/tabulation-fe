@@ -32,6 +32,7 @@ export interface EventData extends StrapiPopulatedItem {
   name: string
   description: string | null
   event_status: 'draft' | 'active' | 'inactive' | 'finished'
+  final_scoring_mode: 'combine_all' | 'last_segment_only'
   // Relationships
   judges: JudgeData[]
   segments: SegmentData[]

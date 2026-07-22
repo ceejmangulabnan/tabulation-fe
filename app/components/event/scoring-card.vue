@@ -24,6 +24,7 @@
           :value="gender.key"
         >
           <v-form @submit.prevent="submitScores(segment)">
+            <!-- Segment Table Headers -->
             <v-data-table
               v-if="!smAndDown"
               :headers="getTableHeaders(segment)"
@@ -71,6 +72,7 @@
                 {{ item.department?.name || 'N/A' }}
               </template>
 
+              <!-- Map over categories in selected segment as columns -->
               <template
                 v-for="category in getActiveCategories(segment)"
                 :key="category.documentId"
@@ -87,9 +89,14 @@
                     type="number"
                     variant="outlined"
                     density="compact"
-                    :rules="isRankingMode
-                      ? [...getRankRules(activeParticipantCount), ...getRankDuplicateRule(category.documentId, item.documentId)]
-                      : getScoreRules(category.weight * 100)"
+                    :rules="
+                      isRankingMode
+                        ? [
+                            ...getRankRules(activeParticipantCount),
+                            ...getRankDuplicateRule(category.documentId, item.documentId),
+                          ]
+                        : getScoreRules(category.weight * 100)
+                    "
                     validate-on="input"
                     :min="isRankingMode ? 1 : 0"
                     :max="isRankingMode ? activeParticipantCount : category.weight * 100"
@@ -200,7 +207,10 @@
                         >
                           mdi-lock
                         </v-icon>
-                        {{ category.name }}<template v-if="!isRankingMode"> ({{ (category.weight * 100).toFixed(0) }}%)</template>
+                        {{ category.name }}
+                        <template v-if="!isRankingMode">
+                          ({{ (category.weight * 100).toFixed(0) }}%)
+                        </template>
                       </div>
                       <div v-if="props.readonly">
                         <span class="ml-auto font-weight-bold text-subtitle-1">
@@ -215,9 +225,14 @@
                           type="number"
                           variant="outlined"
                           density="compact"
-                          :rules="isRankingMode
-                            ? [...getRankRules(activeParticipantCount), ...getRankDuplicateRule(category.documentId, item.documentId)]
-                            : getScoreRules(category.weight * 100)"
+                          :rules="
+                            isRankingMode
+                              ? [
+                                  ...getRankRules(activeParticipantCount),
+                                  ...getRankDuplicateRule(category.documentId, item.documentId),
+                                ]
+                              : getScoreRules(category.weight * 100)
+                          "
                           validate-on="input"
                           :min="isRankingMode ? 1 : 0"
                           :max="isRankingMode ? activeParticipantCount : category.weight * 100"
@@ -237,7 +252,8 @@
                   <v-card-actions>
                     <v-spacer />
                     <span class="font-weight-bold text-sm-subtitle-1 text-body-1">
-                      {{ isRankingMode ? 'Avg Rank' : 'Segment Score' }}: {{ calculateTotalScore(item, segment) }}{{ isRankingMode ? '' : ' / 100' }}
+                      {{ isRankingMode ? 'Avg Rank' : 'Segment Score' }}:
+                      {{ calculateTotalScore(item, segment) }}{{ isRankingMode ? '' : ' / 100' }}
                     </span>
                   </v-card-actions>
                 </v-card>
@@ -343,7 +359,7 @@ function getRankDuplicateRule(categoryDocId: string, participantDocId: string) {
         (p) =>
           p.documentId !== participantDocId &&
           p.participant_status === 'active' &&
-          Number(p.scores[categoryDocId]) === num,
+          Number(p.scores[categoryDocId]) === num
       )
       return !otherHasSameRank || 'Rank already assigned to another participant'
     },
@@ -417,9 +433,7 @@ function getTableHeaders(segment: SegmentData) {
 
   const categoryHeaders =
     getActiveCategories(segment).map((category: CategoryData) => ({
-      title: isRankingMode.value
-        ? category.name
-        : `${category.name} (${category.weight * 100}%)`,
+      title: isRankingMode.value ? category.name : `${category.name} (${category.weight * 100}%)`,
       value: `category_${category.documentId}`,
       sortable: false,
       locked: category.locked,

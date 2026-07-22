@@ -256,7 +256,12 @@
                         #[`item.category_score_${category.documentId}`]="{ item }"
                         :key="`category-score-${category.documentId}-${item.participant_number}`"
                       >
-                        {{ item.category_scores[category.name]?.averaged_score || '-' }}
+                        <template v-if="segment.scoring_mode === 'ranking' && item.category_scores[category.name]?.averaged_score != null">
+                          {{ displayRankScore(item.category_scores[category.name]!.averaged_score).toFixed(2) }}
+                        </template>
+                        <template v-else>
+                          {{ item.category_scores[category.name]?.averaged_score || '-' }}
+                        </template>
                       </template>
                     </v-data-table>
                   </v-window-item>
@@ -300,7 +305,12 @@
                         #[`item.category_score_${category.documentId}`]="{ item }"
                         :key="`category-score-${category.documentId}-${item.participant_number}`"
                       >
-                        {{ item.category_scores[category.name]?.averaged_score || '-' }}
+                        <template v-if="segment.scoring_mode === 'ranking' && item.category_scores[category.name]?.averaged_score != null">
+                          {{ displayRankScore(item.category_scores[category.name]!.averaged_score).toFixed(2) }}
+                        </template>
+                        <template v-else>
+                          {{ item.category_scores[category.name]?.averaged_score || '-' }}
+                        </template>
                       </template>
                     </v-data-table>
                   </v-window-item>
@@ -378,7 +388,12 @@
                         #[`item.segment_score_${segment.documentId}`]="{ item }"
                         :key="`segment-score-${segment.documentId}-${item.participant_number}`"
                       >
-                        {{ item.segment_scores[segment.name]?.averaged_score || '-' }}
+                        <template v-if="segment.scoring_mode === 'ranking' && item.segment_scores[segment.name]?.averaged_score != null">
+                          {{ displaySegmentAvgRank(item.segment_scores[segment.name]!.averaged_score, event?.segments?.find((s) => s.documentId === segment.documentId)?.categories?.length || 0).toFixed(2) }}
+                        </template>
+                        <template v-else>
+                          {{ item.segment_scores[segment.name]?.averaged_score || '-' }}
+                        </template>
                       </template>
                     </v-data-table>
                   </v-window-item>
@@ -419,7 +434,12 @@
                         #[`item.segment_score_${segment.documentId}`]="{ item }"
                         :key="`segment-score-${segment.documentId}-${item.participant_number}`"
                       >
-                        {{ item.segment_scores[segment.name]?.averaged_score || '-' }}
+                        <template v-if="segment.scoring_mode === 'ranking' && item.segment_scores[segment.name]?.averaged_score != null">
+                          {{ displaySegmentAvgRank(item.segment_scores[segment.name]!.averaged_score, event?.segments?.find((s) => s.documentId === segment.documentId)?.categories?.length || 0).toFixed(2) }}
+                        </template>
+                        <template v-else>
+                          {{ item.segment_scores[segment.name]?.averaged_score || '-' }}
+                        </template>
                       </template>
                     </v-data-table>
                   </v-window-item>
@@ -738,6 +758,10 @@ const { smAndDown } = useDisplay()
 
 const eventId = route.params.id as string
 const event = computed(() => eventsStore.event)
+
+const { activeParticipantCount, displayRankScore, displaySegmentAvgRank } = useRankingDisplay(
+  computed(() => event.value?.participants || []) as Ref<any[]>,
+)
 
 const selectedSegmentTab = ref<string | null>(null) // To control segment tabs
 const activeGenderTab = ref('male') // To control male/female tabs within a segment
