@@ -163,28 +163,41 @@
     <!-- Segment Dialog -->
     <UModal v-model:open="segmentDialog" :title="editedSegment.id ? 'Edit Segment' : 'Add Segment'">
       <template #body>
-        <form @submit.prevent="saveSegment" class="space-y-4">
-          <UInput v-model="editedSegment.name" label="Name" autofocus />
-          <UInput v-model.number="editedSegment.order" label="Order in Event" type="number" step="1" />
-          <UInput v-model.number="editedSegment.weight" label="Weight (0.0 to 1.0)" type="number" step="0.01" />
-          <USelect
-            v-model="editedSegment.advancement_type"
-            :items="['all', 'top_n', 'threshold', 'manual']"
-            label="Advancement Type"
-          />
-          <UInput
-            v-if="['top_n', 'threshold'].includes(editedSegment.advancement_type!)"
-            :model-value="editedSegment.advancement_value ?? undefined"
-            label="Advancement Value"
-            type="number"
-            @update:model-value="(val: any) => editedSegment.advancement_value = Number(val)"
-          />
-          <USelect
-            v-model="editedSegment.scoring_mode"
-            :items="['normalized', 'raw_category', 'ranking']"
-            label="Scoring Mode"
-          />
-        </form>
+        <UForm @submit.prevent="saveSegment">
+          <div class="space-y-4">
+            <UFormField label="Name">
+              <UInput v-model="editedSegment.name" class="w-full" autofocus />
+            </UFormField>
+            <UFormField label="Order in Event">
+              <UInput v-model.number="editedSegment.order" class="w-full" type="number" step="1" />
+            </UFormField>
+            <UFormField label="Weight (0.0 to 1.0)">
+              <UInput v-model.number="editedSegment.weight" class="w-full" type="number" step="0.01" />
+            </UFormField>
+            <UFormField label="Advancement Type">
+              <USelect
+                v-model="editedSegment.advancement_type"
+                class="w-full"
+                :items="['all', 'top_n', 'threshold', 'manual']"
+              />
+            </UFormField>
+            <UFormField v-if="['top_n', 'threshold'].includes(editedSegment.advancement_type!)" label="Advancement Value">
+              <UInput
+                :model-value="editedSegment.advancement_value ?? undefined"
+                class="w-full"
+                type="number"
+                @update:model-value="(val: any) => editedSegment.advancement_value = Number(val)"
+              />
+            </UFormField>
+            <UFormField label="Scoring Mode">
+              <USelect
+                v-model="editedSegment.scoring_mode"
+                class="w-full"
+                :items="['normalized', 'raw_category', 'ranking']"
+              />
+            </UFormField>
+          </div>
+        </UForm>
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
@@ -197,27 +210,33 @@
     <!-- Category Dialog -->
     <UModal v-model:open="categoryDialog" :title="editedCategory.id ? 'Edit Category' : 'Add Category'">
       <template #body>
-        <form @submit.prevent="saveCategory" class="space-y-4">
+        <UForm @submit.prevent="saveCategory">
           <div class="space-y-4">
-            <UInput v-model="editedCategory.name" label="Name" autofocus />
-            <UInput v-model="editedCategory.weight" label="Weight (0.0 to 1.0)" type="number" step="0.01" />
-            <USelectMenu
-              v-model="selectedJudges"
-              :items="judgeSelectionOptions"
-              label="Active Judges"
-              multiple
-              searchable
-            />
-            <div class="flex items-center gap-2">
-              <USwitch v-model="editedCategory.active" />
-              <span>Active</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <USwitch v-model="editedCategory.locked" />
-              <span>Locked</span>
+            <UFormField label="Name">
+              <UInput v-model="editedCategory.name" class="w-full" autofocus />
+            </UFormField>
+            <UFormField label="Weight (0.0 to 1.0)">
+              <UInput v-model="editedCategory.weight" class="w-full" type="number" step="0.01" />
+            </UFormField>
+            <UFormField label="Active Judges">
+              <USelectMenu
+                v-model="selectedJudges"
+                :items="judgeSelectionOptions"
+                class="w-full"
+                multiple
+                searchable
+              />
+            </UFormField>
+            <div class="flex items-center gap-4">
+              <UFormField label="Active" class="flex items-center gap-2">
+                <USwitch v-model="editedCategory.active" />
+              </UFormField>
+              <UFormField label="Locked" class="flex items-center gap-2">
+                <USwitch v-model="editedCategory.locked" />
+              </UFormField>
             </div>
           </div>
-        </form>
+        </UForm>
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">

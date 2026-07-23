@@ -119,57 +119,69 @@
 
     <UModal v-model:open="participantDialog" :title="editedParticipant.id ? 'Edit Participant' : 'Add Participant'">
       <template #body>
-        <form @submit.prevent="saveParticipant">
+        <img
+          v-if="headshotPreviewUrl"
+          :src="headshotPreviewUrl"
+          class="max-h-[150px] rounded mb-2"
+        />
+        <img
+          v-else-if="editedParticipant.headshot"
+          :src="getStrapiUrl(editedParticipant.headshot.url)"
+          class="max-h-[150px] rounded mb-2 cursor-pointer"
+          @click="showImagePreview(editedParticipant.headshot.url)"
+        />
+
+        <UForm @submit.prevent="saveParticipant">
           <div class="space-y-4">
-            <img
-              v-if="headshotPreviewUrl"
-              :src="headshotPreviewUrl"
-              class="max-h-[150px] rounded mb-2"
-            />
-            <img
-              v-else-if="editedParticipant.headshot"
-              :src="getStrapiUrl(editedParticipant.headshot.url)"
-              class="max-h-[150px] rounded mb-2 cursor-pointer"
-              @click="showImagePreview(editedParticipant.headshot.url)"
-            />
-
-            <UInput
-              type="file"
-              accept="image/*"
-              :label="editedParticipant.headshot?.url ? 'Replace Headshot Image' : 'Upload Headshot Image'"
-              @change="(e: Event) => headshotFile = (e.target as HTMLInputElement).files?.[0] || null"
-            />
-
-            <UInput
-              v-model="editedParticipant.name"
-              label="Name"
-              autofocus
-              required
-            />
-            <UInput
-              v-model.number="editedParticipant.number"
-              label="Number"
-              type="number"
-              required
-            />
-            <USelect
-              v-model="editedParticipant.gender"
-              :items="['male', 'female']"
-              label="Gender"
-            />
-            <USelectMenu
-              :model-value="editedParticipant.department != null ? { label: departments.find((d: any) => d.id === editedParticipant.department)?.name || '', value: editedParticipant.department as number } : undefined"
-              :items="departments.map((d: any) => ({ label: d.name, value: d.id }))"
-              label="Department"
-              searchable
-              @update:model-value="(val: any) => editedParticipant.department = val?.value ?? val"
-            />
-            <UTextarea
-              v-model="editedParticipant.notes"
-              label="Notes"
-            />
+            <UFormField label="Headshot Image">
+              <UInput
+                type="file"
+                accept="image/*"
+                class="w-full"
+                :label="editedParticipant.headshot?.url ? 'Replace Headshot Image' : 'Upload Headshot Image'"
+                @change="(e: Event) => headshotFile = (e.target as HTMLInputElement).files?.[0] || null"
+              />
+            </UFormField>
+            <UFormField label="Name">
+              <UInput
+                v-model="editedParticipant.name"
+                class="w-full"
+                autofocus
+                required
+              />
+            </UFormField>
+            <UFormField label="Number">
+              <UInput
+                v-model.number="editedParticipant.number"
+                class="w-full"
+                type="number"
+                required
+              />
+            </UFormField>
+            <UFormField label="Gender">
+              <USelect
+                v-model="editedParticipant.gender"
+                class="w-full"
+                :items="['male', 'female']"
+              />
+            </UFormField>
+            <UFormField label="Department">
+              <USelectMenu
+                :model-value="editedParticipant.department != null ? { label: departments.find((d: any) => d.id === editedParticipant.department)?.name || '', value: editedParticipant.department as number } : undefined"
+                :items="departments.map((d: any) => ({ label: d.name, value: d.id }))"
+                class="w-full"
+                searchable
+                @update:model-value="(val: any) => editedParticipant.department = val?.value ?? val"
+              />
+            </UFormField>
+            <UFormField label="Notes">
+              <UTextarea
+                v-model="editedParticipant.notes"
+                class="w-full"
+              />
+            </UFormField>
           </div>
-        </form>
+        </UForm>
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">

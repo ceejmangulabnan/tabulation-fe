@@ -31,13 +31,15 @@
 
     <div v-if="judgeTab === 'assign'">
       <div class="space-y-4">
+        <UFormField label="Search for a judge">
           <USelectMenu
             v-model="selectedJudge as any"
             :items="availableJudges.map(j => ({ label: j.name, value: j }))"
-            label="Search for a judge"
+            class="w-full"
             multiple
             searchable
           />
+        </UFormField>
         <UButton
           label="Assign"
           :disabled="!selectedJudge"
@@ -47,62 +49,76 @@
     </div>
 
     <div v-else-if="judgeTab === 'create'">
-      <form class="space-y-4" @submit.prevent="createJudge">
-        <UInput
-          v-model="newJudge.name"
-          label="Name"
-          placeholder="Enter judge name"
-        />
-        <UInput
-          v-model="newJudge.username"
-          label="Username"
-          placeholder="Enter username"
-        />
-        <UInput
-          v-model="newJudge.email"
-          label="Email"
-          type="email"
-          placeholder="Enter email"
-        />
-        <UInput
-          v-model="newJudge.password"
-          label="Password"
-          :type="showPassword ? 'text' : 'password'"
-          placeholder="Enter password"
-          :ui="{ trailing: 'pe-1' }"
-        >
-          <template #trailing>
-            <UButton
-              color="neutral"
-              variant="link"
-              :icon="showPassword ? 'i-lucide-eye' : 'i-lucide-eye-off'"
-              :padded="false"
-              @click="showPassword = !showPassword"
+      <UForm @submit.prevent="createJudge">
+        <div class="space-y-4">
+          <UFormField label="Name">
+            <UInput
+              v-model="newJudge.name"
+              class="w-full"
+              placeholder="Enter judge name"
             />
-          </template>
-        </UInput>
-        <UInput
-          v-model="newJudge.confirmPassword"
-          label="Confirm Password"
-          :type="showConfirmPassword ? 'text' : 'password'"
-          placeholder="Confirm password"
-          :ui="{ trailing: 'pe-1' }"
-        >
-          <template #trailing>
-            <UButton
-              color="neutral"
-              variant="link"
-              :icon="showConfirmPassword ? 'i-lucide-eye' : 'i-lucide-eye-off'"
-              :padded="false"
-              @click="showConfirmPassword = !showConfirmPassword"
+          </UFormField>
+          <UFormField label="Username">
+            <UInput
+              v-model="newJudge.username"
+              class="w-full"
+              placeholder="Enter username"
             />
-          </template>
-        </UInput>
-        <UButton
-          label="Create and Assign"
-          type="submit"
-        />
-      </form>
+          </UFormField>
+          <UFormField label="Email">
+            <UInput
+              v-model="newJudge.email"
+              class="w-full"
+              type="email"
+              placeholder="Enter email"
+            />
+          </UFormField>
+          <UFormField label="Password">
+            <UInput
+              v-model="newJudge.password"
+              class="w-full"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="Enter password"
+              :ui="{ trailing: 'pe-1' }"
+            >
+              <template #trailing>
+                <UButton
+                  color="neutral"
+                  variant="link"
+                  :icon="showPassword ? 'i-lucide-eye' : 'i-lucide-eye-off'"
+                  :padded="false"
+                  @click="showPassword = !showPassword"
+                />
+              </template>
+            </UInput>
+          </UFormField>
+          <UFormField label="Confirm Password">
+            <UInput
+              v-model="newJudge.confirmPassword"
+              class="w-full"
+              :type="showConfirmPassword ? 'text' : 'password'"
+              placeholder="Confirm password"
+              :ui="{ trailing: 'pe-1' }"
+            >
+              <template #trailing>
+                <UButton
+                  color="neutral"
+                  variant="link"
+                  :icon="showConfirmPassword ? 'i-lucide-eye' : 'i-lucide-eye-off'"
+                  :padded="false"
+                  @click="showConfirmPassword = !showConfirmPassword"
+                />
+              </template>
+            </UInput>
+          </UFormField>
+        </div>
+        <div class="flex justify-end mt-4">
+          <UButton
+            label="Create and Assign"
+            type="submit"
+          />
+        </div>
+      </UForm>
     </div>
   </div>
 </template>
