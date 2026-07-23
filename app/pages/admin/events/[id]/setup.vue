@@ -201,7 +201,7 @@ const { smAndDown } = useDisplay()
 const tab = ref('one')
 const route = useRoute()
 const eventsStore = useEventsStore()
-const snackbar = useSnackbar()
+const { showSnackbar } = useSnackbar()
 const dataLoaded = ref(false)
 const displayEvent = computed<EventData>(() => eventsStore.event as EventData)
 const api = useStrapiApi()
@@ -232,16 +232,16 @@ const event = computed<Partial<EventData>>(() =>
 
 const deleteEvent = async () => {
   if (!event.value?.documentId) {
-    snackbar.showSnackbar('Cannot delete event without a documentId.', 'error')
+    showSnackbar('Cannot delete event without a documentId.', 'error')
     return
   }
   if (confirm('Are you sure you want to delete this event? This cannot be undone.')) {
     try {
       await api.delete(`/events/${event.value.documentId}`)
-      snackbar.showSnackbar('Event deleted successfully.', 'success')
+      showSnackbar('Event deleted successfully.', 'success')
       router.push('/admin/events')
     } catch (e) {
-      snackbar.showSnackbar('Failed to delete event.', 'error')
+      showSnackbar('Failed to delete event.', 'error')
       console.error(e)
     }
   }
@@ -400,11 +400,11 @@ const activateEvent = async () => {
     }
 
     if (res.status === 200) {
-      snackbar.showSnackbar(`${event.value.name} is now active`, 'success')
+      showSnackbar(`${event.value.name} is now active`, 'success')
     }
     await eventsStore.fetchEvent(eventId)
   } catch (error) {
-    snackbar.showSnackbar(`Failed to activate ${event.value.name}`, 'error')
+    showSnackbar(`Failed to activate ${event.value.name}`, 'error')
     console.error('Error activating event:', error)
   }
 }

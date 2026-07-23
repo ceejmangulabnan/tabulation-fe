@@ -189,7 +189,7 @@ const emit = defineEmits(['judges-updated'])
 const api = useStrapiApi()
 const eventsStore = useEventsStore()
 const authStore = useAuthStore()
-const snackbar = useSnackbar()
+const { showSnackbar } = useSnackbar()
 const { smAndDown } = useDisplay()
 
 const judgeTab = ref('assign')
@@ -219,7 +219,7 @@ const judgeHeaders = [
 
 const assignJudge = async () => {
   if (!selectedJudge.value || selectedJudge.value.length === 0) {
-    snackbar.showSnackbar('Please select at least one judge to assign.', 'warning')
+    showSnackbar('Please select at least one judge to assign.', 'warning')
     return
   }
 
@@ -245,16 +245,16 @@ const assignJudge = async () => {
     const successfulAssignments = results.filter((res) => res && res.status === 200).length
 
     if (successfulAssignments > 0) {
-      snackbar.showSnackbar(`${successfulAssignments} judge(s) assigned successfully`, 'success')
+      showSnackbar(`${successfulAssignments} judge(s) assigned successfully`, 'success')
     } else {
-      snackbar.showSnackbar('No judges were assigned. Please try again.', 'error')
+      showSnackbar('No judges were assigned. Please try again.', 'error')
     }
 
     await eventsStore.fetchEvent(props.event.id?.toString() || '')
     emit('judges-updated')
     selectedJudge.value = null // Clear selection after successful judge assignment
   } catch (e) {
-    snackbar.showSnackbar('Failed to assign one or more judges.', 'error')
+    showSnackbar('Failed to assign one or more judges.', 'error')
     console.error('Could not assign judges', e)
   }
 }
@@ -271,9 +271,9 @@ const removeJudge = async (judge: JudgeData) => {
     })
     await eventsStore.fetchEvent(props.event.id?.toString() || '')
     emit('judges-updated')
-    snackbar.showSnackbar('Judge removed successfully', 'success')
+    showSnackbar('Judge removed successfully', 'success')
   } catch (e) {
-    snackbar.showSnackbar('Failed to delete judge', 'error')
+    showSnackbar('Failed to delete judge', 'error')
     console.error('Could not remove judge', e)
   }
 }
@@ -300,12 +300,12 @@ const createJudge = async () => {
       false // Prevent login of created judge in event setup
     )
 
-    snackbar.showSnackbar('Judge created successfully!', 'success')
+    showSnackbar('Judge created successfully!', 'success')
 
     await eventsStore.fetchEvent(String(eventId))
     emit('judges-updated')
   } catch (e) {
-    snackbar.showSnackbar('Failed to create judge', 'error')
+    showSnackbar('Failed to create judge', 'error')
     console.error('Could not create or assign judge', e)
   }
 }

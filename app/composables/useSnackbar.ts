@@ -1,17 +1,12 @@
-const snackbar = reactive({
-  show: false,
-  message: '',
-  color: '',
-  timeout: 3000,
-})
-
 export function useSnackbar() {
-  function showSnackbar(message: string, color: string = 'info', timeout: number = 5000) {
-    snackbar.show = true
-    snackbar.message = message
-    snackbar.color = color
-    snackbar.timeout = timeout
+  const toast = useToast()
+
+  function showSnackbar(message: string, color: string = 'info', _timeout: number = 5000) {
+    toast.add({
+      title: message,
+      color: color as 'error' | 'success' | 'warning' | 'info' | 'primary',
+    })
   }
 
-  return { snackbar, showSnackbar }
+  return { showSnackbar }
 }

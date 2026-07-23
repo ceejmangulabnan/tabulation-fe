@@ -81,7 +81,6 @@
       </v-col>
     </v-row>
 
-    <Snackbar />
   </div>
 </template>
 
@@ -92,19 +91,19 @@ const eventsStore = useEventsStore()
 const authStore = useAuthStore()
 const judgeRequestsStore = useJudgeRequestsStore()
 const selectedEventName = ref('')
-const snackbar = useSnackbar()
+const { showSnackbar } = useSnackbar()
 
 async function register(isActive: { value: boolean }) {
   try {
     if (!selectedEventName.value) {
-      snackbar.showSnackbar('Please select an event.', 'error')
+      showSnackbar('Please select an event.', 'error')
       return
     }
 
     const selectedEvent = eventsStore.events.find((e) => e.name === selectedEventName.value)
 
     if (!selectedEvent) {
-      snackbar.showSnackbar('Selected event not found.', 'error')
+      showSnackbar('Selected event not found.', 'error')
       return
     }
 
@@ -116,7 +115,7 @@ async function register(isActive: { value: boolean }) {
     console.log('Current Judge:', judge)
     console.log('Current User:', authStore)
     if (!judge) {
-      snackbar.showSnackbar('No Judge entry found for this user.', 'error')
+      showSnackbar('No Judge entry found for this user.', 'error')
       return
     }
 
@@ -134,7 +133,7 @@ async function register(isActive: { value: boolean }) {
     console.log('Judge Request Payload:', payload)
 
     await api.post('/judge-requests', payload)
-    snackbar.showSnackbar('Request submitted successfully!', 'success')
+    showSnackbar('Request submitted successfully!', 'success')
     if (authStore.user?.judge?.id) {
       await judgeRequestsStore.fetchJudgeRequests(authStore.user.judge.id)
     }
@@ -144,13 +143,13 @@ async function register(isActive: { value: boolean }) {
     console.error('Error registering for event', error)
     if (error.status === 409) {
       if (error.response.data.error.details.type === 'isJudging') {
-        snackbar.showSnackbar('You are already judging this event.', 'warning')
+        showSnackbar('You are already judging this event.', 'warning')
       } else if (error.response.data.error.details.type === 'hasExistingRequest') {
-        snackbar.showSnackbar('You have already requested to judge this event.', 'warning')
+        showSnackbar('You have already requested to judge this event.', 'warning')
       }
       isActive.value = false // Close dialog on conflict
     } else {
-      snackbar.showSnackbar(
+      showSnackbar(
         error.data?.error?.message || 'An error occurred while submitting your request.',
         'error'
       )

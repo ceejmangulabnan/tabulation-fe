@@ -454,7 +454,7 @@ const props = defineProps({
 const theme = useThemeStore()
 const api = useStrapiApi()
 const eventsStore = useEventsStore()
-const snackbar = useSnackbar()
+const { showSnackbar } = useSnackbar()
 const { smAndDown } = useDisplay()
 
 const availableJudges = computed(() => {
@@ -607,14 +607,14 @@ const saveSegment = async () => {
     }
     if (editedSegment.value.documentId) {
       await api.put(`/segments/${editedSegment.value.documentId}`, updatePayload)
-      snackbar.showSnackbar('Segment updated successfully', 'success')
+      showSnackbar('Segment updated successfully', 'success')
     } else {
       await api.post('/segments/create', createPayload)
-      snackbar.showSnackbar('Segment created successfully!', 'success')
+      showSnackbar('Segment created successfully!', 'success')
     }
     await eventsStore.fetchEvent(props.event.id?.toString() || '')
   } catch (error) {
-    snackbar.showSnackbar('Failed to save segment', 'error')
+    showSnackbar('Failed to save segment', 'error')
     console.error('Error saving segment:', error)
   } finally {
     segmentDialog.value = false
@@ -626,12 +626,12 @@ const deleteSegment = async (item: SegmentData) => {
   try {
     await api.delete(`/segments/${item.documentId}`)
     await eventsStore.fetchEvent(props.event.documentId || '')
-    snackbar.showSnackbar('Segment deleted successfully', 'success')
+    showSnackbar('Segment deleted successfully', 'success')
 
     await eventsStore.fetchEvent(props.event.id?.toString() || '')
   } catch (error) {
     console.error('Error deleting segment:', error)
-    snackbar.showSnackbar('Failed to delete segment', 'error')
+    showSnackbar('Failed to delete segment', 'error')
   }
 }
 
@@ -678,14 +678,14 @@ const saveCategory = async () => {
     }
     if (editedCategory.value.documentId) {
       await api.put(`/categories/${editedCategory.value.documentId}`, payload)
-      snackbar.showSnackbar('Category updated successfully', 'success')
+      showSnackbar('Category updated successfully', 'success')
     } else {
       await api.post('/categories', payload)
-      snackbar.showSnackbar('Category created successfully!', 'success')
+      showSnackbar('Category created successfully!', 'success')
     }
     await eventsStore.fetchEvent(props.event.id?.toString() || '')
   } catch (error) {
-    snackbar.showSnackbar('Failed to save category', 'error')
+    showSnackbar('Failed to save category', 'error')
     console.error('Error saving category:', error)
   } finally {
     categoryDialog.value = false
@@ -697,11 +697,11 @@ const deleteCategory = async (item: CategoryData) => {
   try {
     await api.delete(`/categories/${item.documentId}`)
     await eventsStore.fetchEvent(props.event.documentId || '')
-    snackbar.showSnackbar('Category deleted successfully', 'success')
+    showSnackbar('Category deleted successfully', 'success')
     await eventsStore.fetchEvent(props.event.id?.toString() || '')
   } catch (error) {
     console.error('Error deleting category:', error)
-    snackbar.showSnackbar('Failed to delete category', 'error')
+    showSnackbar('Failed to delete category', 'error')
   }
 }
 </script>

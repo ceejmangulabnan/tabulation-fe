@@ -73,7 +73,7 @@ watch(
 
 const api = useStrapiApi()
 const eventsStore = useEventsStore()
-const snackbar = useSnackbar()
+const { showSnackbar } = useSnackbar()
 
 const statusColor = computed(() => {
   switch (props.event.event_status) {
@@ -98,11 +98,11 @@ const handleSave = async () => {
         final_scoring_mode: formData.value.final_scoring_mode,
       },
     })
-    snackbar.showSnackbar('Event updated successfully.', 'success')
+    showSnackbar('Event updated successfully.', 'success')
     await eventsStore.fetchEvent(props.event.id?.toString() || '')
   } catch (error) {
     console.error('Error updating event:', error)
-    snackbar.showSnackbar('Failed to udpate event.', 'error')
+    showSnackbar('Failed to udpate event.', 'error')
   }
 }
 </script>

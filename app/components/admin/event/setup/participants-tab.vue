@@ -386,7 +386,7 @@ const props = defineProps({
 
 const api = useStrapiApi()
 const eventsStore = useEventsStore()
-const snackbar = useSnackbar()
+const { showSnackbar } = useSnackbar()
 const { smAndDown } = useDisplay()
 
 const maleParticipants = computed(
@@ -500,14 +500,14 @@ const saveParticipant = async () => {
     }
 
     if (!participantData.name || !participantData.number || !participantData.gender) {
-      snackbar.showSnackbar('Name, number, and gender are required.', 'error')
+      showSnackbar('Name, number, and gender are required.', 'error')
       return
     }
 
     if (headshotFile.value) {
       const file: File = headshotFile.value
       if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-        snackbar.showSnackbar('Only JPEG, JPG, PNG, and WebP images are accepted.', 'error')
+        showSnackbar('Only JPEG, JPG, PNG, and WebP images are accepted.', 'error')
         return
       }
       const formData = new FormData()
@@ -524,10 +524,10 @@ const saveParticipant = async () => {
       await api.put(`/participants/${editedParticipant.value.documentId}`, {
         data: participantData,
       })
-      snackbar.showSnackbar('Participant updated successfully', 'success')
+      showSnackbar('Participant updated successfully', 'success')
     } else {
       await api.post('/participants/create', { data: participantData })
-      snackbar.showSnackbar('Participant created successfully', 'success')
+      showSnackbar('Participant created successfully', 'success')
     }
 
     await eventsStore.fetchEvent(props.event.id?.toString() || '')
@@ -546,12 +546,12 @@ const saveParticipant = async () => {
     const err = error as AxiosError<any>
 
     if (err.response?.status === 409) {
-      snackbar.showSnackbar(
+      showSnackbar(
         'An existing participant already has this number. Please input a different participant number.',
         'error'
       )
     } else {
-      snackbar.showSnackbar('Error saving participant', 'error')
+      showSnackbar('Error saving participant', 'error')
     }
 
     console.error('Error saving participant:', err)
@@ -565,9 +565,9 @@ const deleteParticipant = async (item: ParticipantData) => {
   try {
     await api.delete(`/participants/${item.documentId}`)
     await eventsStore.fetchEvent(props.event.id?.toString() || '')
-    snackbar.showSnackbar('Participant deleted successfully', 'success')
+    showSnackbar('Participant deleted successfully', 'success')
   } catch (error) {
-    snackbar.showSnackbar('Failed to delete participant', 'error')
+    showSnackbar('Failed to delete participant', 'error')
     console.error('Error deleting participant:', error)
   }
 }

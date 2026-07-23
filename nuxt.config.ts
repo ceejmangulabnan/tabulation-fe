@@ -10,7 +10,8 @@ export default defineNuxtConfig({
       __VUE_DEVTOOLS_GLOBAL_HOOK__: false,
     },
   },
-  modules: ['@nuxt/eslint', 'vuetify-nuxt-module', '@pinia/nuxt'],
+  modules: ['@nuxt/eslint', 'vuetify-nuxt-module', '@pinia/nuxt', '@nuxt/ui'],
+  css: ['~/assets/css/main.css'],
   runtimeConfig: {
     // Server-side environment variables
     authSecret: process.env.NUXT_AUTH_SECRET,

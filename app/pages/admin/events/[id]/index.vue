@@ -752,7 +752,7 @@ const route = useRoute()
 const eventsStore = useEventsStore()
 const router = useRouter()
 const api = useStrapiApi()
-const snackbar = useSnackbar()
+const { showSnackbar } = useSnackbar()
 
 const { smAndDown } = useDisplay()
 
@@ -785,7 +785,7 @@ onMounted(async () => {
   await eventsStore.fetchEvent(eventId)
 
   if (!event.value) {
-    snackbar.showSnackbar('Failed to load event data.', 'error')
+    showSnackbar('Failed to load event data.', 'error')
     return
   }
 
@@ -831,7 +831,7 @@ watch(selectedSegmentTab, async (newTab) => {
 
 const fetchSegmentScores = async (segmentDocumentId: string) => {
   if (!event.value) {
-    snackbar.showSnackbar('Event data not available.', 'error')
+    showSnackbar('Event data not available.', 'error')
     return
   }
 
@@ -850,7 +850,7 @@ const fetchSegmentScores = async (segmentDocumentId: string) => {
     })
     segmentCategories.value = data.categories
   } catch (e) {
-    snackbar.showSnackbar('Failed to fetch segment scores.', 'error')
+    showSnackbar('Failed to fetch segment scores.', 'error')
     console.error(e)
   } finally {
     eventsStore.isLoading = false
@@ -859,7 +859,7 @@ const fetchSegmentScores = async (segmentDocumentId: string) => {
 
 const fetchFinalScores = async () => {
   if (!event.value) {
-    snackbar.showSnackbar('Event data not available.', 'error')
+    showSnackbar('Event data not available.', 'error')
     return
   }
 
@@ -871,7 +871,7 @@ const fetchFinalScores = async () => {
     finalFemaleResults.value = data.results.female.filter((p) => !p.isEliminated)
     finalSegments.value = data.segments
   } catch (e) {
-    snackbar.showSnackbar('Failed to fetch final scores.', 'error')
+    showSnackbar('Failed to fetch final scores.', 'error')
     console.error(e)
   } finally {
     eventsStore.isLoading = false
@@ -880,16 +880,16 @@ const fetchFinalScores = async () => {
 
 const deleteEvent = async () => {
   if (!event.value?.documentId) {
-    snackbar.showSnackbar('Cannot delete event without a documentId.', 'error')
+    showSnackbar('Cannot delete event without a documentId.', 'error')
     return
   }
   if (confirm('Are you sure you want to delete this event? This cannot be undone.')) {
     try {
       await api.delete(`/events/${event.value.documentId}`)
-      snackbar.showSnackbar('Event deleted successfully.', 'success')
+      showSnackbar('Event deleted successfully.', 'success')
       router.push('/admin/events')
     } catch (e) {
-      snackbar.showSnackbar('Failed to delete event.', 'error')
+      showSnackbar('Failed to delete event.', 'error')
       console.error(e)
     }
   }
@@ -1076,7 +1076,7 @@ const fetchRankings = async () => {
 
   if (printType.value === 'category') {
     if (!segmentId || !categoryId) {
-      snackbar.showSnackbar('Please select a segment and a category.', 'warning')
+      showSnackbar('Please select a segment and a category.', 'warning')
       return false
     }
 
@@ -1090,7 +1090,7 @@ const fetchRankings = async () => {
     printTitle.value = `Category Ranking – ${categoryName} (${Number(categoryWeight) * 100}%)`
   } else if (printType.value === 'segment') {
     if (!segmentId) {
-      snackbar.showSnackbar('Please select a segment.', 'warning')
+      showSnackbar('Please select a segment.', 'warning')
       return false
     }
     url = `/admin/events/${event.value?.documentId}/segments/${segmentId}/ranking`
@@ -1141,14 +1141,14 @@ const fetchRankings = async () => {
     }
 
     if (!maleRankings.value.length && !femaleRankings.value.length) {
-      snackbar.showSnackbar('No ranking data found.', 'info')
+      showSnackbar('No ranking data found.', 'info')
       return false
     }
 
     return true
   } catch (err) {
     console.error(err)
-    snackbar.showSnackbar('Failed to fetch rankings.', 'error')
+    showSnackbar('Failed to fetch rankings.', 'error')
     return false
   }
 }

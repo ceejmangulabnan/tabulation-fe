@@ -39,7 +39,7 @@
 <script setup lang="ts">
 const emit = defineEmits(['close-dialog'])
 const eventsStore = useEventsStore()
-const snackbar = useSnackbar()
+const { showSnackbar } = useSnackbar()
 const router = useRouter()
 
 const form = ref({
@@ -53,12 +53,12 @@ const createEvent = async () => {
   console.log('Admin Create Event response:', response)
   if (response) {
     if (response.status === 201) {
-      snackbar.showSnackbar(`Event "${response.data.data.name}" created successfully.`, 'success')
+      showSnackbar(`Event "${response.data.data.name}" created successfully.`, 'success')
       emit('close-dialog')
       router.push(`/admin/events/${response.data.data.id}/setup`)
       return
     } else {
-      snackbar.showSnackbar(
+      showSnackbar(
         `Failed to create event "${response.data.data.name}". Please try again later.`,
         'error'
       )

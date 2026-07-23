@@ -287,7 +287,7 @@ const route = useRoute()
 const eventId = route.params.id as string
 const categoryId = computed(() => route.params.categoryId as string)
 const eventsStore = useEventsStore()
-const snackbar = useSnackbar()
+const { showSnackbar } = useSnackbar()
 const api = useStrapiApi()
 const router = useRouter()
 const tab = ref('male')
@@ -325,7 +325,7 @@ const getJudgeHeaderKey = (judgeName: string) => {
 const fetchData = async () => {
   await eventsStore.fetchEvent(eventId) // Ensure event data is available
   if (!event.value || !segment.value || !category.value) {
-    snackbar.showSnackbar('Failed to load event, segment or category data.', 'error')
+    showSnackbar('Failed to load event, segment or category data.', 'error')
     return
   }
 
@@ -349,23 +349,23 @@ const fetchData = async () => {
     femaleItems.value = filterAndSort(data.results.female)
     activeJudgesFromApi.value = data.activeJudges
   } catch (e) {
-    snackbar.showSnackbar('Failed to fetch judge scores.', 'error')
+    showSnackbar('Failed to fetch judge scores.', 'error')
     console.error(e)
   }
 }
 
 const deleteEvent = async () => {
   if (!event.value?.documentId) {
-    snackbar.showSnackbar('Cannot delete event without a documentId.', 'error')
+    showSnackbar('Cannot delete event without a documentId.', 'error')
     return
   }
   if (confirm('Are you sure you want to delete this event? This cannot be undone.')) {
     try {
       await api.delete(`/events/${event.value.documentId}`)
-      snackbar.showSnackbar('Event deleted successfully.', 'success')
+      showSnackbar('Event deleted successfully.', 'success')
       router.push('/admin/events')
     } catch (e) {
-      snackbar.showSnackbar('Failed to delete event.', 'error')
+      showSnackbar('Failed to delete event.', 'error')
       console.error(e)
     }
   }
@@ -413,7 +413,7 @@ const segment = computed(() => {
 
 const handlePrint = async () => {
   if (!event.value || !segment.value || !category.value) {
-    snackbar.showSnackbar('Cannot print without event, segment or category.', 'error')
+    showSnackbar('Cannot print without event, segment or category.', 'error')
     return
   }
 
@@ -422,7 +422,7 @@ const handlePrint = async () => {
   printTitle.value = `Category Ranking – ${category.value.name} (${Number(category.value.weight) * 100}%)`
 
   if (!maleRankings.value.length && !femaleRankings.value.length) {
-    snackbar.showSnackbar('No ranking data found.', 'info')
+    showSnackbar('No ranking data found.', 'info')
     return
   }
 
