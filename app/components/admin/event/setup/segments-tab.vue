@@ -40,8 +40,19 @@
         </template>
         <template #actions-cell="{ row }">
           <div class="flex gap-1">
-            <UButton icon="i-lucide-pencil" variant="ghost" size="xs" @click.stop="showSegmentDialog(row.original as SegmentData)" />
-            <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click.stop="deleteSegment(row.original as SegmentData)" />
+            <UButton
+              icon="i-lucide-pencil"
+              variant="ghost"
+              size="xs"
+              @click.stop="showSegmentDialog(row.original as SegmentData)"
+            />
+            <UButton
+              icon="i-lucide-trash-2"
+              color="error"
+              variant="ghost"
+              size="xs"
+              @click.stop="deleteSegment(row.original as SegmentData)"
+            />
           </div>
         </template>
         <template #expanded="{ row }">
@@ -69,29 +80,46 @@
                 <div class="flex gap-2">
                   <UBadge
                     :color="catRow.original.active ? 'success' : 'error'"
-                    size="xs"
+                    size="md"
                   >
                     {{ catRow.original.active ? 'Active' : 'Inactive' }}
                   </UBadge>
                   <UBadge
                     v-if="catRow.original.locked"
                     color="error"
-                    size="xs"
+                    size="md"
                   >
-                    <UIcon name="i-lucide-lock" class="mr-1 size-3" />
+                    <UIcon
+                      name="i-lucide-lock"
+                      class="mr-1 size-4"
+                    />
                     Locked
                   </UBadge>
                 </div>
               </template>
               <template #actions-cell="{ row: catRow }">
                 <div class="flex gap-1">
-                  <UButton icon="i-lucide-pencil" variant="ghost" size="xs" @click="showCategoryDialog(catRow.original as CategoryData, row.original.documentId)" />
-                  <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click="deleteCategory(catRow.original as CategoryData)" />
+                  <UButton
+                    icon="i-lucide-pencil"
+                    variant="ghost"
+                    size="xs"
+                    @click="
+                      showCategoryDialog(catRow.original as CategoryData, row.original.documentId)
+                    "
+                  />
+                  <UButton
+                    icon="i-lucide-trash-2"
+                    color="error"
+                    variant="ghost"
+                    size="xs"
+                    @click="deleteCategory(catRow.original as CategoryData)"
+                  />
                 </div>
               </template>
             </UTable>
             <div class="text-right font-bold text-sm mt-2">
-              Total Category Weight: {{ calculateTotalCategoryWeight(row.original as SegmentData) }} / 100
+              Total Category Weight:
+              {{ calculateTotalCategoryWeight(row.original as SegmentData) }} / 100
             </div>
           </div>
         </template>
@@ -109,18 +137,35 @@
           <div>
             <div class="font-medium">{{ segment.name }}</div>
             <div class="text-sm text-muted">
-              Weight: {{ segment.weight * 100 }}%, Order: {{ segment.order }}, Advancement: {{ segment.advancement_type }} {{ segment.advancement_value !== null ? `(${segment.advancement_value})` : '' }}
+              Weight: {{ segment.weight * 100 }}%, Order: {{ segment.order }}, Advancement:
+              {{ segment.advancement_type }}
+              {{ segment.advancement_value !== null ? `(${segment.advancement_value})` : '' }}
             </div>
           </div>
           <div class="flex gap-1">
-            <UButton icon="i-lucide-pencil" variant="ghost" size="xs" @click="showSegmentDialog(segment as SegmentData)" />
-            <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click="deleteSegment(segment as SegmentData)" />
+            <UButton
+              icon="i-lucide-pencil"
+              variant="ghost"
+              size="xs"
+              @click="showSegmentDialog(segment as SegmentData)"
+            />
+            <UButton
+              icon="i-lucide-trash-2"
+              color="error"
+              variant="ghost"
+              size="xs"
+              @click="deleteSegment(segment as SegmentData)"
+            />
           </div>
         </div>
         <div class="border-t p-3 bg-muted/30">
           <div class="flex items-center justify-between mb-2">
             <span class="font-medium text-sm">Categories for {{ segment.name }}</span>
-            <UButton icon="i-lucide-plus" size="xs" @click="showCategoryDialog(null, segment.documentId)" />
+            <UButton
+              icon="i-lucide-plus"
+              size="xs"
+              @click="showCategoryDialog(null, segment.documentId)"
+            />
           </div>
           <div class="space-y-2">
             <div
@@ -132,20 +177,40 @@
                 <div class="font-medium text-sm">{{ cat.name }}</div>
                 <div class="text-xs text-muted">Weight: {{ cat.weight * 100 }}%</div>
                 <div class="flex gap-1 mt-1">
-                  <UBadge :color="cat.active ? 'success' : 'error'" size="xs">
+                  <UBadge
+                    :color="cat.active ? 'success' : 'error'"
+                    size="xs"
+                  >
                     {{ cat.active ? 'Active' : 'Inactive' }}
                   </UBadge>
-                  <UBadge :color="cat.locked ? 'success' : 'neutral'" size="xs">
+                  <UBadge
+                    :color="cat.locked ? 'success' : 'neutral'"
+                    size="xs"
+                  >
                     {{ cat.locked ? 'Locked' : 'Unlocked' }}
                   </UBadge>
                 </div>
               </div>
               <div class="flex gap-1">
-                <UButton icon="i-lucide-pencil" variant="ghost" size="xs" @click="showCategoryDialog(cat as CategoryData, segment.documentId)" />
-                <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click="deleteCategory(cat as CategoryData)" />
+                <UButton
+                  icon="i-lucide-pencil"
+                  variant="ghost"
+                  size="xs"
+                  @click="showCategoryDialog(cat as CategoryData, segment.documentId)"
+                />
+                <UButton
+                  icon="i-lucide-trash-2"
+                  color="error"
+                  variant="ghost"
+                  size="xs"
+                  @click="deleteCategory(cat as CategoryData)"
+                />
               </div>
             </div>
-            <div v-if="segment.categories.length === 0" class="text-center text-sm text-muted py-2">
+            <div
+              v-if="segment.categories.length === 0"
+              class="text-center text-sm text-muted py-2"
+            >
               No Categories for this Segment
             </div>
           </div>
@@ -154,26 +219,46 @@
           </div>
         </div>
       </div>
-      <div v-if="event.segments?.length === 0" class="text-center text-muted py-4">No Segments</div>
+      <div
+        v-if="event.segments?.length === 0"
+        class="text-center text-muted py-4"
+      >
+        No Segments
+      </div>
     </div>
 
-    <p class="mt-4 text-right font-bold">
-      Total Segment Weight: {{ totalSegmentWeight }} / 100
-    </p>
+    <p class="mt-4 text-right font-bold">Total Segment Weight: {{ totalSegmentWeight }} / 100</p>
 
     <!-- Segment Dialog -->
-    <UModal v-model:open="segmentDialog" :title="editedSegment.id ? 'Edit Segment' : 'Add Segment'">
+    <UModal
+      v-model:open="segmentDialog"
+      :title="editedSegment.id ? 'Edit Segment' : 'Add Segment'"
+    >
       <template #body>
         <UForm @submit.prevent="saveSegment">
           <div class="space-y-4">
             <UFormField label="Name">
-              <UInput v-model="editedSegment.name" class="w-full" autofocus />
+              <UInput
+                v-model="editedSegment.name"
+                class="w-full"
+                autofocus
+              />
             </UFormField>
             <UFormField label="Order in Event">
-              <UInput v-model.number="editedSegment.order" class="w-full" type="number" step="1" />
+              <UInput
+                v-model.number="editedSegment.order"
+                class="w-full"
+                type="number"
+                step="1"
+              />
             </UFormField>
             <UFormField label="Weight (0.0 to 1.0)">
-              <UInput v-model.number="editedSegment.weight" class="w-full" type="number" step="0.01" />
+              <UInput
+                v-model.number="editedSegment.weight"
+                class="w-full"
+                type="number"
+                step="0.01"
+              />
             </UFormField>
             <UFormField label="Advancement Type">
               <USelect
@@ -182,12 +267,15 @@
                 :items="['all', 'top_n', 'threshold', 'manual']"
               />
             </UFormField>
-            <UFormField v-if="['top_n', 'threshold'].includes(editedSegment.advancement_type!)" label="Advancement Value">
+            <UFormField
+              v-if="['top_n', 'threshold'].includes(editedSegment.advancement_type!)"
+              label="Advancement Value"
+            >
               <UInput
                 :model-value="editedSegment.advancement_value ?? undefined"
                 class="w-full"
                 type="number"
-                @update:model-value="(val: any) => editedSegment.advancement_value = Number(val)"
+                @update:model-value="(val: any) => (editedSegment.advancement_value = Number(val))"
               />
             </UFormField>
             <UFormField label="Scoring Mode">
@@ -202,22 +290,42 @@
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <UButton label="Cancel" color="neutral" variant="ghost" @click="segmentDialog = false" />
-          <UButton label="Save" @click="saveSegment" />
+          <UButton
+            label="Cancel"
+            color="neutral"
+            variant="ghost"
+            @click="segmentDialog = false"
+          />
+          <UButton
+            label="Save"
+            @click="saveSegment"
+          />
         </div>
       </template>
     </UModal>
 
     <!-- Category Dialog -->
-    <UModal v-model:open="categoryDialog" :title="editedCategory.id ? 'Edit Category' : 'Add Category'">
+    <UModal
+      v-model:open="categoryDialog"
+      :title="editedCategory.id ? 'Edit Category' : 'Add Category'"
+    >
       <template #body>
         <UForm @submit.prevent="saveCategory">
           <div class="space-y-4">
             <UFormField label="Name">
-              <UInput v-model="editedCategory.name" class="w-full" autofocus />
+              <UInput
+                v-model="editedCategory.name"
+                class="w-full"
+                autofocus
+              />
             </UFormField>
             <UFormField label="Weight (0.0 to 1.0)">
-              <UInput v-model="editedCategory.weight" class="w-full" type="number" step="0.01" />
+              <UInput
+                v-model="editedCategory.weight"
+                class="w-full"
+                type="number"
+                step="0.01"
+              />
             </UFormField>
             <UFormField label="Active Judges">
               <USelectMenu
@@ -229,10 +337,16 @@
               />
             </UFormField>
             <div class="flex items-center gap-4">
-              <UFormField label="Active" class="flex items-center gap-2">
+              <UFormField
+                label="Active"
+                class="flex items-center gap-2"
+              >
                 <USwitch v-model="editedCategory.active" />
               </UFormField>
-              <UFormField label="Locked" class="flex items-center gap-2">
+              <UFormField
+                label="Locked"
+                class="flex items-center gap-2"
+              >
                 <USwitch v-model="editedCategory.locked" />
               </UFormField>
             </div>
@@ -241,8 +355,16 @@
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <UButton label="Cancel" color="neutral" variant="ghost" @click="categoryDialog = false" />
-          <UButton label="Save" @click="saveCategory" />
+          <UButton
+            label="Cancel"
+            color="neutral"
+            variant="ghost"
+            @click="categoryDialog = false"
+          />
+          <UButton
+            label="Save"
+            @click="saveCategory"
+          />
         </div>
       </template>
     </UModal>
@@ -281,14 +403,14 @@ const allJudgeIds = computed(() => {
 
 const selectedJudges = computed({
   get() {
-    const active = editedCategory.value.active_judges || []
+    const active = (editedCategory.value.active_judges || []).filter((id: any) => id !== '__all__')
     return active.map((id: any) => {
-      const judge = availableJudges.value.find(j => j.value === id)
+      const judge = availableJudges.value.find((j) => j.value === id)
       return judge || { label: id, value: id }
     })
   },
   set(val: any[]) {
-    if (val.includes('__all__')) {
+    if (val.some((v: any) => (v.value ?? v) === '__all__')) {
       editedCategory.value.active_judges = [...allJudgeIds.value] as any
       return
     }
@@ -307,17 +429,21 @@ const judgeSelectionOptions = computed(() => {
 const segmentColumns = [
   {
     id: 'expand',
-    cell: ({ row }: any) => h(UButton, {
-      'color': 'neutral',
-      'variant': 'ghost',
-      'icon': 'i-lucide-chevron-down',
-      'square': true,
-      'aria-label': 'Expand',
-      'ui': {
-        leadingIcon: ['transition-transform', row.getIsExpanded() ? 'duration-200 rotate-180' : '']
-      },
-      'onClick': () => row.toggleExpanded()
-    })
+    cell: ({ row }: any) =>
+      h(UButton, {
+        color: 'neutral',
+        variant: 'ghost',
+        icon: 'i-lucide-chevron-down',
+        square: true,
+        'aria-label': 'Expand',
+        ui: {
+          leadingIcon: [
+            'transition-transform',
+            row.getIsExpanded() ? 'duration-200 rotate-180' : '',
+          ],
+        },
+        onClick: () => row.toggleExpanded(),
+      }),
   },
   { accessorKey: 'name', header: 'Name' },
   { accessorKey: 'weight', header: 'Weight' },
