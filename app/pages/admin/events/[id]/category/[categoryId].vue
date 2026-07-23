@@ -2,32 +2,63 @@
   <div class="mx-auto max-w-7xl px-4 py-6">
     <div class="flex justify-between items-start mb-4 flex-wrap gap-2">
       <header class="flex items-center gap-3 w-full justify-between">
-        <UBadge :color="statusColor" size="lg" class="font-bold flex-shrink-0 capitalize">
+        <UBadge
+          :color="statusColor"
+          size="lg"
+          class="font-bold flex-shrink-0 capitalize"
+        >
           {{ event?.event_status.toUpperCase() }}
         </UBadge>
         <div class="flex flex-wrap gap-2 flex-shrink-0">
           <UTooltip text="Print Rankings">
-            <UButton icon="i-lucide-printer" variant="ghost" @click="handlePrint" />
+            <UButton
+              icon="i-lucide-printer"
+              variant="ghost"
+              @click="handlePrint"
+            />
           </UTooltip>
           <UTooltip text="Refresh Data">
-            <UButton icon="i-lucide-refresh-cw" :loading="eventsStore.isLoading" variant="ghost" @click="fetchData" />
+            <UButton
+              icon="i-lucide-refresh-cw"
+              :loading="eventsStore.isLoading"
+              variant="ghost"
+              @click="fetchData"
+            />
           </UTooltip>
           <UTooltip text="Manage Event">
-            <UButton icon="i-lucide-settings" variant="ghost" :to="`/admin/events/${eventId}/manage`" />
+            <UButton
+              icon="i-lucide-settings"
+              variant="ghost"
+              :to="`/admin/events/${eventId}/manage`"
+            />
           </UTooltip>
           <UTooltip text="Setup Event">
-            <UButton icon="i-lucide-pencil" variant="ghost" :to="`/admin/events/${eventId}/setup`" />
+            <UButton
+              icon="i-lucide-pencil"
+              variant="ghost"
+              :to="`/admin/events/${eventId}/setup`"
+            />
           </UTooltip>
           <UTooltip text="Delete Event">
-            <UButton icon="i-lucide-trash-2" color="error" variant="ghost" @click="deleteEvent" />
+            <UButton
+              icon="i-lucide-trash-2"
+              color="error"
+              variant="ghost"
+              @click="deleteEvent"
+            />
           </UTooltip>
         </div>
       </header>
 
-      <NuxtLink :to="`/admin/events/${eventId}`" class="text-decoration-none hover:underline">
+      <NuxtLink
+        :to="`/admin/events/${eventId}`"
+        class="text-decoration-none hover:underline"
+      >
         <div class="flex flex-col gap-1">
           <h1 class="text-xl sm:text-2xl font-bold">{{ event?.name }}</h1>
-          <p class="text-sm sm:text-base text-muted">{{ event?.description || 'No description provided.' }}</p>
+          <p class="text-sm sm:text-base text-muted">
+            {{ event?.description || 'No description provided.' }}
+          </p>
         </div>
       </NuxtLink>
     </div>
@@ -36,7 +67,11 @@
       {{ category?.name }} - {{ (category?.weight || 0) * 100 }}%
     </h2>
 
-    <UTabs v-model="tab" :items="genderTabs" class="mb-4" />
+    <UTabs
+      v-model="tab"
+      :items="genderTabs"
+      class="mb-4"
+    />
 
     <UTable
       v-if="tab === 'male'"
@@ -44,15 +79,21 @@
       :columns="headers"
     >
       <template #name-cell="{ row }">
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-4">
           <img
             v-if="row.original.headshot"
             :src="getStrapiImageUrl(row.original.headshot)"
-            class="w-8 h-8 rounded-full object-cover cursor-pointer"
+            class="w-16 h-16 rounded-full object-cover cursor-pointer"
             @click="showImagePreview(row.original.headshot)"
           />
-          <div v-else class="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-            <UIcon name="i-lucide-user" class="size-4" />
+          <div
+            v-else
+            class="w-16 h-16 rounded-full bg-muted flex items-center justify-center"
+          >
+            <UIcon
+              name="i-lucide-user"
+              class="size-4"
+            />
           </div>
           <span>{{ row.original.name }}</span>
         </div>
@@ -64,15 +105,21 @@
       :columns="headers"
     >
       <template #name-cell="{ row }">
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-4">
           <img
             v-if="row.original.headshot"
             :src="getStrapiImageUrl(row.original.headshot)"
-            class="w-8 h-8 rounded-full object-cover cursor-pointer"
+            class="w-16 h-16 rounded-full object-cover cursor-pointer"
             @click="showImagePreview(row.original.headshot)"
           />
-          <div v-else class="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-            <UIcon name="i-lucide-user" class="size-4" />
+          <div
+            v-else
+            class="w-16 h-16 rounded-full bg-muted flex items-center justify-center"
+          >
+            <UIcon
+              name="i-lucide-user"
+              class="size-4"
+            />
           </div>
           <span>{{ row.original.name }}</span>
         </div>
@@ -186,7 +233,10 @@ const fetchData = async () => {
 }
 
 const deleteEvent = async () => {
-  if (!event.value?.documentId) { showSnackbar('Cannot delete event without a documentId.', 'error'); return }
+  if (!event.value?.documentId) {
+    showSnackbar('Cannot delete event without a documentId.', 'error')
+    return
+  }
   if (confirm('Are you sure you want to delete this event? This cannot be undone.')) {
     try {
       await api.delete(`/events/${event.value.documentId}`)
@@ -210,11 +260,16 @@ onUnmounted(() => {
 
 const statusColor = computed(() => {
   switch (event.value?.event_status) {
-    case 'draft': return 'neutral'
-    case 'active': return 'success'
-    case 'inactive': return 'warning'
-    case 'finished': return 'info'
-    default: return 'neutral'
+    case 'draft':
+      return 'neutral'
+    case 'active':
+      return 'success'
+    case 'inactive':
+      return 'warning'
+    case 'finished':
+      return 'info'
+    default:
+      return 'neutral'
   }
 })
 

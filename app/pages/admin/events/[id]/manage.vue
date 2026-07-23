@@ -71,7 +71,12 @@
         <h2 class="text-lg font-bold mb-4">Participant Scores</h2>
         <USelect
           v-model="selectedSegmentId"
-          :items="(event?.segments || []).map((s: SegmentData) => ({ label: s.name, value: s.documentId }))"
+          :items="
+            (event?.segments || []).map((s: SegmentData) => ({
+              label: s.name,
+              value: s.documentId,
+            }))
+          "
           placeholder="Select Segment"
           class="w-full mb-4"
           clearable
@@ -102,7 +107,10 @@
                   v-else
                   class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3"
                 >
-                  <UIcon name="i-lucide-user" class="text-gray-500" />
+                  <UIcon
+                    name="i-lucide-user"
+                    class="text-gray-500"
+                  />
                 </div>
                 <UBadge
                   v-if="row.original.isEliminated"
@@ -134,24 +142,37 @@
                   >
                     <template #header="{ open }">
                       <div class="flex justify-between w-full items-center">
-                        <span>
-                          {{ cat.name }} ({{ Math.round(cat.weight * 100) }}%)
-                        </span>
+                        <span>{{ cat.name }} ({{ Math.round(cat.weight * 100) }}%)</span>
                         <strong>
-                          Avg: {{ getParticipantCategoryAverage(row.original.documentId, cat).toFixed(2) }}
+                          Avg:
+                          {{
+                            getParticipantCategoryAverage(row.original.documentId, cat).toFixed(2)
+                          }}
                         </strong>
                       </div>
                     </template>
                     <div class="py-2">
+                      <h3 class="font-bold text-base">{{ cat.name }}</h3>
                       <div
                         v-for="judge in sortedJudges"
                         :key="judge.id"
                         class="flex justify-between items-center py-1 px-2"
-                        :class="{ 'text-green-500 font-bold': isJudgeActiveForCategory(judge.documentId, cat.documentId) }"
+                        :class="{
+                          'text-green-500 font-bold': isJudgeActiveForCategory(
+                            judge.documentId,
+                            cat.documentId
+                          ),
+                        }"
                       >
                         <span>{{ judge.name }}</span>
                         <strong>
-                          {{ getParticipantScoreForCategoryByJudge(row.original.documentId, cat.documentId, judge.documentId) }}
+                          {{
+                            getParticipantScoreForCategoryByJudge(
+                              row.original.documentId,
+                              cat.documentId,
+                              judge.documentId
+                            )
+                          }}
                         </strong>
                       </div>
                     </div>
@@ -181,7 +202,10 @@
                   v-else
                   class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3"
                 >
-                  <UIcon name="i-lucide-user" class="text-gray-500" />
+                  <UIcon
+                    name="i-lucide-user"
+                    class="text-gray-500"
+                  />
                 </div>
                 <UBadge
                   v-if="row.original.isEliminated"
@@ -213,11 +237,12 @@
                   >
                     <template #header>
                       <div class="flex justify-between w-full items-center">
-                        <span>
-                          {{ cat.name }} ({{ Math.round(cat.weight * 100) }}%)
-                        </span>
+                        <span>{{ cat.name }} ({{ Math.round(cat.weight * 100) }}%)</span>
                         <strong>
-                          Avg: {{ getParticipantCategoryAverage(row.original.documentId, cat).toFixed(2) }}
+                          Avg:
+                          {{
+                            getParticipantCategoryAverage(row.original.documentId, cat).toFixed(2)
+                          }}
                         </strong>
                       </div>
                     </template>
@@ -226,11 +251,22 @@
                         v-for="judge in sortedJudges"
                         :key="judge.id"
                         class="flex justify-between items-center py-1 px-2"
-                        :class="{ 'text-green-500 font-bold': isJudgeActiveForCategory(judge.documentId, cat.documentId) }"
+                        :class="{
+                          'text-green-500 font-bold': isJudgeActiveForCategory(
+                            judge.documentId,
+                            cat.documentId
+                          ),
+                        }"
                       >
                         <span>{{ judge.name }}</span>
                         <strong>
-                          {{ getParticipantScoreForCategoryByJudge(row.original.documentId, cat.documentId, judge.documentId) }}
+                          {{
+                            getParticipantScoreForCategoryByJudge(
+                              row.original.documentId,
+                              cat.documentId,
+                              judge.documentId
+                            )
+                          }}
                         </strong>
                       </div>
                     </div>
@@ -249,14 +285,23 @@
         <h2 class="text-lg font-bold mb-4">Update Scores on Behalf of a Judge</h2>
         <USelect
           v-model="selectedJudgeId"
-          :items="(event?.judges || []).sort((a: JudgeData, b: JudgeData) => a.name.localeCompare(b.name)).map((j: JudgeData) => ({ label: j.name, value: j.documentId }))"
+          :items="
+            (event?.judges || [])
+              .sort((a: JudgeData, b: JudgeData) => a.name.localeCompare(b.name))
+              .map((j: JudgeData) => ({ label: j.name, value: j.documentId }))
+          "
           placeholder="Select Judge"
           class="w-full mb-4"
         />
 
         <USelect
           v-model="selectedSegmentId"
-          :items="(event?.segments || []).map((s: SegmentData) => ({ label: s.name, value: s.documentId }))"
+          :items="
+            (event?.segments || []).map((s: SegmentData) => ({
+              label: s.name,
+              value: s.documentId,
+            }))
+          "
           placeholder="Select Segment"
           class="w-full mb-4"
           clearable
@@ -315,7 +360,9 @@
             <div class="mt-3 flex justify-end">
               <USelect
                 :model-value="pendingSegmentChanges[segment.id] || segment.segment_status"
-                :items="['draft', 'inactive', 'active', 'closed'].map(s => ({ label: s, value: s }))"
+                :items="
+                  ['draft', 'inactive', 'active', 'closed'].map((s) => ({ label: s, value: s }))
+                "
                 placeholder="Status"
                 class="w-40"
                 @update:model-value="(val: any) => handleStatusChange(segment.id, val)"
@@ -348,7 +395,10 @@
     />
 
     <!-- Print Rankings Dialog -->
-    <UModal v-model:open="showPrintDialog" title="Print Rankings">
+    <UModal
+      v-model:open="showPrintDialog"
+      title="Print Rankings"
+    >
       <template #body>
         <div class="space-y-4">
           <USelect
@@ -363,7 +413,12 @@
           <USelect
             v-if="printType !== 'final'"
             v-model="selectedSegmentId"
-            :items="(event?.segments || []).map((s: SegmentData) => ({ label: s.name, value: s.documentId }))"
+            :items="
+              (event?.segments || []).map((s: SegmentData) => ({
+                label: s.name,
+                value: s.documentId,
+              }))
+            "
             placeholder="Segment"
             @update:model-value="printCategoryId = undefined"
           />
@@ -571,7 +626,9 @@ const selectedSegment = computed(() => {
 })
 
 const sortedJudges = computed(() => {
-  return (event.value?.judges || []).sort((a: JudgeData, b: JudgeData) => a.name.localeCompare(b.name))
+  return (event.value?.judges || []).sort((a: JudgeData, b: JudgeData) =>
+    a.name.localeCompare(b.name)
+  )
 })
 
 const segmentCategories = computed(() => {
@@ -587,21 +644,30 @@ const segmentCategories = computed(() => {
 const scoreColumns = [
   {
     id: 'expand',
-    cell: ({ row }: any) => h(UButton, {
-      'color': 'neutral',
-      'variant': 'ghost',
-      'icon': 'i-lucide-chevron-down',
-      'square': true,
-      'aria-label': 'Expand',
-      'ui': {
-        leadingIcon: ['transition-transform', row.getIsExpanded() ? 'duration-200 rotate-180' : '']
-      },
-      'onClick': () => row.toggleExpanded()
-    })
+    cell: ({ row }: any) =>
+      h(UButton, {
+        color: 'neutral',
+        variant: 'ghost',
+        icon: 'i-lucide-chevron-down',
+        square: true,
+        'aria-label': 'Expand',
+        ui: {
+          leadingIcon: [
+            'transition-transform',
+            row.getIsExpanded() ? 'duration-200 rotate-180' : '',
+          ],
+        },
+        onClick: () => row.toggleExpanded(),
+      }),
   },
   { id: 'number', header: 'No.', accessorKey: 'number', sortable: true },
   { id: 'name', header: 'Name', accessorKey: 'name', sortable: true },
-  { id: 'department.name', header: 'Department', accessorFn: (row: any) => row.department?.name || 'N/A', sortable: true },
+  {
+    id: 'department.name',
+    header: 'Department',
+    accessorFn: (row: any) => row.department?.name || 'N/A',
+    sortable: true,
+  },
   { id: 'averaged_score', header: 'Average Score', accessorKey: 'averaged_score', sortable: true },
   { id: 'rank', header: 'Rank', accessorKey: 'rank', sortable: true },
 ]

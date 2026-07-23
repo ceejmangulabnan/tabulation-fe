@@ -25,16 +25,16 @@
         :columns="participantHeaders"
       >
         <template #name-cell="{ row }">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-4">
             <img
               v-if="row.original.headshot"
               :src="getStrapiUrl(row.original.headshot.formats.thumbnail.url)"
-              class="w-10 h-10 rounded-full object-cover cursor-pointer"
+              class="w-16 h-16 rounded-full object-cover cursor-pointer"
               @click="showImagePreview(row.original.headshot.url)"
             />
             <div
               v-else
-              class="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
+              class="w-16 h-16 rounded-full bg-muted flex items-center justify-center"
             >
               <UIcon
                 name="i-lucide-user"
@@ -51,16 +51,16 @@
         :columns="participantHeaders"
       >
         <template #name-cell="{ row }">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-4">
             <img
               v-if="row.original.headshot"
               :src="getStrapiUrl(row.original.headshot.formats.thumbnail.url)"
-              class="w-10 h-10 rounded-full object-cover cursor-pointer"
+              class="w-16 h-16 rounded-full object-cover cursor-pointer"
               @click="showImagePreview(row.original.headshot.url)"
             />
             <div
               v-else
-              class="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
+              class="w-16 h-16 rounded-full bg-muted flex items-center justify-center"
             >
               <UIcon
                 name="i-lucide-user"
@@ -80,16 +80,16 @@
           :key="participant.id"
           class="flex items-center justify-between p-2"
         >
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-4">
             <img
               v-if="participant.headshot"
               :src="getStrapiUrl(participant.headshot.formats.thumbnail.url)"
-              class="w-10 h-10 rounded-full object-cover cursor-pointer"
+              class="w-16 h-16 rounded-full object-cover cursor-pointer"
               @click="showImagePreview(participant.headshot.url)"
             />
             <div
               v-else
-              class="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
+              class="w-16 h-16 rounded-full bg-muted flex items-center justify-center"
             >
               <UIcon name="i-lucide-user" />
             </div>
@@ -137,7 +137,7 @@
           :key="participant.id"
           class="flex items-center justify-between p-2"
         >
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-4">
             <img
               v-if="participant.headshot"
               :src="getStrapiUrl(participant.headshot.formats.thumbnail.url)"
