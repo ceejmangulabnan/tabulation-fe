@@ -112,7 +112,7 @@
             :columns="segmentHeaders"
           >
             <template #name-cell="{ row }">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-4">
                 <img
                   v-if="row.original.headshot"
                   :src="getStrapiUrl(row.original.headshot)"
@@ -138,7 +138,7 @@
             :columns="segmentHeaders"
           >
             <template #name-cell="{ row }">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-4">
                 <img
                   v-if="row.original.headshot"
                   :src="getStrapiUrl(row.original.headshot)"
@@ -191,7 +191,7 @@
           :columns="finalRankingsHeaders"
         >
           <template #name-cell="{ row }">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-4">
               <img
                 v-if="row.original.headshot"
                 :src="getStrapiUrl(row.original.headshot)"
@@ -217,7 +217,7 @@
           :columns="finalRankingsHeaders"
         >
           <template #name-cell="{ row }">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-4">
               <img
                 v-if="row.original.headshot"
                 :src="getStrapiUrl(row.original.headshot)"
