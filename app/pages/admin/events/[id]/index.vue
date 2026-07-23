@@ -105,46 +105,60 @@
           class="mb-4"
         />
 
-        <UTable
-          v-if="activeGenderTab === 'male'"
-          :data="maleSegmentResults"
-          :columns="segmentHeaders"
-        >
-          <template #name-cell="{ row }">
-            <div class="flex items-center gap-2">
-              <img
-                v-if="row.original.headshot"
-                :src="getStrapiUrl(row.original.headshot)"
-                class="w-16 h-16 rounded-full object-cover cursor-pointer"
-                @click="showImagePreview(row.original.headshot)"
-              />
-              <div v-else class="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                <UIcon name="i-lucide-user" class="size-6" />
+        <div class="overflow-x-auto">
+          <UTable
+            v-if="activeGenderTab === 'male'"
+            :data="maleSegmentResults"
+            :columns="segmentHeaders"
+          >
+            <template #name-cell="{ row }">
+              <div class="flex items-center gap-2">
+                <img
+                  v-if="row.original.headshot"
+                  :src="getStrapiUrl(row.original.headshot)"
+                  class="w-16 h-16 rounded-full object-cover cursor-pointer"
+                  @click="showImagePreview(row.original.headshot)"
+                />
+                <div
+                  v-else
+                  class="w-16 h-16 rounded-full bg-muted flex items-center justify-center"
+                >
+                  <UIcon
+                    name="i-lucide-user"
+                    class="size-6"
+                  />
+                </div>
+                <span>{{ row.original.name }}</span>
               </div>
-              <span>{{ row.original.name }}</span>
-            </div>
-          </template>
-        </UTable>
-        <UTable
-          v-else
-          :data="femaleSegmentResults"
-          :columns="segmentHeaders"
-        >
-          <template #name-cell="{ row }">
-            <div class="flex items-center gap-2">
-              <img
-                v-if="row.original.headshot"
-                :src="getStrapiUrl(row.original.headshot)"
-                class="w-16 h-16 rounded-full object-cover cursor-pointer"
-                @click="showImagePreview(row.original.headshot)"
-              />
-              <div v-else class="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                <UIcon name="i-lucide-user" class="size-6" />
+            </template>
+          </UTable>
+          <UTable
+            v-else
+            :data="femaleSegmentResults"
+            :columns="segmentHeaders"
+          >
+            <template #name-cell="{ row }">
+              <div class="flex items-center gap-2">
+                <img
+                  v-if="row.original.headshot"
+                  :src="getStrapiUrl(row.original.headshot)"
+                  class="w-16 h-16 rounded-full object-cover cursor-pointer"
+                  @click="showImagePreview(row.original.headshot)"
+                />
+                <div
+                  v-else
+                  class="w-16 h-16 rounded-full bg-muted flex items-center justify-center"
+                >
+                  <UIcon
+                    name="i-lucide-user"
+                    class="size-6"
+                  />
+                </div>
+                <span>{{ row.original.name }}</span>
               </div>
-              <span>{{ row.original.name }}</span>
-            </div>
-          </template>
-        </UTable>
+            </template>
+          </UTable>
+        </div>
       </UCard>
     </div>
 
@@ -170,46 +184,60 @@
         class="mb-4"
       />
 
-      <UTable
-        v-if="activeGenderTab === 'male'"
-        :data="finalMaleResults"
-        :columns="finalRankingsHeaders"
-      >
-        <template #name-cell="{ row }">
-          <div class="flex items-center gap-2">
-            <img
-              v-if="row.original.headshot"
-              :src="getStrapiUrl(row.original.headshot)"
-              class="w-16 h-16 rounded-full object-cover cursor-pointer"
-              @click="showImagePreview(row.original.headshot)"
-            />
-            <div v-else class="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-              <UIcon name="i-lucide-user" class="size-6" />
+      <div class="overflow-x-auto">
+        <UTable
+          v-if="activeGenderTab === 'male'"
+          :data="finalMaleResults"
+          :columns="finalRankingsHeaders"
+        >
+          <template #name-cell="{ row }">
+            <div class="flex items-center gap-2">
+              <img
+                v-if="row.original.headshot"
+                :src="getStrapiUrl(row.original.headshot)"
+                class="w-16 h-16 rounded-full object-cover cursor-pointer"
+                @click="showImagePreview(row.original.headshot)"
+              />
+              <div
+                v-else
+                class="w-16 h-16 rounded-full bg-muted flex items-center justify-center"
+              >
+                <UIcon
+                  name="i-lucide-user"
+                  class="size-6"
+                />
+              </div>
+              <span>{{ row.original.name }}</span>
             </div>
-            <span>{{ row.original.name }}</span>
-          </div>
-        </template>
-      </UTable>
-      <UTable
-        v-else
-        :data="finalFemaleResults"
-        :columns="finalRankingsHeaders"
-      >
-        <template #name-cell="{ row }">
-          <div class="flex items-center gap-2">
-            <img
-              v-if="row.original.headshot"
-              :src="getStrapiUrl(row.original.headshot)"
-              class="w-16 h-16 rounded-full object-cover cursor-pointer"
-              @click="showImagePreview(row.original.headshot)"
-            />
-            <div v-else class="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-              <UIcon name="i-lucide-user" class="size-6" />
+          </template>
+        </UTable>
+        <UTable
+          v-else
+          :data="finalFemaleResults"
+          :columns="finalRankingsHeaders"
+        >
+          <template #name-cell="{ row }">
+            <div class="flex items-center gap-2">
+              <img
+                v-if="row.original.headshot"
+                :src="getStrapiUrl(row.original.headshot)"
+                class="w-16 h-16 rounded-full object-cover cursor-pointer"
+                @click="showImagePreview(row.original.headshot)"
+              />
+              <div
+                v-else
+                class="w-16 h-16 rounded-full bg-muted flex items-center justify-center"
+              >
+                <UIcon
+                  name="i-lucide-user"
+                  class="size-6"
+                />
+              </div>
+              <span>{{ row.original.name }}</span>
             </div>
-            <span>{{ row.original.name }}</span>
-          </div>
-        </template>
-      </UTable>
+          </template>
+        </UTable>
+      </div>
     </UCard>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -656,12 +684,25 @@ function getScoringProgress(category: CategoryData, judges: JudgeData[], eventSc
 
 const segmentHeaders = computed(() => {
   const staticHeaders = [
-    { accessorKey: 'participant_number', header: 'No.', size: 60 },
-    { accessorKey: 'name', header: 'Participant', size: 250 },
-    { accessorKey: 'department', header: 'Department', size: 150 },
+    {
+      accessorKey: 'participant_number',
+      header: 'No.',
+      meta: { class: { td: 'w-[60px]', th: 'w-[60px]' } },
+    },
+    {
+      accessorKey: 'name',
+      header: 'Participant',
+      meta: { class: { td: 'min-w-[250px] whitespace-nowrap', th: 'min-w-[250px]' } },
+    },
+    {
+      accessorKey: 'department',
+      header: 'Department',
+      meta: { class: { td: 'min-w-[150px]', th: 'min-w-[150px]' } },
+    },
   ]
   const catHeaders = segmentCategories.value.map((category) => ({
-    accessorFn: (row: SegmentResultParticipant) => row.category_scores?.[category.name]?.averaged_score ?? '-',
+    accessorFn: (row: SegmentResultParticipant) =>
+      row.category_scores?.[category.name]?.averaged_score ?? '-',
     header: `${category.name} (${category.weight * 100}%)`,
   }))
   return [
@@ -674,12 +715,25 @@ const segmentHeaders = computed(() => {
 
 const finalRankingsHeaders = computed(() => {
   const staticHeaders = [
-    { accessorKey: 'participant_number', header: 'No.', size: 60 },
-    { accessorKey: 'name', header: 'Participant', size: 250 },
-    { accessorKey: 'department', header: 'Department', size: 150 },
+    {
+      accessorKey: 'participant_number',
+      header: 'No.',
+      meta: { class: { td: 'w-[60px]', th: 'w-[60px]' } },
+    },
+    {
+      accessorKey: 'name',
+      header: 'Participant',
+      meta: { class: { td: 'min-w-[250px] whitespace-nowrap', th: 'min-w-[250px]' } },
+    },
+    {
+      accessorKey: 'department',
+      header: 'Department',
+      meta: { class: { td: 'min-w-[150px]', th: 'min-w-[150px]' } },
+    },
   ]
   const segHeaders = finalSegments.value.map((segment) => ({
-    accessorFn: (row: FinalParticipant) => row.segment_scores?.[segment.documentId]?.averaged_score ?? '-',
+    accessorFn: (row: FinalParticipant) =>
+      row.segment_scores?.[segment.documentId]?.averaged_score ?? '-',
     header:
       segment.scoring_mode === 'ranking'
         ? segment.name
