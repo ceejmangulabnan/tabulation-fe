@@ -21,6 +21,7 @@
         :data="event.segments || []"
         :columns="segmentColumns"
         :get-row-id="(row) => row.documentId"
+        v-model:expanded="expandedSegments"
       >
         <template #name-cell="{ row }">
           <span>{{ row.original.name }}</span>
@@ -43,7 +44,7 @@
             <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click.stop="deleteSegment(row.original as SegmentData)" />
           </div>
         </template>
-        <template #expanded-row="{ row }">
+        <template #expanded="{ row }">
           <div class="p-4 border border-dashed rounded bg-muted/30 mt-2">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
               <span class="font-medium">Categories for {{ row.original.name }}</span>
@@ -316,6 +317,7 @@ const categoryColumns = [
 ]
 
 const segmentDialog = ref(false)
+const expandedSegments = ref<Record<string, boolean>>({})
 const editedSegment = ref<Partial<SegmentData>>({
   id: 0,
   name: '',

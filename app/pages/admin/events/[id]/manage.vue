@@ -123,7 +123,7 @@
               <strong class="text-lg">{{ row.original.averaged_score }}</strong>
             </template>
 
-            <template #expanded-row="{ row }">
+            <template #expanded="{ row }">
               <div class="p-4">
                 <div class="text-lg font-bold mb-2">Score Details</div>
                 <template v-if="selectedSegment?.categories?.length">
@@ -202,7 +202,7 @@
               <strong class="text-lg">{{ row.original.averaged_score }}</strong>
             </template>
 
-            <template #expanded-row="{ row }">
+            <template #expanded="{ row }">
               <div class="p-4">
                 <div class="text-lg font-bold mb-2">Score Details</div>
                 <template v-if="selectedSegment?.categories?.length">
