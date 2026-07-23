@@ -11,7 +11,7 @@
         <div class="flex flex-wrap gap-2 flex-shrink-0">
           <UButton
             icon="i-lucide-printer"
-            color="purple"
+            color="secondary"
             variant="ghost"
             title="Print Rankings"
             @click="showPrintDialog = true"
@@ -26,21 +26,21 @@
           />
           <UButton
             icon="i-lucide-settings"
-            color="blue"
+            color="info"
             variant="ghost"
             title="Manage Event"
             :to="`/admin/events/${eventId}/manage`"
           />
           <UButton
             icon="i-lucide-pencil"
-            color="green"
+            color="success"
             variant="ghost"
             title="Setup Event"
             :to="`/admin/events/${eventId}/setup`"
           />
           <UButton
             icon="i-lucide-trash-2"
-            color="red"
+            color="error"
             variant="ghost"
             title="Delete Event"
             @click="deleteEvent"
@@ -107,7 +107,7 @@
                 <UBadge
                   v-if="row.original.isEliminated"
                   label="E"
-                  color="red"
+                  color="error"
                   size="sm"
                   class="mr-2"
                 />
@@ -186,7 +186,7 @@
                 <UBadge
                   v-if="row.original.isEliminated"
                   label="E"
-                  color="red"
+                  color="error"
                   size="sm"
                   class="mr-2"
                 />
@@ -365,7 +365,7 @@
             v-model="selectedSegmentId"
             :items="(event?.segments || []).map((s: SegmentData) => ({ label: s.name, value: s.documentId }))"
             placeholder="Segment"
-            @update:model-value="printCategoryId = null"
+            @update:model-value="printCategoryId = undefined"
           />
           <USelect
             v-if="printType === 'category'"
@@ -430,7 +430,7 @@ const imagePreviewUrl = ref<string | undefined>('')
 const pendingSegmentChanges = ref<{ [key: number]: SegmentData['segment_status'] }>({})
 
 const printType = ref<'segment' | 'category' | 'final'>('segment')
-const printCategoryId = ref<string | null>(null)
+const printCategoryId = ref<string | undefined>(undefined)
 const printGender = ref<'male' | 'female' | 'both'>('both')
 
 const maleRankings = ref<any[]>([])
@@ -441,12 +441,12 @@ type ParticipantScoreMap = Record<string, number | null | undefined>
 type ParticipantWithScores = Omit<ParticipantData, 'scores'> & { scores: ParticipantScoreMap }
 
 const participantsWithScoresForJudge = ref<ParticipantWithScores[]>([])
-const selectedJudgeId = ref<string | null>(null)
+const selectedJudgeId = ref<string | undefined>(undefined)
 
 const refetchInterval = ref<NodeJS.Timeout | null>(null)
 
-const expandedMale = ref<any[]>([])
-const expandedFemale = ref<any[]>([])
+const expandedMale = ref<Record<string, boolean>>({})
+const expandedFemale = ref<Record<string, boolean>>({})
 
 const deleteEvent = async () => {
   if (!event.value?.documentId) {
@@ -560,7 +560,7 @@ const statusColor = computed(() => {
 })
 
 const activeGenderTab = ref('male')
-const selectedSegmentId = ref<string | null>(null)
+const selectedSegmentId = ref<string | undefined>(undefined)
 
 const selectedSegment = computed(() => {
   return event.value?.segments?.find((s) => s.documentId === selectedSegmentId.value) || null
@@ -877,7 +877,7 @@ watch(selectedSegmentId, fetchSegmentRanking, { immediate: true })
 watch(
   () => event.value?.segments,
   (newSegments) => {
-    if (newSegments && newSegments.length > 0 && selectedSegmentId.value === null) {
+    if (newSegments && newSegments.length > 0 && selectedSegmentId.value === undefined) {
       selectedSegmentId.value = newSegments[0]?.documentId || ''
     }
   },
@@ -886,10 +886,10 @@ watch(
 
 watch(printType, (val) => {
   if (val === 'segment') {
-    printCategoryId.value = null
+    printCategoryId.value = undefined
   } else if (val === 'final') {
-    selectedSegmentId.value = null
-    printCategoryId.value = null
+    selectedSegmentId.value = undefined
+    printCategoryId.value = undefined
   }
 })
 </script>
