@@ -19,7 +19,7 @@
           src="/logo.png"
           alt="Logo"
           class="h-9 w-9 object-contain"
-        >
+        />
         <span class="text-lg font-bold">SNC Tabulation</span>
       </div>
 
@@ -32,14 +32,22 @@
           active-class="!bg-primary/15 !text-primary"
           @click="mobileOpen = false"
         >
-          <UIcon :name="item.icon" class="h-5 w-5 shrink-0" />
+          <UIcon
+            :name="item.icon"
+            class="h-5 w-5 shrink-0"
+          />
           {{ item.label }}
         </NuxtLink>
 
         <template v-if="segmentedCategories.length">
-          <hr class="my-2 border-default">
-          <p class="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-muted">Event Segments</p>
-          <template v-for="segment in segmentedCategories" :key="segment.name">
+          <hr class="my-2 border-default" />
+          <p class="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-muted">
+            Event Segments
+          </p>
+          <template
+            v-for="segment in segmentedCategories"
+            :key="segment.name"
+          >
             <p class="px-3 pt-2 pb-1 text-xs font-medium text-muted">{{ segment.name }}</p>
             <NuxtLink
               v-for="cat in segment.categories"
@@ -57,17 +65,25 @@
       </nav>
 
       <div class="border-t border-default p-3">
-        <div class="mb-2 px-3 text-sm">
-          Welcome, <span class="font-semibold text-primary">{{ authStore.user?.username }}</span>
-        </div>
-        <UButton
-          color="error"
-          variant="ghost"
-          block
-          icon="i-lucide-log-out"
-          label="Logout"
-          @click="authStore.logout()"
-        />
+        <UDropdownMenu
+          :items="userMenuItems"
+          :content="{ side: 'right' }"
+        >
+          <button
+            class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-default"
+          >
+            <div
+              class="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 text-primary"
+            >
+              {{ authStore.user?.username?.charAt(0)?.toUpperCase() || '?' }}
+            </div>
+            <span class="truncate">{{ authStore.user?.username }}</span>
+            <UIcon
+              name="i-lucide-chevron-right"
+              class="ml-auto h-4 w-4 text-muted"
+            />
+          </button>
+        </UDropdownMenu>
       </div>
     </aside>
 
@@ -90,8 +106,16 @@
             size="xs"
             @click="router.back()"
           />
-          <template v-for="(crumb, i) in breadcrumbs" :key="i">
-            <span v-if="i > 0" class="text-muted">/</span>
+          <template
+            v-for="(crumb, i) in breadcrumbs"
+            :key="i"
+          >
+            <span
+              v-if="i > 0"
+              class="text-muted"
+            >
+              /
+            </span>
             <NuxtLink
               v-if="!crumb.disabled"
               :to="crumb.to"
@@ -99,7 +123,12 @@
             >
               {{ crumb.title }}
             </NuxtLink>
-            <span v-else class="font-medium text-default">{{ crumb.title }}</span>
+            <span
+              v-else
+              class="font-medium text-default"
+            >
+              {{ crumb.title }}
+            </span>
           </template>
         </div>
 
@@ -132,6 +161,17 @@ const mobileOpen = ref(false)
 function toggleTheme() {
   colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
 }
+
+const userMenuItems = [
+  [
+    {
+      label: 'Logout',
+      icon: 'i-lucide-log-out',
+      color: 'error' as const,
+      onSelect: () => authStore.logout(),
+    },
+  ],
+]
 
 const eventId = computed(() => route.params.id as string)
 const event = computed(() => eventsStore.event)

@@ -38,17 +38,17 @@
       </nav>
 
       <div class="border-t border-default p-3">
-        <div class="mb-2 px-3 text-sm">
-          Welcome, <span class="font-semibold text-primary">{{ authStore.user?.username }}</span>
-        </div>
-        <UButton
-          color="error"
-          variant="ghost"
-          block
-          icon="i-lucide-log-out"
-          label="Logout"
-          @click="authStore.logout()"
-        />
+        <UDropdownMenu :items="userMenuItems">
+          <button
+            class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-default"
+          >
+            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 text-primary">
+              {{ authStore.user?.username?.charAt(0)?.toUpperCase() || '?' }}
+            </div>
+            <span class="truncate">{{ authStore.user?.username }}</span>
+            <UIcon name="i-lucide-chevron-up" class="ml-auto h-4 w-4 text-muted" />
+          </button>
+        </UDropdownMenu>
       </div>
     </aside>
 
@@ -112,6 +112,10 @@ const mobileOpen = ref(false)
 function toggleTheme() {
   colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
 }
+
+const userMenuItems = [[
+  { label: 'Logout', icon: 'i-lucide-log-out', color: 'error' as const, onSelect: () => authStore.logout() },
+]]
 
 const navItems = [
   { to: '/', label: 'Home', icon: 'i-lucide-home' },
