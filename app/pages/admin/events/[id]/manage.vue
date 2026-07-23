@@ -415,6 +415,10 @@
 </template>
 
 <script setup lang="ts">
+import { h, resolveComponent } from 'vue'
+
+const UButton = resolveComponent('UButton')
+
 const route = useRoute()
 const eventsStore = useEventsStore()
 const { showSnackbar } = useSnackbar()
@@ -581,6 +585,20 @@ const segmentCategories = computed(() => {
 })
 
 const scoreColumns = [
+  {
+    id: 'expand',
+    cell: ({ row }: any) => h(UButton, {
+      'color': 'neutral',
+      'variant': 'ghost',
+      'icon': 'i-lucide-chevron-down',
+      'square': true,
+      'aria-label': 'Expand',
+      'ui': {
+        leadingIcon: ['transition-transform', row.getIsExpanded() ? 'duration-200 rotate-180' : '']
+      },
+      'onClick': () => row.toggleExpanded()
+    })
+  },
   { id: 'number', header: 'No.', accessorKey: 'number', sortable: true },
   { id: 'name', header: 'Name', accessorKey: 'name', sortable: true },
   { id: 'department.name', header: 'Department', accessorFn: (row: any) => row.department?.name || 'N/A', sortable: true },

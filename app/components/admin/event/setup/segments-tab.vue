@@ -250,6 +250,10 @@
 </template>
 
 <script setup lang="ts">
+import { h, resolveComponent } from 'vue'
+
+const UButton = resolveComponent('UButton')
+
 const props = defineProps({
   event: {
     type: Object as PropType<Partial<EventData>>,
@@ -301,6 +305,20 @@ const judgeSelectionOptions = computed(() => {
 })
 
 const segmentColumns = [
+  {
+    id: 'expand',
+    cell: ({ row }: any) => h(UButton, {
+      'color': 'neutral',
+      'variant': 'ghost',
+      'icon': 'i-lucide-chevron-down',
+      'square': true,
+      'aria-label': 'Expand',
+      'ui': {
+        leadingIcon: ['transition-transform', row.getIsExpanded() ? 'duration-200 rotate-180' : '']
+      },
+      'onClick': () => row.toggleExpanded()
+    })
+  },
   { accessorKey: 'name', header: 'Name' },
   { accessorKey: 'weight', header: 'Weight' },
   { accessorKey: 'order', header: 'Order' },
