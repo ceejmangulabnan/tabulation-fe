@@ -161,45 +161,43 @@
     </p>
 
     <!-- Segment Dialog -->
-    <UModal v-model:open="segmentDialog">
-      <form @submit.prevent="saveSegment">
-        <UCard>
-          <h3 class="text-xl font-bold mb-4">{{ editedSegment.id ? 'Edit' : 'Add' }} Segment</h3>
-          <div class="space-y-4">
-            <UInput v-model="editedSegment.name" label="Name" autofocus />
-            <UInput v-model.number="editedSegment.order" label="Order in Event" type="number" step="1" />
-            <UInput v-model.number="editedSegment.weight" label="Weight (0.0 to 1.0)" type="number" step="0.01" />
-            <USelect
-              v-model="editedSegment.advancement_type"
-              :items="['all', 'top_n', 'threshold', 'manual']"
-              label="Advancement Type"
-            />
-            <UInput
-              v-if="['top_n', 'threshold'].includes(editedSegment.advancement_type!)"
-              :model-value="editedSegment.advancement_value ?? undefined"
-              label="Advancement Value"
-              type="number"
-              @update:model-value="(val: any) => editedSegment.advancement_value = Number(val)"
-            />
-            <USelect
-              v-model="editedSegment.scoring_mode"
-              :items="['normalized', 'raw_category', 'ranking']"
-              label="Scoring Mode"
-            />
-          </div>
-          <div class="flex justify-end gap-2 mt-4">
-            <UButton label="Cancel" color="neutral" variant="ghost" @click="segmentDialog = false" />
-            <UButton label="Save" type="submit" />
-          </div>
-        </UCard>
-      </form>
+    <UModal v-model:open="segmentDialog" :title="editedSegment.id ? 'Edit Segment' : 'Add Segment'">
+      <template #body>
+        <form @submit.prevent="saveSegment" class="space-y-4">
+          <UInput v-model="editedSegment.name" label="Name" autofocus />
+          <UInput v-model.number="editedSegment.order" label="Order in Event" type="number" step="1" />
+          <UInput v-model.number="editedSegment.weight" label="Weight (0.0 to 1.0)" type="number" step="0.01" />
+          <USelect
+            v-model="editedSegment.advancement_type"
+            :items="['all', 'top_n', 'threshold', 'manual']"
+            label="Advancement Type"
+          />
+          <UInput
+            v-if="['top_n', 'threshold'].includes(editedSegment.advancement_type!)"
+            :model-value="editedSegment.advancement_value ?? undefined"
+            label="Advancement Value"
+            type="number"
+            @update:model-value="(val: any) => editedSegment.advancement_value = Number(val)"
+          />
+          <USelect
+            v-model="editedSegment.scoring_mode"
+            :items="['normalized', 'raw_category', 'ranking']"
+            label="Scoring Mode"
+          />
+        </form>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <UButton label="Cancel" color="neutral" variant="ghost" @click="segmentDialog = false" />
+          <UButton label="Save" @click="saveSegment" />
+        </div>
+      </template>
     </UModal>
 
     <!-- Category Dialog -->
-    <UModal v-model:open="categoryDialog">
-      <form @submit.prevent="saveCategory">
-        <UCard>
-          <h3 class="text-xl font-bold mb-4">{{ editedCategory.id ? 'Edit' : 'Add' }} Category</h3>
+    <UModal v-model:open="categoryDialog" :title="editedCategory.id ? 'Edit Category' : 'Add Category'">
+      <template #body>
+        <form @submit.prevent="saveCategory" class="space-y-4">
           <div class="space-y-4">
             <UInput v-model="editedCategory.name" label="Name" autofocus />
             <UInput v-model="editedCategory.weight" label="Weight (0.0 to 1.0)" type="number" step="0.01" />
@@ -219,12 +217,14 @@
               <span>Locked</span>
             </div>
           </div>
-          <div class="flex justify-end gap-2 mt-4">
-            <UButton label="Cancel" color="neutral" variant="ghost" @click="categoryDialog = false" />
-            <UButton label="Save" type="submit" />
-          </div>
-        </UCard>
-      </form>
+        </form>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <UButton label="Cancel" color="neutral" variant="ghost" @click="categoryDialog = false" />
+          <UButton label="Save" @click="saveCategory" />
+        </div>
+      </template>
     </UModal>
   </div>
 </template>

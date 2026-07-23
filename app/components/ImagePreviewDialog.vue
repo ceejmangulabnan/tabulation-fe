@@ -1,6 +1,6 @@
 <template>
   <UModal :open="modelValue" @update:open="$emit('update:modelValue', $event)">
-    <template #default>
+    <template #body>
       <div class="p-1">
         <img
           v-if="imageUrl"

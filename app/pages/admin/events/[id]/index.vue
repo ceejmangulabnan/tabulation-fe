@@ -141,9 +141,8 @@
     </div>
 
     <!-- Print Dialog -->
-    <UModal v-model:open="showPrintDialog">
-      <UCard>
-        <h3 class="text-xl font-bold mb-4">Print Rankings</h3>
+    <UModal v-model:open="showPrintDialog" title="Print Rankings">
+      <template #body>
         <div class="space-y-4">
           <USelect
             v-model="printType"
@@ -177,11 +176,13 @@
             label="Gender"
           />
         </div>
-        <div class="flex justify-end gap-2 mt-4">
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2">
           <UButton label="Cancel" color="neutral" variant="ghost" @click="showPrintDialog = false" />
           <UButton label="Print" @click="confirmPrint" />
         </div>
-      </UCard>
+      </template>
     </UModal>
 
     <PrintableRankings

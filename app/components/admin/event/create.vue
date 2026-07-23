@@ -1,5 +1,5 @@
 <template>
-  <UCard class="pa-2">
+  <div class="flex flex-col gap-4">
     <h3 class="text-lg font-bold mb-4">Create Event</h3>
     <form class="flex flex-col gap-4" @submit.prevent="createEvent">
       <UInput
@@ -29,7 +29,7 @@
         />
       </div>
     </form>
-  </UCard>
+  </div>
 </template>
 
 <script setup lang="ts">

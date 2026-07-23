@@ -117,13 +117,9 @@
       :image-url="imagePreviewUrl"
     />
 
-    <UModal v-model:open="participantDialog">
-      <form @submit.prevent="saveParticipant">
-        <UCard>
-          <h3 class="text-xl font-bold mb-4">
-            {{ editedParticipant.id ? 'Edit' : 'Add' }} Participant
-          </h3>
-
+    <UModal v-model:open="participantDialog" :title="editedParticipant.id ? 'Edit Participant' : 'Add Participant'">
+      <template #body>
+        <form @submit.prevent="saveParticipant">
           <div class="space-y-4">
             <img
               v-if="headshotPreviewUrl"
@@ -173,23 +169,24 @@
               label="Notes"
             />
           </div>
-
-          <div class="flex justify-end gap-2 mt-4">
-            <UButton
-              label="Cancel"
-              color="neutral"
-              variant="ghost"
-              @click="participantDialog = false"
-            />
-            <UButton
-              label="Save"
-              type="submit"
-              color="success"
-              variant="subtle"
-            />
-          </div>
-        </UCard>
-      </form>
+        </form>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <UButton
+            label="Cancel"
+            color="neutral"
+            variant="ghost"
+            @click="participantDialog = false"
+          />
+          <UButton
+            label="Save"
+            color="success"
+            variant="subtle"
+            @click="saveParticipant"
+          />
+        </div>
+      </template>
     </UModal>
   </div>
 </template>

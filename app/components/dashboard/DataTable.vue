@@ -37,15 +37,17 @@
     </UTable>
 
     <UModal v-model:open="dialog">
-      <UCard>
+      <template #body>
         <img
           :src="currentImgUrl"
           class="max-h-[80vh] w-full object-contain"
         />
-        <div class="flex justify-end mt-4">
+      </template>
+      <template #footer>
+        <div class="flex justify-end">
           <UButton label="Close" color="neutral" variant="ghost" @click="dialog = false" />
         </div>
-      </UCard>
+      </template>
     </UModal>
   </div>
 </template>

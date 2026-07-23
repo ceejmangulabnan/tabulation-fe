@@ -13,8 +13,7 @@
       :data="eventsStore.events"
       :columns="columns"
       :loading="eventsStore.isLoading"
-      :expanded="expandedRows"
-      @toggle-row-expand="(row: any) => toggleExpand(row)"
+      v-model:expanded="expandedRows"
       class="border rounded-lg"
     >
       <template #name-cell="{ row }">
@@ -57,7 +56,7 @@
         </div>
       </template>
 
-      <template #expanded-row="{ row }">
+      <template #expanded="{ row }">
         <div class="p-4">
           <UCard variant="subtle">
             <h4 class="font-bold mb-2">Segment & Scoring Overview</h4>
@@ -69,9 +68,7 @@
               :key="segment.id"
               class="mb-4"
             >
-              <h4 class="font-bold">
-                {{ segment.name }} (Weight: {{ segment.weight * 100 }}%)
-              </h4>
+              <h4 class="font-bold">{{ segment.name }} (Weight: {{ segment.weight * 100 }}%)</h4>
               <div class="space-y-1">
                 <div
                   v-for="category in segment.categories"
@@ -80,10 +77,14 @@
                 >
                   <div class="font-medium">{{ category.name }}</div>
                   <div class="text-muted">
-                    Scoring Progress: {{ getScoringProgress(category, row.original.judges, row.original.scores) }}
+                    Scoring Progress:
+                    {{ getScoringProgress(category, row.original.judges, row.original.scores) }}
                   </div>
                 </div>
-                <div v-if="!segment.categories || segment.categories.length === 0" class="text-sm text-muted">
+                <div
+                  v-if="!segment.categories || segment.categories.length === 0"
+                  class="text-sm text-muted"
+                >
                   No categories in this segment.
                 </div>
               </div>
@@ -93,8 +94,13 @@
       </template>
     </UTable>
 
-    <UModal v-model:open="showCreateDialog">
-      <AdminEventCreate @close="showCreateDialog = false" />
+    <UModal
+      v-model:open="showCreateDialog"
+      title="Create Event"
+    >
+      <template #body>
+        <AdminEventCreate @close-dialog="showCreateDialog = false" />
+      </template>
     </UModal>
   </div>
 </template>

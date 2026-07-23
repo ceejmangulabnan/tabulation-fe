@@ -78,12 +78,14 @@
     </UCard>
 
     <!-- Scoring Dialog -->
-    <UModal v-model:open="showScoringDialog">
-      <UCard class="h-full">
-        <div class="flex items-center justify-between mb-4">
+    <UModal v-model:open="showScoringDialog" fullscreen>
+      <template #header>
+        <div class="flex items-center justify-between w-full">
           <h3 class="font-bold text-lg">Score Event: {{ event?.name }} - {{ currentSegmentName }}</h3>
           <UButton icon="i-lucide-x" variant="ghost" @click="closeScoringDialog" />
         </div>
+      </template>
+      <template #body>
         <EventScoringCard
           v-if="event && judgeId && currentSegment"
           :isAdmin="false"
@@ -98,7 +100,7 @@
         <div v-else class="text-center py-4 text-muted">
           No active segment selected for scoring.
         </div>
-      </UCard>
+      </template>
     </UModal>
   </div>
 </template>

@@ -56,11 +56,8 @@
       </template>
     </UTable>
 
-    <UModal v-model:open="confirmationDialog">
-      <UCard>
-        <h3 class="text-xl font-bold mb-4">
-          {{ actionToConfirm === 'approve' ? 'Approve' : 'Reject' }} Request
-        </h3>
+    <UModal v-model:open="confirmationDialog" :title="actionToConfirm === 'approve' ? 'Approve Request' : 'Reject Request'">
+      <template #body>
         <p>
           Are you sure you want to {{ actionToConfirm }} the request for
           <strong>{{ selectedRequest?.judge.name }}</strong>
@@ -68,7 +65,9 @@
           <strong>{{ selectedRequest?.event.name }}</strong>
           ?
         </p>
-        <div class="flex justify-end gap-2 mt-4">
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2">
           <UButton
             label="Cancel"
             color="neutral"
@@ -81,7 +80,7 @@
             @click="confirmAction"
           />
         </div>
-      </UCard>
+      </template>
     </UModal>
   </section>
 </template>
