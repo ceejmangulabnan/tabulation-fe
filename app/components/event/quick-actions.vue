@@ -1,86 +1,50 @@
 <template>
   <div>
-    <div class="d-flex justify-space-between align-center w-100 mb-4">
+    <div class="flex items-center justify-between w-full mb-4">
       <h2>Quick Actions</h2>
     </div>
-    <v-row no-gutters>
-      <v-col
-        cols="12"
-        sm="6"
-        class="d-flex"
-      >
-        <v-dialog max-width="500">
-          <template #activator="{ props: activatorProps }">
-            <v-card
-              v-bind="activatorProps"
-              elevation="0"
-              class="cursor-pointer custom-hover-card d-flex flex-column w-100 pa-3 ma-2 border-md border-dashed rounded-xl"
-            >
-              <v-card-item>
-                <v-card-title class="d-flex flex-column ga-4">
-                  <v-icon icon="mdi-plus"></v-icon>
-                  <span class="text-wrap">Create a request to judge an event</span>
-                </v-card-title>
-              </v-card-item>
-              <v-spacer></v-spacer>
-              <v-card-text class="text-lg">Submit a request to judge an active event</v-card-text>
-            </v-card>
-          </template>
-
-          <template #default="{ isActive }">
-            <v-card class="pa-2">
-              <v-card-text>
-                <div class="mb-4">
-                  <p class="text-h5">Request to Judge</p>
-                  <p class="text-body">Open a request to judge an event</p>
-                </div>
-                <v-form>
-                  <v-select
-                    v-model="selectedEventName"
-                    label="Select an event"
-                    :items="eventsStore.events.map((e) => e.name)"
-                  ></v-select>
-                </v-form>
-              </v-card-text>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  text="Cancel"
-                  @click="isActive.value = false"
-                ></v-btn>
-                <v-btn
-                  variant="tonal"
-                  text="Submit"
-                  @click="register(isActive)"
-                ></v-btn>
-              </v-card-actions>
-            </v-card>
-          </template>
-        </v-dialog>
-      </v-col>
-
-      <v-col
-        cols="12"
-        sm="6"
-        class="d-flex"
-      >
-        <v-card
-          elevation="0"
-          class="cursor-pointer custom-hover-card d-flex flex-column w-100 pa-3 ma-2 border-md border-dashed rounded-xl"
-          @click="router.push('/judge/scores')"
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <UModal>
+        <UCard
+          class="cursor-pointer transition-all duration-250 hover:-translate-y-1 hover:shadow-lg border border-dashed rounded-xl"
         >
-          <v-card-item>
-            <v-card-title class="d-flex flex-column ga-4">
-              <v-icon icon="mdi-eye"></v-icon>
-              <span class="text-wrap">View my scores</span>
-            </v-card-title>
-          </v-card-item>
-          <v-spacer></v-spacer>
-          <v-card-text class="text-lg">Review your scores for judged events</v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+          <div class="flex flex-col gap-4">
+            <UIcon name="i-lucide-plus" class="size-6" />
+            <span class="text-wrap">Create a request to judge an event</span>
+          </div>
+          <p class="text-lg mt-4">Submit a request to judge an active event</p>
+        </UCard>
 
+        <template #content>
+          <UCard>
+            <div class="mb-4">
+              <p class="text-lg font-bold">Request to Judge</p>
+              <p>Open a request to judge an event</p>
+            </div>
+            <USelect
+              v-model="selectedEventName"
+              label="Select an event"
+              :items="eventsStore.events.map((e) => e.name)"
+            />
+            <div class="flex justify-end gap-2 mt-4">
+              <UButton label="Cancel" color="neutral" variant="ghost" />
+              <UButton label="Submit" @click="register()" />
+            </div>
+          </UCard>
+        </template>
+      </UModal>
+
+      <UCard
+        class="cursor-pointer transition-all duration-250 hover:-translate-y-1 hover:shadow-lg border border-dashed rounded-xl"
+        @click="router.push('/judge/scores')"
+      >
+        <div class="flex flex-col gap-4">
+          <UIcon name="i-lucide-eye" class="size-6" />
+          <span class="text-wrap">View my scores</span>
+        </div>
+        <p class="text-lg mt-4">Review your scores for judged events</p>
+      </UCard>
+    </div>
   </div>
 </template>
 
@@ -93,7 +57,7 @@ const judgeRequestsStore = useJudgeRequestsStore()
 const selectedEventName = ref('')
 const { showSnackbar } = useSnackbar()
 
-async function register(isActive: { value: boolean }) {
+async function register() {
   try {
     if (!selectedEventName.value) {
       showSnackbar('Please select an event.', 'error')
@@ -112,8 +76,6 @@ async function register(isActive: { value: boolean }) {
     )
 
     const judge = judgeRes?.data?.[0]
-    console.log('Current Judge:', judge)
-    console.log('Current User:', authStore)
     if (!judge) {
       showSnackbar('No Judge entry found for this user.', 'error')
       return
@@ -130,14 +92,12 @@ async function register(isActive: { value: boolean }) {
         },
       },
     }
-    console.log('Judge Request Payload:', payload)
 
     await api.post('/judge-requests', payload)
     showSnackbar('Request submitted successfully!', 'success')
     if (authStore.user?.judge?.id) {
       await judgeRequestsStore.fetchJudgeRequests(authStore.user.judge.id)
     }
-    isActive.value = false
     selectedEventName.value = ''
   } catch (error: any) {
     console.error('Error registering for event', error)
@@ -147,7 +107,6 @@ async function register(isActive: { value: boolean }) {
       } else if (error.response.data.error.details.type === 'hasExistingRequest') {
         showSnackbar('You have already requested to judge this event.', 'warning')
       }
-      isActive.value = false // Close dialog on conflict
     } else {
       showSnackbar(
         error.data?.error?.message || 'An error occurred while submitting your request.',
@@ -157,14 +116,3 @@ async function register(isActive: { value: boolean }) {
   }
 }
 </script>
-
-<style scoped>
-.custom-hover-card {
-  transition: all 0.25s ease;
-}
-
-.custom-hover-card:hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08) !important;
-  transform: translateY(-3px);
-}
-</style>

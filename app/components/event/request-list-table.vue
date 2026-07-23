@@ -1,6 +1,6 @@
 <template>
   <section>
-    <header class="d-flex justify-space-between align-center w-100 mb-4">
+    <header class="flex items-center justify-between w-full mb-4">
       <h2>Judging Requests</h2>
       <span>
         {{
@@ -10,57 +10,35 @@
         }}
       </span>
     </header>
-    <v-table
-      class="border-sm rounded-lg"
-      striped="even"
+    <UTable
+      :data="judgeRequestsStore.judgeRequests"
+      :columns="[
+        { accessorKey: 'event.name', header: 'Event Name' },
+        { accessorKey: 'judge.name', header: 'Judge' },
+        { accessorKey: 'request_status', header: 'Request Status' },
+        { accessorKey: 'actions', header: 'Actions' },
+      ]"
     >
-      <thead>
-        <tr>
-          <th class="font-weight-bold text-subtitle-1 text-left">Event Name</th>
-          <th class="font-weight-bold text-subtitle-1 text-center">Judge</th>
-          <th class="font-weight-bold text-subtitle-1 text-center">Request Status</th>
-          <th class="font-weight-bold text-subtitle-1 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="judgeRequestsStore.judgeRequests.length == 0">
-          <td
-            colspan="4"
-            class="text-center text-grey-darken-2"
-          >
-            No Judge Requests
-          </td>
-        </tr>
-        <tr
-          v-for="item in judgeRequestsStore.judgeRequests"
-          :key="item.id"
-        >
-          <td>{{ item.event?.name || 'No Event' }}</td>
-          <td align="center">{{ item.judge.name }}</td>
-          <td align="center">
-            <v-chip
-              :color="getStatusColor(item.request_status)"
-              label
-              class="text-capitalize"
-            >
-              {{ item.request_status }}
-            </v-chip>
-          </td>
-
-          <td
-            v-if="item.request_status !== 'approved'"
-            align="center"
-          >
-            <v-btn
-              variant="tonal"
-              color="error"
-            >
-              Cancel
-            </v-btn>
-          </td>
-        </tr>
-      </tbody>
-    </v-table>
+      <template #empty>
+        <div class="text-center py-4 text-muted">No Judge Requests</div>
+      </template>
+      <template #event.name-cell="{ row }">
+        {{ row.original.event?.name || 'No Event' }}
+      </template>
+      <template #request_status-cell="{ row }">
+        <UBadge :color="getStatusColor(row.original.request_status)" class="capitalize">
+          {{ row.original.request_status }}
+        </UBadge>
+      </template>
+      <template #actions-cell="{ row }">
+        <UButton
+          v-if="row.original.request_status !== 'approved'"
+          label="Cancel"
+          color="error"
+          variant="subtle"
+        />
+      </template>
+    </UTable>
   </section>
 </template>
 
@@ -69,19 +47,12 @@ const authStore = useAuthStore()
 const judgeRequestsStore = useJudgeRequestsStore()
 await judgeRequestsStore.fetchJudgeRequests(authStore.user?.judge?.id as number)
 
-const theme = useThemeStore()
-
 const getStatusColor = (status: string) => {
-  const isDark = theme.current === 'dark'
   switch (status) {
-    case 'approved':
-      return isDark ? 'success' : 'green-darken-2'
-    case 'pending':
-      return isDark ? 'warning' : 'yellow-darken-2'
-    case 'rejected':
-      return isDark ? 'error' : 'red-darken-2'
-    default:
-      return 'info'
+    case 'approved': return 'success'
+    case 'pending': return 'warning'
+    case 'rejected': return 'error'
+    default: return 'info'
   }
 }
 </script>

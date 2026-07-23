@@ -1,94 +1,50 @@
 <template>
   <div>
-    <div class="d-flex justify-space-between align-center w-100 mb-4">
+    <div class="flex items-center justify-between w-full mb-4">
       <h2>Quick Actions</h2>
     </div>
-    <v-row no-gutters>
-      <v-col
-        cols="12"
-        sm="4"
-        class="d-flex"
-      >
-        <v-dialog max-width="500">
-          <template #activator="{ props: activatorProps }">
-            <v-card
-              v-bind="activatorProps"
-              elevation="0"
-              class="cursor-pointer custom-hover-card d-flex flex-column w-100 pa-3 ma-2 border-md border-dashed rounded-xl"
-            >
-              <v-card-item>
-                <v-card-title class="d-flex flex-column ga-4">
-                  <v-icon icon="mdi-plus"></v-icon>
-                  <span class="text-wrap">Create new event</span>
-                </v-card-title>
-              </v-card-item>
-              <v-spacer></v-spacer>
-              <v-card-text class="text-lg">Create a new pagaent event</v-card-text>
-            </v-card>
-          </template>
-
-          <template #default="{ isActive }">
-            <AdminEventCreate @close-dialog="isActive.value = false" />
-          </template>
-        </v-dialog>
-      </v-col>
-
-      <v-col
-        cols="12"
-        sm="4"
-        class="d-flex"
-      >
-        <v-card
-          elevation="0"
-          class="cursor-pointer custom-hover-card d-flex flex-column w-100 pa-3 ma-2 border-md border-dashed rounded-xl"
-          @click="router.push('/admin/users')"
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <UModal>
+        <UCard
+          class="cursor-pointer transition-all duration-250 hover:-translate-y-1 hover:shadow-lg border border-dashed rounded-xl"
         >
-          <v-card-item>
-            <v-card-title class="d-flex flex-column ga-4">
-              <v-icon icon="mdi-account-group"></v-icon>
-              <span class="text-wrap">Manage Users</span>
-            </v-card-title>
-          </v-card-item>
-          <v-spacer></v-spacer>
-          <v-card-text class="text-lg">View and manage judges and admins</v-card-text>
-        </v-card>
-      </v-col>
+          <div class="flex flex-col gap-4">
+            <UIcon name="i-lucide-plus" class="size-6" />
+            <span class="text-wrap">Create new event</span>
+          </div>
+          <p class="text-lg mt-4">Create a new pageant event</p>
+        </UCard>
 
-      <v-col
-        cols="12"
-        sm="4"
-        class="d-flex"
+        <template #content>
+          <AdminEventCreate />
+        </template>
+      </UModal>
+
+      <UCard
+        class="cursor-pointer transition-all duration-250 hover:-translate-y-1 hover:shadow-lg border border-dashed rounded-xl"
+        @click="router.push('/admin/users')"
       >
-        <v-card
-          elevation="0"
-          class="cursor-pointer custom-hover-card d-flex flex-column w-100 pa-3 ma-2 border-md border-dashed rounded-xl"
-          @click="router.push('/admin/scores')"
-        >
-          <v-card-item>
-            <v-card-title class="d-flex flex-column ga-4">
-              <v-icon icon="mdi-poll"></v-icon>
-              <span class="text-wrap">Manage Scores</span>
-            </v-card-title>
-          </v-card-item>
-          <v-spacer></v-spacer>
-          <v-card-text class="text-lg">View and manage event scores</v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+        <div class="flex flex-col gap-4">
+          <UIcon name="i-lucide-users" class="size-6" />
+          <span class="text-wrap">Manage Users</span>
+        </div>
+        <p class="text-lg mt-4">View and manage judges and admins</p>
+      </UCard>
+
+      <UCard
+        class="cursor-pointer transition-all duration-250 hover:-translate-y-1 hover:shadow-lg border border-dashed rounded-xl"
+        @click="router.push('/admin/scores')"
+      >
+        <div class="flex flex-col gap-4">
+          <UIcon name="i-lucide-bar-chart-3" class="size-6" />
+          <span class="text-wrap">Manage Scores</span>
+        </div>
+        <p class="text-lg mt-4">View and manage event scores</p>
+      </UCard>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 const router = useRouter()
 </script>
-
-<style scoped>
-.custom-hover-card {
-  transition: all 0.25s ease;
-}
-
-.custom-hover-card:hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08) !important;
-  transform: translateY(-3px);
-}
-</style>

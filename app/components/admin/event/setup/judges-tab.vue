@@ -1,170 +1,109 @@
 <template>
   <div>
-    <v-card-title class="font-weight-bold">Judges</v-card-title>
-    <v-data-table
-      v-if="!smAndDown"
-      :headers="judgeHeaders"
-      :items="event.judges"
-      class="mb-4"
-    >
-      <template #headers="{ columns, getSortIcon, isSorted, toggleSort }">
-        <tr>
-          <template
-            v-for="column in columns"
-            ::key="column.key"
-          >
-            <th @click="toggleSort(column)">
-              <div class="font-weight-bold d-flex cursor-pointer">
-                <span
-                  class="me-2 cursor-pointer"
-                  v-text="column.title"
-                ></span>
-
-                <v-icon
-                  v-if="isSorted(column)"
-                  :icon="getSortIcon(column)"
-                  color="medium-emphasis"
-                ></v-icon>
-              </div>
-            </th>
-          </template>
-        </tr>
-      </template>
-      <template #item.actions="{ item }">
-        <v-icon
-          small
-          color="error"
-          @click="removeJudge(item)"
-        >
-          mdi-delete
-        </v-icon>
-      </template>
-    </v-data-table>
-    <v-list
-      v-else
-      class="mb-4"
-      lines="one"
-    >
-      <v-list-item
+    <h3 class="font-bold text-lg mb-4">Judges</h3>
+    <div v-if="!smAndDown" class="mb-4">
+      <UTable
+        :data="event.judges || []"
+        :columns="judgeHeaders"
+      />
+    </div>
+    <div v-else class="mb-4 space-y-1">
+      <div
         v-for="judge in event.judges"
         :key="judge.id"
-        :title="judge.name"
+        class="flex items-center justify-between p-2"
       >
-        <template #append>
-          <v-icon
-            color="error"
-            @click="removeJudge(judge)"
-          >
-            mdi-delete
-          </v-icon>
-        </template>
-      </v-list-item>
-      <v-list-item v-if="event.judges?.length === 0">
-        <v-list-item-title class="text-center text-grey-darken-2">
-          No Judges Assigned
-        </v-list-item-title>
-      </v-list-item>
-    </v-list>
+        <span>{{ judge.name }}</span>
+        <UButton
+          icon="i-lucide-trash-2"
+          color="error"
+          variant="ghost"
+          size="xs"
+          @click="removeJudge(judge)"
+        />
+      </div>
+      <div v-if="event.judges?.length === 0" class="text-center text-muted py-4">
+        No Judges Assigned
+      </div>
+    </div>
 
-    <v-tabs
-      v-model="judgeTab"
-      bg-color="primary"
-    >
-      <v-tab value="assign">Assign Existing</v-tab>
-      <v-tab value="create">Create New</v-tab>
-    </v-tabs>
-    <v-window v-model="judgeTab">
-      <v-window-item value="assign">
-        <v-card-text>
-          <v-autocomplete
-            :clearable="true"
-            :multiple="true"
-            autocomplete="off"
-            v-model="selectedJudge"
-            :items="availableJudges"
-            item-title="name"
-            item-value="id"
+    <UTabs v-model="judgeTab" :items="tabItems" class="mb-4" />
+
+    <div v-if="judgeTab === 'assign'">
+      <div class="space-y-4">
+          <USelectMenu
+            v-model="selectedJudge as any"
+            :items="availableJudges.map(j => ({ label: j.name, value: j }))"
             label="Search for a judge"
+            multiple
+            searchable
           />
-          <v-btn
-            color="primary"
-            :disabled="!selectedJudge"
-            @click="assignJudge"
-          >
-            Assign
-          </v-btn>
-        </v-card-text>
-      </v-window-item>
-      <v-window-item value="create">
-        <v-form
-          ref="formRef"
-          @submit.prevent="createJudge"
+        <UButton
+          label="Assign"
+          :disabled="!selectedJudge"
+          @click="assignJudge"
+        />
+      </div>
+    </div>
+
+    <div v-else-if="judgeTab === 'create'">
+      <form class="space-y-4" @submit.prevent="createJudge">
+        <UInput
+          v-model="newJudge.name"
+          label="Name"
+          placeholder="Enter judge name"
+        />
+        <UInput
+          v-model="newJudge.username"
+          label="Username"
+          placeholder="Enter username"
+        />
+        <UInput
+          v-model="newJudge.email"
+          label="Email"
+          type="email"
+          placeholder="Enter email"
+        />
+        <UInput
+          v-model="newJudge.password"
+          label="Password"
+          :type="showPassword ? 'text' : 'password'"
+          placeholder="Enter password"
+          :ui="{ trailing: 'pe-1' }"
         >
-          <v-card-text>
-            <v-text-field
-              v-model="newJudge.name"
-              label="Name"
-              :rules="requiredRule"
+          <template #trailing>
+            <UButton
+              color="neutral"
+              variant="link"
+              :icon="showPassword ? 'i-lucide-eye' : 'i-lucide-eye-off'"
+              :padded="false"
+              @click="showPassword = !showPassword"
             />
-            <v-text-field
-              v-model="newJudge.username"
-              label="Username"
-              :rules="requiredRule"
+          </template>
+        </UInput>
+        <UInput
+          v-model="newJudge.confirmPassword"
+          label="Confirm Password"
+          :type="showConfirmPassword ? 'text' : 'password'"
+          placeholder="Confirm password"
+          :ui="{ trailing: 'pe-1' }"
+        >
+          <template #trailing>
+            <UButton
+              color="neutral"
+              variant="link"
+              :icon="showConfirmPassword ? 'i-lucide-eye' : 'i-lucide-eye-off'"
+              :padded="false"
+              @click="showConfirmPassword = !showConfirmPassword"
             />
-            <v-text-field
-              v-model="newJudge.email"
-              label="Email"
-              :rules="[...emailRule, ...requiredRule]"
-            />
-            <v-text-field
-              v-model="newJudge.password"
-              label="Password"
-              :type="showPassword ? 'text' : 'password'"
-              :rules="[...requiredRule, ...passwordLengthRule]"
-            >
-              <template #append-inner>
-                <v-btn
-                  tabindex="-1"
-                  icon
-                  variant="text"
-                  @click="toggleShowPassword"
-                >
-                  <v-icon size="small">
-                    {{ showPassword ? 'mdi-eye-outline' : 'mdi-eye-off' }}
-                  </v-icon>
-                </v-btn>
-              </template>
-            </v-text-field>
-            <v-text-field
-              v-model="newJudge.confirmPassword"
-              label="Confirm Password"
-              :type="showConfirmPassword ? 'text' : 'password'"
-              :rules="[...requiredRule, ...passwordLengthRule, ...passwordMatchRule]"
-            >
-              <template #append-inner>
-                <v-btn
-                  tabindex="-1"
-                  icon
-                  variant="text"
-                  @click="toggleShowConfirmPassword"
-                >
-                  <v-icon size="small">
-                    {{ showPassword ? 'mdi-eye-outline' : 'mdi-eye-off' }}
-                  </v-icon>
-                </v-btn>
-              </template>
-            </v-text-field>
-            <v-btn
-              class="mt-4"
-              color="green"
-              type="submit"
-            >
-              Create and Assign
-            </v-btn>
-          </v-card-text>
-        </v-form>
-      </v-window-item>
-    </v-window>
+          </template>
+        </UInput>
+        <UButton
+          label="Create and Assign"
+          type="submit"
+        />
+      </form>
+    </div>
   </div>
 </template>
 
@@ -193,28 +132,21 @@ const { showSnackbar } = useSnackbar()
 const { smAndDown } = useDisplay()
 
 const judgeTab = ref('assign')
-const selectedJudge = ref<number[] | null>(null)
+const tabItems = [
+  { label: 'Assign Existing', value: 'assign' },
+  { label: 'Create New', value: 'create' },
+]
+const selectedJudge = ref<JudgeData[]>([])
 const newJudge = ref({ name: '', username: '', email: '', password: '', confirmPassword: '' })
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 const route = useRoute()
 
-// Form Validation Rules
-const formRef = ref<HTMLFormElement | null>(null)
-
-const requiredRule = [(v: string) => !!v || 'Field is required']
-const emailRule = [(v: string) => !v || /.+@.+\..+/.test(v) || 'E-mail must be valid']
-const passwordLengthRule = [
-  (v: string) => v.length >= 6 || 'Password must be at least 6 characters',
-]
-const passwordMatchRule = [(v: string) => v === newJudge.value.password || 'Passwords do not match']
-
 const eventId = route.params.id
 
-// --- Judges Tab ---
 const judgeHeaders = [
-  { title: 'Name', key: 'name', class: 'font-weight-bold' },
-  { title: 'Actions', key: 'actions', sortable: false, class: 'font-weight-bold' },
+  { accessorKey: 'name', header: 'Name' },
+  { accessorKey: 'actions', header: '' },
 ]
 
 const assignJudge = async () => {
@@ -223,10 +155,10 @@ const assignJudge = async () => {
     return
   }
 
-  const assignmentPromises = selectedJudge.value.map(async (judgeId) => {
-    const judgeToAssign = props.availableJudges.find((j) => j.id === judgeId)
+  const assignmentPromises = selectedJudge.value.map(async (judge) => {
+    const judgeToAssign = judge.id ? judge : props.availableJudges.find((j) => j.documentId === judge.documentId)
     if (!judgeToAssign) {
-      console.warn(`Could not find judge with ID ${judgeId} in available judges.`)
+      console.warn(`Could not find judge with ID ${judge.documentId} in available judges.`)
       return Promise.resolve(null)
     }
 
@@ -252,7 +184,7 @@ const assignJudge = async () => {
 
     await eventsStore.fetchEvent(props.event.id?.toString() || '')
     emit('judges-updated')
-    selectedJudge.value = null // Clear selection after successful judge assignment
+    selectedJudge.value = []
   } catch (e) {
     showSnackbar('Failed to assign one or more judges.', 'error')
     console.error('Could not assign judges', e)
@@ -278,18 +210,19 @@ const removeJudge = async (judge: JudgeData) => {
   }
 }
 
-const toggleShowPassword = () => {
-  showPassword.value = !showPassword.value
-}
-
-const toggleShowConfirmPassword = () => {
-  showConfirmPassword.value = !showConfirmPassword.value
-}
-
 const createJudge = async () => {
-  if (!formRef.value) return
-  const { valid } = await formRef.value.validate()
-  if (!valid) return
+  if (!newJudge.value.name || !newJudge.value.password) {
+    showSnackbar('Please fill in all required fields.', 'error')
+    return
+  }
+  if (newJudge.value.password !== newJudge.value.confirmPassword) {
+    showSnackbar('Passwords do not match.', 'error')
+    return
+  }
+  if (newJudge.value.password.length < 6) {
+    showSnackbar('Password must be at least 6 characters.', 'error')
+    return
+  }
   try {
     await authStore.register(
       newJudge.value.name,
@@ -297,7 +230,7 @@ const createJudge = async () => {
       newJudge.value.password,
       newJudge.value.email,
       eventsStore.event?.documentId,
-      false // Prevent login of created judge in event setup
+      false
     )
 
     showSnackbar('Judge created successfully!', 'success')
