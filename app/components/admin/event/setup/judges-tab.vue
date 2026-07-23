@@ -5,7 +5,17 @@
       <UTable
         :data="event.judges || []"
         :columns="judgeHeaders"
-      />
+      >
+        <template #actions-cell="{ row }">
+          <UButton
+            icon="i-lucide-trash-2"
+            color="error"
+            variant="ghost"
+            size="xs"
+            @click="removeJudge(row.original)"
+          />
+        </template>
+      </UTable>
     </div>
     <div class="md:hidden mb-4 space-y-1">
       <div
