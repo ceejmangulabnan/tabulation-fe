@@ -42,12 +42,42 @@
       v-if="tab === 'male'"
       :data="maleItems"
       :columns="headers"
-    />
+    >
+      <template #name-cell="{ row }">
+        <div class="flex items-center gap-2">
+          <img
+            v-if="row.original.headshot"
+            :src="getStrapiImageUrl(row.original.headshot)"
+            class="w-8 h-8 rounded-full object-cover cursor-pointer"
+            @click="showImagePreview(row.original.headshot)"
+          />
+          <div v-else class="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+            <UIcon name="i-lucide-user" class="size-4" />
+          </div>
+          <span>{{ row.original.name }}</span>
+        </div>
+      </template>
+    </UTable>
     <UTable
       v-else
       :data="femaleItems"
       :columns="headers"
-    />
+    >
+      <template #name-cell="{ row }">
+        <div class="flex items-center gap-2">
+          <img
+            v-if="row.original.headshot"
+            :src="getStrapiImageUrl(row.original.headshot)"
+            class="w-8 h-8 rounded-full object-cover cursor-pointer"
+            @click="showImagePreview(row.original.headshot)"
+          />
+          <div v-else class="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+            <UIcon name="i-lucide-user" class="size-4" />
+          </div>
+          <span>{{ row.original.name }}</span>
+        </div>
+      </template>
+    </UTable>
 
     <PrintableRankings
       v-if="event"
