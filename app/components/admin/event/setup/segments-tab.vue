@@ -3,20 +3,20 @@
     <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
       <span class="font-bold text-lg">Event Scoring Segments</span>
       <UButton
-        v-if="smAndDown"
+        class="md:hidden"
         icon="i-lucide-plus"
         size="xs"
         @click="showSegmentDialog()"
       />
       <UButton
-        v-else
+        class="hidden md:inline-flex"
         icon="i-lucide-plus"
         label="Add segment"
         @click="showSegmentDialog()"
       />
     </div>
 
-    <div v-if="!smAndDown">
+    <div class="hidden md:block">
       <UTable
         :data="event.segments || []"
         :columns="segmentColumns"
@@ -48,13 +48,13 @@
             <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
               <span class="font-medium">Categories for {{ row.original.name }}</span>
               <UButton
-                v-if="smAndDown"
+                class="md:hidden"
                 icon="i-lucide-plus"
                 size="xs"
                 @click="showCategoryDialog(null, row.original.documentId)"
               />
               <UButton
-                v-else
+                class="hidden md:inline-flex"
                 icon="i-lucide-plus"
                 label="Add category"
                 @click="showCategoryDialog(null, row.original.documentId)"
@@ -98,7 +98,7 @@
     </div>
 
     <!-- Mobile view -->
-    <div v-else class="space-y-4">
+    <div class="md:hidden space-y-4">
       <div
         v-for="segment in event.segments"
         :key="segment.id"
@@ -260,7 +260,6 @@ const theme = useThemeStore()
 const api = useStrapiApi()
 const eventsStore = useEventsStore()
 const { showSnackbar } = useSnackbar()
-const { smAndDown } = useDisplay()
 
 const availableJudges = computed(() => {
   if (!props.event.judges) return []

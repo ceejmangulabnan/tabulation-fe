@@ -6,7 +6,7 @@
       <div v-if="activeGenderTab === gender.key">
         <form @submit.prevent="submitScores(segment)">
           <!-- Desktop View -->
-          <div v-if="!smAndDown" class="overflow-x-auto">
+          <div class="hidden md:block overflow-x-auto">
             <table class="w-full border-collapse">
               <thead>
                 <tr class="border-b">
@@ -72,7 +72,7 @@
           </div>
 
           <!-- Mobile View -->
-          <div v-else class="space-y-3">
+          <div class="md:hidden space-y-3">
             <UCard
               v-for="item in getParticipantsByGender(gender.key, segment)"
               :key="item.id"
@@ -221,7 +221,6 @@ function getRankDuplicateRule(categoryDocId: string, participantDocId: string) {
   ]
 }
 
-const { smAndDown } = useDisplay()
 const { showSnackbar } = useSnackbar()
 const api = useStrapiApi()
 const isLoading = ref<boolean>(false)

@@ -4,21 +4,21 @@
       <span class="font-bold text-lg">Participants</span>
 
       <UButton
-        v-if="smAndDown"
+        class="md:hidden"
         icon="i-lucide-plus"
         size="xs"
         @click="showParticipantDialog()"
       />
 
       <UButton
-        v-else
+        class="hidden md:inline-flex"
         icon="i-lucide-plus"
         label="Add participant"
         @click="showParticipantDialog()"
       />
     </div>
 
-    <div v-if="!smAndDown">
+    <div class="hidden md:block">
       <div class="text-base font-semibold mb-2">Male Participants</div>
       <UTable
         :data="maleParticipants"
@@ -30,7 +30,7 @@
         :columns="participantHeaders"
       />
     </div>
-    <div v-else>
+    <div class="md:hidden">
       <div class="text-base font-semibold mb-2">Male Participants</div>
       <div class="space-y-1">
         <div
@@ -219,7 +219,6 @@ const props = defineProps({
 const api = useStrapiApi()
 const eventsStore = useEventsStore()
 const { showSnackbar } = useSnackbar()
-const { smAndDown } = useDisplay()
 
 const maleParticipants = computed(
   () => props.event.participants?.filter((p) => p.gender === 'male') || []

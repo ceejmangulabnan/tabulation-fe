@@ -10,7 +10,7 @@
           {{ displayEvent?.event_status.toUpperCase() }}
         </UBadge>
 
-        <div v-if="!smAndDown" class="flex flex-wrap gap-2 flex-shrink-0">
+        <div class="hidden md:flex flex-wrap gap-2 flex-shrink-0">
           <UTooltip text="Refresh Data">
             <UButton
               icon="i-lucide-refresh-cw"
@@ -43,7 +43,7 @@
           </UTooltip>
         </div>
 
-        <div v-else>
+        <div class="md:hidden">
           <UDropdownMenu :items="mobileMenuItems">
             <UButton icon="i-lucide-ellipsis-vertical" variant="ghost" />
           </UDropdownMenu>
@@ -110,8 +110,6 @@ const dataLoaded = ref(false)
 const displayEvent = computed<EventData>(() => eventsStore.event as EventData)
 const api = useStrapiApi()
 const router = useRouter()
-const { smAndDown } = useDisplay()
-
 const tabItems = [
   { label: 'Event Info', value: 'one' },
   { label: 'Scoring Segments', value: 'two' },

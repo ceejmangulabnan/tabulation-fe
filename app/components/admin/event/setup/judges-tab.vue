@@ -1,13 +1,13 @@
 <template>
   <div>
     <h3 class="font-bold text-lg mb-4">Judges</h3>
-    <div v-if="!smAndDown" class="mb-4">
+    <div class="hidden md:block mb-4">
       <UTable
         :data="event.judges || []"
         :columns="judgeHeaders"
       />
     </div>
-    <div v-else class="mb-4 space-y-1">
+    <div class="md:hidden mb-4 space-y-1">
       <div
         v-for="judge in event.judges"
         :key="judge.id"
@@ -145,7 +145,6 @@ const api = useStrapiApi()
 const eventsStore = useEventsStore()
 const authStore = useAuthStore()
 const { showSnackbar } = useSnackbar()
-const { smAndDown } = useDisplay()
 
 const judgeTab = ref('assign')
 const tabItems = [

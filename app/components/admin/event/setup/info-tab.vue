@@ -10,36 +10,46 @@
       Event Information
     </div>
 
-    <form class="space-y-4" @submit.prevent="handleSave">
-      <UInput
-        v-model="formData.name"
-        label="Title"
-        autofocus
-      />
+    <UForm @submit.prevent="handleSave">
+      <div class="space-y-4 flex flex-col">
+        <UFormField label="Title">
+          <UInput
+            class="w-full"
+            v-model="formData.name"
+            autofocus
+          />
+        </UFormField>
 
-      <UTextarea
-        :model-value="formData.description ?? undefined"
-        label="Description"
-        @update:model-value="(val: any) => formData.description = val"
-      />
+        <UFormField label="Description">
+          <UTextarea
+            class="w-full"
+            :model-value="formData.description ?? undefined"
+            label="Description"
+            @update:model-value="(val: any) => (formData.description = val)"
+          />
+        </UFormField>
 
-      <USelect
-        :model-value="formData.final_scoring_mode || undefined"
-        label="Final Scoring Mode"
-        :items="[
-          { label: 'Combine All Segments', value: 'combine_all' },
-          { label: 'Last Segment Only', value: 'last_segment_only' },
-        ]"
-        @update:model-value="(val: any) => formData.final_scoring_mode = val"
-      />
+        <UFormField label="Final Scoring Mode">
+          <USelect
+            class="w-full"
+            :model-value="formData.final_scoring_mode || undefined"
+            label="Final Scoring Mode"
+            :items="[
+              { label: 'Combine All Segments', value: 'combine_all' },
+              { label: 'Last Segment Only', value: 'last_segment_only' },
+            ]"
+            @update:model-value="(val: any) => (formData.final_scoring_mode = val)"
+          />
+        </UFormField>
+      </div>
 
-      <div class="flex justify-end">
+      <div class="flex justify-end mt-4">
         <UButton
           label="Update"
           type="submit"
         />
       </div>
-    </form>
+    </UForm>
   </div>
 </template>
 

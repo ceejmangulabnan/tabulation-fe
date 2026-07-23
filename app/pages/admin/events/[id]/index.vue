@@ -9,7 +9,7 @@
         >
           {{ event?.event_status.toUpperCase() }}
         </UBadge>
-        <div v-if="!smAndDown" class="flex flex-wrap gap-2 flex-shrink-0">
+        <div class="hidden md:flex flex-wrap gap-2 flex-shrink-0">
           <UTooltip text="Print Rankings">
             <UButton icon="i-lucide-printer" variant="ghost" @click="showPrintDialog = true" />
           </UTooltip>
@@ -26,7 +26,7 @@
             <UButton icon="i-lucide-trash-2" color="error" variant="ghost" @click="deleteEvent" />
           </UTooltip>
         </div>
-        <div v-else>
+        <div class="block md:hidden">
           <UDropdownMenu :items="mobileMenuItems">
             <UButton icon="i-lucide-ellipsis-vertical" variant="ghost" />
           </UDropdownMenu>
@@ -274,8 +274,6 @@ const eventsStore = useEventsStore()
 const router = useRouter()
 const api = useStrapiApi()
 const { showSnackbar } = useSnackbar()
-const { smAndDown } = useDisplay()
-
 const eventId = route.params.id as string
 const event = computed(() => eventsStore.event)
 const { activeParticipantCount, displayRankScore, displaySegmentAvgRank } = useRankingDisplay(
