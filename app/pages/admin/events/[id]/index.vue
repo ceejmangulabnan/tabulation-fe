@@ -656,9 +656,9 @@ function getScoringProgress(category: CategoryData, judges: JudgeData[], eventSc
 
 const segmentHeaders = computed(() => {
   const staticHeaders = [
-    { accessorKey: 'participant_number', header: 'No.' },
-    { accessorKey: 'name', header: 'Participant' },
-    { accessorKey: 'department', header: 'Department' },
+    { accessorKey: 'participant_number', header: 'No.', size: 60 },
+    { accessorKey: 'name', header: 'Participant', size: 250 },
+    { accessorKey: 'department', header: 'Department', size: 150 },
   ]
   const catHeaders = segmentCategories.value.map((category) => ({
     accessorFn: (row: SegmentResultParticipant) => row.category_scores?.[category.name]?.averaged_score ?? '-',
@@ -674,9 +674,9 @@ const segmentHeaders = computed(() => {
 
 const finalRankingsHeaders = computed(() => {
   const staticHeaders = [
-    { accessorKey: 'participant_number', header: 'No.' },
-    { accessorKey: 'name', header: 'Participant' },
-    { accessorKey: 'department', header: 'Department' },
+    { accessorKey: 'participant_number', header: 'No.', size: 60 },
+    { accessorKey: 'name', header: 'Participant', size: 250 },
+    { accessorKey: 'department', header: 'Department', size: 150 },
   ]
   const segHeaders = finalSegments.value.map((segment) => ({
     accessorFn: (row: FinalParticipant) => row.segment_scores?.[segment.documentId]?.averaged_score ?? '-',
