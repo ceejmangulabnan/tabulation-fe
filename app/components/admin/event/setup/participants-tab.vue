@@ -23,12 +23,54 @@
       <UTable
         :data="maleParticipants"
         :columns="participantHeaders"
-      />
+      >
+        <template #name-cell="{ row }">
+          <div class="flex items-center gap-2">
+            <img
+              v-if="row.original.headshot"
+              :src="getStrapiUrl(row.original.headshot.formats.thumbnail.url)"
+              class="w-10 h-10 rounded-full object-cover cursor-pointer"
+              @click="showImagePreview(row.original.headshot.url)"
+            />
+            <div
+              v-else
+              class="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
+            >
+              <UIcon
+                name="i-lucide-user"
+                class="size-4"
+              />
+            </div>
+            <span>{{ row.original.name }}</span>
+          </div>
+        </template>
+      </UTable>
       <div class="text-base font-semibold mt-4 mb-2">Female Participants</div>
       <UTable
         :data="femaleParticipants"
         :columns="participantHeaders"
-      />
+      >
+        <template #name-cell="{ row }">
+          <div class="flex items-center gap-2">
+            <img
+              v-if="row.original.headshot"
+              :src="getStrapiUrl(row.original.headshot.formats.thumbnail.url)"
+              class="w-10 h-10 rounded-full object-cover cursor-pointer"
+              @click="showImagePreview(row.original.headshot.url)"
+            />
+            <div
+              v-else
+              class="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
+            >
+              <UIcon
+                name="i-lucide-user"
+                class="size-4"
+              />
+            </div>
+            <span>{{ row.original.name }}</span>
+          </div>
+        </template>
+      </UTable>
     </div>
     <div class="md:hidden">
       <div class="text-base font-semibold mb-2">Male Participants</div>
@@ -45,7 +87,10 @@
               class="w-10 h-10 rounded-full object-cover cursor-pointer"
               @click="showImagePreview(participant.headshot.url)"
             />
-            <div v-else class="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+            <div
+              v-else
+              class="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
+            >
               <UIcon name="i-lucide-user" />
             </div>
             <div>
@@ -62,11 +107,25 @@
             </div>
           </div>
           <div class="flex gap-1">
-            <UButton icon="i-lucide-pencil" variant="ghost" size="xs" @click="showParticipantDialog(participant as ParticipantData)" />
-            <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click="deleteParticipant(participant as ParticipantData)" />
+            <UButton
+              icon="i-lucide-pencil"
+              variant="ghost"
+              size="xs"
+              @click="showParticipantDialog(participant as ParticipantData)"
+            />
+            <UButton
+              icon="i-lucide-trash-2"
+              color="error"
+              variant="ghost"
+              size="xs"
+              @click="deleteParticipant(participant as ParticipantData)"
+            />
           </div>
         </div>
-        <div v-if="maleParticipants.length === 0" class="text-center text-muted py-4">
+        <div
+          v-if="maleParticipants.length === 0"
+          class="text-center text-muted py-4"
+        >
           No Male Participants
         </div>
       </div>
@@ -85,7 +144,10 @@
               class="w-10 h-10 rounded-full object-cover cursor-pointer"
               @click="showImagePreview(participant.headshot.url)"
             />
-            <div v-else class="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+            <div
+              v-else
+              class="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
+            >
               <UIcon name="i-lucide-user" />
             </div>
             <div>
@@ -102,11 +164,25 @@
             </div>
           </div>
           <div class="flex gap-1">
-            <UButton icon="i-lucide-pencil" variant="ghost" size="xs" @click="showParticipantDialog(participant as ParticipantData)" />
-            <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click="deleteParticipant(participant as ParticipantData)" />
+            <UButton
+              icon="i-lucide-pencil"
+              variant="ghost"
+              size="xs"
+              @click="showParticipantDialog(participant as ParticipantData)"
+            />
+            <UButton
+              icon="i-lucide-trash-2"
+              color="error"
+              variant="ghost"
+              size="xs"
+              @click="deleteParticipant(participant as ParticipantData)"
+            />
           </div>
         </div>
-        <div v-if="femaleParticipants.length === 0" class="text-center text-muted py-4">
+        <div
+          v-if="femaleParticipants.length === 0"
+          class="text-center text-muted py-4"
+        >
           No Female Participants
         </div>
       </div>
@@ -117,7 +193,10 @@
       :image-url="imagePreviewUrl"
     />
 
-    <UModal v-model:open="participantDialog" :title="editedParticipant.id ? 'Edit Participant' : 'Add Participant'">
+    <UModal
+      v-model:open="participantDialog"
+      :title="editedParticipant.id ? 'Edit Participant' : 'Add Participant'"
+    >
       <template #body>
         <img
           v-if="headshotPreviewUrl"
@@ -138,8 +217,14 @@
                 type="file"
                 accept="image/*"
                 class="w-full"
-                :label="editedParticipant.headshot?.url ? 'Replace Headshot Image' : 'Upload Headshot Image'"
-                @change="(e: Event) => headshotFile = (e.target as HTMLInputElement).files?.[0] || null"
+                :label="
+                  editedParticipant.headshot?.url
+                    ? 'Replace Headshot Image'
+                    : 'Upload Headshot Image'
+                "
+                @change="
+                  (e: Event) => (headshotFile = (e.target as HTMLInputElement).files?.[0] || null)
+                "
               />
             </UFormField>
             <UFormField label="Name">
@@ -167,11 +252,22 @@
             </UFormField>
             <UFormField label="Department">
               <USelectMenu
-                :model-value="editedParticipant.department != null ? { label: departments.find((d: any) => d.id === editedParticipant.department)?.name || '', value: editedParticipant.department as number } : undefined"
+                :model-value="
+                  editedParticipant.department != null
+                    ? {
+                        label:
+                          departments.find((d: any) => d.id === editedParticipant.department)
+                            ?.name || '',
+                        value: editedParticipant.department as number,
+                      }
+                    : undefined
+                "
                 :items="departments.map((d: any) => ({ label: d.name, value: d.id }))"
                 class="w-full"
                 searchable
-                @update:model-value="(val: any) => editedParticipant.department = val?.value ?? val"
+                @update:model-value="
+                  (val: any) => (editedParticipant.department = val?.value ?? val)
+                "
               />
             </UFormField>
             <UFormField label="Notes">

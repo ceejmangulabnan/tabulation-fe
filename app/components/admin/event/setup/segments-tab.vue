@@ -184,7 +184,7 @@
                     {{ cat.active ? 'Active' : 'Inactive' }}
                   </UBadge>
                   <UBadge
-                    :color="cat.locked ? 'success' : 'neutral'"
+                    :color="cat.locked ? 'error' : 'neutral'"
                     size="xs"
                   >
                     {{ cat.locked ? 'Locked' : 'Unlocked' }}

@@ -32,29 +32,38 @@
           @click="removeJudge(judge)"
         />
       </div>
-      <div v-if="event.judges?.length === 0" class="text-center text-muted py-4">
+      <div
+        v-if="event.judges?.length === 0"
+        class="text-center text-muted py-4"
+      >
         No Judges Assigned
       </div>
     </div>
 
-    <UTabs v-model="judgeTab" :items="tabItems" class="mb-4" />
+    <UTabs
+      v-model="judgeTab"
+      :items="tabItems"
+      class="mb-4"
+    />
 
     <div v-if="judgeTab === 'assign'">
-      <div class="space-y-4">
+      <div class="space-y-4 flex flex-col">
         <UFormField label="Search for a judge">
           <USelectMenu
             v-model="selectedJudge as any"
-            :items="availableJudges.map(j => ({ label: j.name, value: j }))"
+            :items="availableJudges.map((j) => ({ label: j.name, value: j }))"
             class="w-full"
             multiple
             searchable
           />
         </UFormField>
-        <UButton
-          label="Assign"
-          :disabled="!selectedJudge"
-          @click="assignJudge"
-        />
+        <div class="flex justify-end">
+          <UButton
+            label="Assign"
+            :disabled="!selectedJudge"
+            @click="assignJudge"
+          />
+        </div>
       </div>
     </div>
 
@@ -171,7 +180,11 @@ const eventId = route.params.id
 
 const judgeHeaders = [
   { accessorKey: 'name', header: 'Name' },
-  { accessorKey: 'actions', header: '' },
+  {
+    accessorKey: 'actions',
+    header: 'Actions',
+    meta: { class: { td: 'text-right', th: 'text-right' } },
+  },
 ]
 
 const assignJudge = async () => {
@@ -180,25 +193,26 @@ const assignJudge = async () => {
     return
   }
 
-  const assignmentPromises = selectedJudge.value.map(async (judge) => {
-    const judgeToAssign = judge.id ? judge : props.availableJudges.find((j) => j.documentId === judge.documentId)
-    if (!judgeToAssign) {
-      console.warn(`Could not find judge with ID ${judge.documentId} in available judges.`)
+  const assignmentPromises = selectedJudge.value.map(async (item: any) => {
+    const judge = item.value ?? item
+    if (!judge?.documentId) {
+      console.warn('Could not resolve judge from selection:', item)
       return Promise.resolve(null)
     }
 
-    return api.put(`/judges/${judgeToAssign.documentId}`, {
+    return api.put(`/judges/${judge.documentId}`, {
       data: {
         events: {
           connect: [props.event.documentId],
         },
-        name: judgeToAssign.name,
+        name: judge.name,
       },
     })
   })
 
   try {
     const results = await Promise.all(assignmentPromises)
+    console.log('Judge Assignement Results', results)
     const successfulAssignments = results.filter((res) => res && res.status === 200).length
 
     if (successfulAssignments > 0) {
