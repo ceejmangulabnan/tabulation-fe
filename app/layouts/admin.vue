@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen bg-default text-default">
+  <UDashboardGroup class="flex h-screen bg-default text-default">
     <!-- Mobile sidebar overlay -->
     <div
       v-if="mobileOpen"
@@ -19,7 +19,7 @@
           src="/logo.png"
           alt="Logo"
           class="h-9 w-9 object-contain"
-        >
+        />
         <span class="text-lg font-bold">SNC Tabulation</span>
       </div>
 
@@ -32,14 +32,18 @@
           active-class="!bg-primary/15 !text-primary"
           @click="mobileOpen = false"
         >
-          <UIcon :name="item.icon" class="h-5 w-5 shrink-0" />
+          <UIcon
+            :name="item.icon"
+            class="h-5 w-5 shrink-0"
+          />
           {{ item.label }}
         </NuxtLink>
       </nav>
 
       <div class="border-t border-default p-3">
         <div class="mb-2 px-3 text-sm">
-          Welcome, <span class="font-semibold text-primary">{{ authStore.user?.username }}</span>
+          Welcome,
+          <span class="font-semibold text-primary">{{ authStore.user?.username }}</span>
         </div>
         <UButton
           color="error"
@@ -71,8 +75,16 @@
             size="xs"
             @click="router.back()"
           />
-          <template v-for="(crumb, i) in breadcrumbs" :key="i">
-            <span v-if="i > 0" class="text-muted">/</span>
+          <template
+            v-for="(crumb, i) in breadcrumbs"
+            :key="i"
+          >
+            <span
+              v-if="i > 0"
+              class="text-muted"
+            >
+              /
+            </span>
             <NuxtLink
               v-if="!crumb.disabled"
               :to="crumb.to"
@@ -80,7 +92,12 @@
             >
               {{ crumb.title }}
             </NuxtLink>
-            <span v-else class="font-medium text-default">{{ crumb.title }}</span>
+            <span
+              v-else
+              class="font-medium text-default"
+            >
+              {{ crumb.title }}
+            </span>
           </template>
         </div>
 
@@ -98,7 +115,7 @@
         <slot />
       </main>
     </div>
-  </div>
+  </UDashboardGroup>
 </template>
 
 <script setup lang="ts">

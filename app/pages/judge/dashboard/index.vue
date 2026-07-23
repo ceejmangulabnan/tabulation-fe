@@ -6,13 +6,11 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="my-2 mx-6 d-flex flex-column ga-10">
+  <div class="mx-6 my-2 flex flex-col gap-10">
     <div class="mb-6">
       <h1>Judge Dashboard</h1>
-      <p class="text-subtitle">Manage your scoring assignments and view your active events</p>
+      <p class="text-muted">Manage your scoring assignments and view your active events</p>
     </div>
     <EventList />
-    <!-- <EventRequestListTable /> -->
-    <!-- <EventQuickActions /> -->
   </div>
 </template>

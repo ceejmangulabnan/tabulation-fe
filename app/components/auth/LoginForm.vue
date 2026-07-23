@@ -1,5 +1,8 @@
 <template>
-  <form class="flex flex-col gap-4" @submit.prevent="login">
+  <form
+    class="flex flex-col gap-4"
+    @submit.prevent="login"
+  >
     <UInput
       v-model="user.username"
       label="Username"
@@ -27,7 +30,10 @@
       </template>
     </UInput>
 
-    <div v-if="errorMsg" class="text-sm text-error">
+    <div
+      v-if="errorMsg"
+      class="text-sm text-error"
+    >
       {{ errorMsg }}
     </div>
 
