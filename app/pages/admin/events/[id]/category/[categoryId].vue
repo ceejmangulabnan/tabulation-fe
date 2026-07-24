@@ -292,15 +292,21 @@ const handlePrint = async () => {
     showSnackbar('Cannot print without event, segment or category.', 'error')
     return
   }
+  const printWindow = window.open('', '_blank')
+  if (!printWindow) {
+    showSnackbar('Popup blocked. Please allow popups for this site.', 'warning')
+    return
+  }
   maleRankings.value = maleItems.value.filter((p) => p.rank === 1).slice(0, 3)
   femaleRankings.value = femaleItems.value.filter((p) => p.rank === 1).slice(0, 3)
   printTitle.value = `Category Ranking – ${category.value.name} (${Number(category.value.weight) * 100}%)`
   if (!maleRankings.value.length && !femaleRankings.value.length) {
+    printWindow.close()
     showSnackbar('No ranking data found.', 'info')
     return
   }
   await nextTick()
-  await printableRef.value?.generatePdf()
+  await printableRef.value?.generatePdf(printWindow)
 }
 
 const isJudgeActive = (judge: any) => {

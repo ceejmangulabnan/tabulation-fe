@@ -814,6 +814,7 @@ const fetchRankings = async () => {
   }
   try {
     const { data } = await api.get(url)
+    console.log('RANKING DATA to PRINT', data)
     const results: { male: any[]; female: any[] } = data.results
     maleRankings.value = []
     femaleRankings.value = []
@@ -841,11 +842,25 @@ const fetchRankings = async () => {
 }
 
 const confirmPrint = async () => {
+  const printWindow = window.open('', '_blank')
+  if (!printWindow) {
+    showSnackbar('Popup blocked. Please allow popups for this site.', 'warning')
+    return
+  }
   const ok = await fetchRankings()
-  if (!ok) return
+  if (!ok) {
+    printWindow.close()
+    return
+  }
   showPrintDialog.value = false
   await nextTick()
-  await printableRef.value?.generatePdf()
+  try {
+    await printableRef.value?.generatePdf(printWindow)
+  } catch (err) {
+    console.error('PDF generation failed:', err)
+    showSnackbar('Failed to generate PDF.', 'error')
+    printWindow.close()
+  }
 }
 
 watch(printType, (val) => {

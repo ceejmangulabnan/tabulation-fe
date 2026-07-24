@@ -911,14 +911,23 @@ const fetchRankings = async () => {
 }
 
 const confirmPrint = async () => {
+  const printWindow = window.open('', '_blank')
+  if (!printWindow) {
+    showSnackbar('Popup blocked. Please allow popups for this site.', 'warning')
+    return
+  }
+
   const ok = await fetchRankings()
-  if (!ok) return
+  if (!ok) {
+    printWindow.close()
+    return
+  }
 
   showPrintDialog.value = false
 
   await nextTick()
 
-  await printableRef.value?.generatePdf()
+  await printableRef.value?.generatePdf(printWindow)
 }
 
 interface SegmentRanking {
