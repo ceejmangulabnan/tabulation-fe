@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import { useNuxtApp, useCookie } from '#app'
 
 export const useThemeStore = defineStore('theme', {
   state: () => ({
@@ -9,13 +8,11 @@ export const useThemeStore = defineStore('theme', {
   actions: {
     setTheme(theme: 'light' | 'dark') {
       this.current = theme
-
-      const cookie = useCookie<'light' | 'dark'>('theme', { path: '/', maxAge: 60 * 60 * 24 * 365 })
-      cookie.value = theme
-
-      const { $vuetify } = useNuxtApp()
-      if ($vuetify?.theme?.global?.name) {
-        $vuetify.theme.change(theme)
+      if (import.meta.client) {
+        const colorMode = useNuxtApp().$colorMode
+        if (colorMode) {
+          colorMode.preference = theme
+        }
       }
     },
 
@@ -24,14 +21,12 @@ export const useThemeStore = defineStore('theme', {
     },
 
     init() {
-      const cookie = useCookie<'light' | 'dark'>('theme')
-      const preferred =
-        import.meta.client && window.matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light'
-
-      const theme = cookie.value || preferred
-      this.setTheme(theme)
+      if (import.meta.client) {
+        const colorMode = useNuxtApp().$colorMode
+        if (colorMode) {
+          this.current = colorMode.value as 'light' | 'dark'
+        }
+      }
     },
   },
 })

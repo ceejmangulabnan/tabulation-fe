@@ -1,52 +1,23 @@
 <template>
   <div>
-    <div class="d-flex justify-space-between align-center w-100 mb-4">
+    <div class="flex items-center justify-between w-full mb-4">
       <h2>Your Events</h2>
       <span>
-        {{
-          judgeEvents.length == 1 ? `${judgeEvents.length} event` : `${judgeEvents.length} events`
-        }}
+        {{ judgeEvents.length == 1 ? `${judgeEvents.length} event` : `${judgeEvents.length} events` }}
       </span>
     </div>
 
-    <v-row
-      v-if="eventsStore.isLoading"
-      no-gutters
-    >
-      <v-col
-        v-for="n in 3"
-        :key="n"
-        cols="12"
-        sm="6"
-        md="4"
-        class="d-flex"
-      >
-        <EventCardSkeleton />
-      </v-col>
-    </v-row>
+    <div v-if="eventsStore.isLoading" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <EventCardSkeleton v-for="n in 3" :key="n" />
+    </div>
 
-    <v-row
-      v-else-if="judgeEvents.length > 0"
-      no-gutters
-    >
-      <v-col
-        v-for="(event, i) in judgeEvents"
-        :key="i"
-        cols="12"
-        sm="6"
-        md="4"
-        class="d-flex"
-      >
-        <EventCard :event="event" />
-      </v-col>
-    </v-row>
+    <div v-else-if="judgeEvents.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <EventCard v-for="(event, i) in judgeEvents" :key="i" :event="event" />
+    </div>
 
-    <v-sheet
-      v-else
-      class="d-flex justify-center align-center pa-16 rounded-xl border-sm my-4"
-    >
-      <p class="text-h6">No active events</p>
-    </v-sheet>
+    <div v-else class="flex justify-center items-center p-16 rounded-xl border my-4">
+      <p class="text-lg">No active events</p>
+    </div>
   </div>
 </template>
 

@@ -1,29 +1,33 @@
 <template>
-  <v-dialog
-    :model-value="modelValue"
-    @update:model-value="closeDialog"
-    max-width="500px"
-  >
-    <v-card>
-      <v-img :src="imageUrl" />
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn color="primary" @click="closeDialog">Close</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+  <UModal :open="modelValue" @update:open="$emit('update:modelValue', $event)">
+    <template #body>
+      <div class="p-1">
+        <img
+          v-if="imageUrl"
+          :src="imageUrl"
+          alt="Preview"
+          class="w-full rounded-lg object-contain"
+        >
+      </div>
+    </template>
+    <template #footer>
+      <div class="flex justify-end">
+        <UButton
+          color="neutral"
+          label="Close"
+          @click="$emit('update:modelValue', false)"
+        />
+      </div>
+    </template>
+  </UModal>
 </template>
 
 <script setup lang="ts">
 interface Props {
-  modelValue: boolean;
-  imageUrl: string | undefined;
+  modelValue: boolean
+  imageUrl: string | undefined
 }
 
-const props = defineProps<Props>();
-const emit = defineEmits(['update:modelValue']);
-
-const closeDialog = () => {
-  emit('update:modelValue', false);
-};
+defineProps<Props>()
+defineEmits(['update:modelValue'])
 </script>

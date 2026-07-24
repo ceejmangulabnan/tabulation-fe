@@ -22,29 +22,26 @@
         <section v-if="filteredMale.length">
           <h4 class="gender">Male Participants</h4>
 
-          <table class="ranking-table">
-            <thead>
-              <tr>
-                <th>No.</th>
-                <th>Name</th>
-                <th>Department</th>
-                <th>Average Score</th>
-                <th>Rank</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="row in filteredMale"
-                :key="row.participant_number"
-              >
-                <td>{{ row.participant_number }}</td>
-                <td>{{ row.name }}</td>
-                <td>{{ row.department || '-' }}</td>
-                <td>{{ row.averaged_score }}</td>
-                <td>{{ row.rank }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="ranking-table">
+            <div class="ranking-row header-row">
+              <div class="cell col-no">No.</div>
+              <div class="cell col-name">Name</div>
+              <div class="cell col-dept">Department</div>
+              <div class="cell col-score">Average Score</div>
+              <div class="cell col-rank">Rank</div>
+            </div>
+            <div
+              class="ranking-row"
+              v-for="row in filteredMale"
+              :key="row.participant_number"
+            >
+              <div class="cell col-no">{{ row.participant_number }}</div>
+              <div class="cell col-name">{{ row.name }}</div>
+              <div class="cell col-dept">{{ row.department || '-' }}</div>
+              <div class="cell col-score">{{ row.averaged_score }}</div>
+              <div class="cell col-rank">{{ row.rank }}</div>
+            </div>
+          </div>
         </section>
 
         <div class="spacer" />
@@ -53,29 +50,26 @@
         <section v-if="filteredFemale.length">
           <h4 class="gender">Female Participants</h4>
 
-          <table class="ranking-table">
-            <thead>
-              <tr>
-                <th>No.</th>
-                <th>Name</th>
-                <th>Department</th>
-                <th>Average Score</th>
-                <th>Rank</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="row in filteredFemale"
-                :key="row.participant_number"
-              >
-                <td>{{ row.participant_number }}</td>
-                <td>{{ row.name }}</td>
-                <td>{{ row.department || '-' }}</td>
-                <td>{{ row.averaged_score }}</td>
-                <td>{{ row.rank }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="ranking-table">
+            <div class="ranking-row header-row">
+              <div class="cell col-no">No.</div>
+              <div class="cell col-name">Name</div>
+              <div class="cell col-dept">Department</div>
+              <div class="cell col-score">Average Score</div>
+              <div class="cell col-rank">Rank</div>
+            </div>
+            <div
+              class="ranking-row"
+              v-for="row in filteredFemale"
+              :key="row.participant_number"
+            >
+              <div class="cell col-no">{{ row.participant_number }}</div>
+              <div class="cell col-name">{{ row.name }}</div>
+              <div class="cell col-dept">{{ row.department || '-' }}</div>
+              <div class="cell col-score">{{ row.averaged_score }}</div>
+              <div class="cell col-rank">{{ row.rank }}</div>
+            </div>
+          </div>
         </section>
       </div>
     </section>
@@ -105,7 +99,7 @@
 
 <script setup lang="ts">
 import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
+import html2canvas from 'html2canvas-pro'
 
 const props = defineProps<{
   gender: 'male' | 'female' | 'both'
@@ -120,7 +114,7 @@ const filteredFemale = computed(() => props.female.filter(Boolean))
 
 const pdfRoot = ref<HTMLElement | null>(null)
 
-const generatePdf = async () => {
+const generatePdf = async (target?: Window) => {
   if (!pdfRoot.value) return
 
   const pages = pdfRoot.value.querySelectorAll('.page')
@@ -152,7 +146,14 @@ const generatePdf = async () => {
     pdf.addImage(imgData, 'PNG', 0, pageHeight - imgHeight, imgWidth, imgHeight)
   }
 
-  window.open(pdf.output('bloburl'), '_blank')
+  const blob = pdf.output('blob')
+  const blobUrl = URL.createObjectURL(blob)
+
+  if (target) {
+    target.location.href = blobUrl
+  } else {
+    window.open(blobUrl, '_blank')
+  }
 }
 
 defineExpose({ generatePdf })
@@ -242,20 +243,41 @@ defineExpose({ generatePdf })
 
 .ranking-table {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 11px;
-}
-
-.ranking-table th,
-.ranking-table td {
   border: 1px solid #000;
-  padding: 4px;
-  text-align: center;
+  font-size: 11px;
+  box-sizing: border-box;
 }
 
-.ranking-table th {
+.ranking-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr 1fr 60px;
+  border-bottom: 1px solid #000;
+  height: 28px;
+}
+
+.ranking-row:last-child {
+  border-bottom: none;
+}
+
+.header-row {
   background: #f0f0f0;
   font-weight: bold;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 4px;
+  border-right: 1px solid #000;
+  box-sizing: border-box;
+  height: 100%;
+  line-height: 1;
+}
+
+.cell:last-child {
+  border-right: none;
 }
 
 .spacer {

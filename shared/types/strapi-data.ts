@@ -32,6 +32,7 @@ export interface EventData extends StrapiPopulatedItem {
   name: string
   description: string | null
   event_status: 'draft' | 'active' | 'inactive' | 'finished'
+  final_scoring_mode: 'combine_all' | 'last_segment_only'
   // Relationships
   judges: JudgeData[]
   segments: SegmentData[]
@@ -133,5 +134,5 @@ export interface SegmentData extends StrapiPopulatedItem {
   eliminated_participants: ParticipantData[]
   advancement_type: 'all' | 'top_n' | 'threshold' | 'manual'
   advancement_value: number | null
-  scoring_mode: 'normalized' | 'raw_category'
+  scoring_mode: 'normalized' | 'raw_category' | 'ranking'
 }

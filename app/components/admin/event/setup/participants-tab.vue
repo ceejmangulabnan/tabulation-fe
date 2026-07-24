@@ -1,371 +1,301 @@
 <template>
   <div>
-    <v-card-title class="d-flex flex-wrap align-center justify-space-between ga-2">
-      <span class="font-weight-bold">Participants</span>
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+      <span class="font-bold text-lg">Participants</span>
 
-      <v-btn
-        v-if="smAndDown"
-        density="compact"
-        color="green"
-        icon="mdi-plus"
+      <UButton
+        class="md:hidden"
+        icon="i-lucide-plus"
+        size="xs"
         @click="showParticipantDialog()"
       />
 
-      <v-btn
-        v-else
-        prepend-icon="mdi-plus"
-        color="green"
+      <UButton
+        class="hidden md:inline-flex"
+        icon="i-lucide-plus"
+        label="Add participant"
         @click="showParticipantDialog()"
+      />
+    </div>
+
+    <div class="hidden md:block">
+      <div class="text-base font-semibold mb-2">Male Participants</div>
+      <UTable
+        :data="maleParticipants"
+        :columns="participantHeaders"
       >
-        Add participant
-      </v-btn>
-    </v-card-title>
-    <v-card-text>
-      <div v-if="!smAndDown">
-        <div class="text-h6">Male Participants</div>
-        <v-data-table
-          :headers="participantHeaders"
-          :items="maleParticipants"
-          no-data-text="No male participants yet"
-          :sort-by="[{ key: 'number', order: 'asc' }]"
-          hide-default-footer
-        >
-          <template #headers="{ columns, getSortIcon, isSorted, toggleSort }">
-            <tr>
-              <template
-                v-for="column in columns"
-                ::key="column.key"
-              >
-                <th @click="toggleSort(column)">
-                  <div class="font-weight-bold d-flex cursor-pointer">
-                    <span
-                      class="me-2 cursor-pointer"
-                      v-text="column.title"
-                    ></span>
-
-                    <v-icon
-                      v-if="isSorted(column)"
-                      :icon="getSortIcon(column)"
-                      color="medium-emphasis"
-                    ></v-icon>
-                  </div>
-                </th>
-              </template>
-            </tr>
-          </template>
-          <template #item.headshot="{ item }">
-            <v-avatar
-              v-if="item.headshot"
-              @click="showImagePreview(item.headshot.url)"
+        <template #name-cell="{ row }">
+          <div class="flex items-center gap-4">
+            <img
+              v-if="row.original.headshot"
+              :src="getStrapiUrl(row.original.headshot.formats.thumbnail.url)"
+              class="w-16 h-16 rounded-full object-cover cursor-pointer"
+              @click="showImagePreview(row.original.headshot.url)"
+            />
+            <div
+              v-else
+              class="w-16 h-16 rounded-full bg-muted flex items-center justify-center"
             >
-              <v-img :src="getStrapiUrl(item.headshot.formats.thumbnail.url)" />
-            </v-avatar>
-          </template>
-          <template #item.name="{ item }">
-            <div class="d-flex align-center py-2">
-              <div class="font-weight-bold">{{ item.name }}</div>
-              <v-chip
-                v-if="item.participant_status === 'eliminated'"
-                color="red"
-                class="ml-2"
-                size="small"
-                label
-              >
-                Eliminated
-              </v-chip>
+              <UIcon
+                name="i-lucide-user"
+                class="size-4"
+              />
             </div>
-          </template>
-          <template #item.actions="{ item }">
-            <v-icon
-              small
-              class="mr-2"
-              @click="showParticipantDialog(item as ParticipantData)"
+            <span>{{ row.original.name }}</span>
+          </div>
+        </template>
+      </UTable>
+      <div class="text-base font-semibold mt-4 mb-2">Female Participants</div>
+      <UTable
+        :data="femaleParticipants"
+        :columns="participantHeaders"
+      >
+        <template #name-cell="{ row }">
+          <div class="flex items-center gap-4">
+            <img
+              v-if="row.original.headshot"
+              :src="getStrapiUrl(row.original.headshot.formats.thumbnail.url)"
+              class="w-16 h-16 rounded-full object-cover cursor-pointer"
+              @click="showImagePreview(row.original.headshot.url)"
+            />
+            <div
+              v-else
+              class="w-16 h-16 rounded-full bg-muted flex items-center justify-center"
             >
-              mdi-pencil
-            </v-icon>
-            <v-icon
-              small
-              color="error"
-              @click="deleteParticipant(item as ParticipantData)"
-            >
-              mdi-delete
-            </v-icon>
-          </template>
-        </v-data-table>
-        <div class="text-h6 mt-4">Female Participants</div>
-        <v-data-table
-          :headers="participantHeaders"
-          :items="femaleParticipants"
-          no-data-text="No female participants yet"
-          :sort-by="[{ key: 'number', order: 'asc' }]"
-          hide-default-footer
-        >
-          <template #headers="{ columns, getSortIcon, isSorted, toggleSort }">
-            <tr>
-              <template
-                v-for="column in columns"
-                ::key="column.key"
-              >
-                <th @click="toggleSort(column)">
-                  <div class="font-weight-bold d-flex cursor-pointer">
-                    <span
-                      class="me-2 cursor-pointer"
-                      v-text="column.title"
-                    ></span>
-
-                    <v-icon
-                      v-if="isSorted(column)"
-                      :icon="getSortIcon(column)"
-                      color="medium-emphasis"
-                    ></v-icon>
-                  </div>
-                </th>
-              </template>
-            </tr>
-          </template>
-          <template #item.headshot="{ item }">
-            <v-avatar
-              v-if="item.headshot"
-              @click="showImagePreview(item.headshot.url)"
-            >
-              <v-img :src="getStrapiUrl(item.headshot.formats.thumbnail.url)" />
-            </v-avatar>
-          </template>
-          <template #item.name="{ item }">
-            <div class="d-flex align-center py-2">
-              <div class="font-weight-bold">{{ item.name }}</div>
-              <v-chip
-                v-if="item.participant_status === 'eliminated'"
-                color="red"
-                class="ml-2"
-                size="small"
-                label
-              >
-                Eliminated
-              </v-chip>
+              <UIcon
+                name="i-lucide-user"
+                class="size-4"
+              />
             </div>
-          </template>
-          <template #item.actions="{ item }">
-            <v-icon
-              small
-              class="mr-2"
-              @click="showParticipantDialog(item as ParticipantData)"
+            <span>{{ row.original.name }}</span>
+          </div>
+        </template>
+      </UTable>
+    </div>
+    <div class="md:hidden">
+      <div class="text-base font-semibold mb-2">Male Participants</div>
+      <div class="space-y-1">
+        <div
+          v-for="participant in maleParticipants"
+          :key="participant.id"
+          class="flex items-center justify-between p-2"
+        >
+          <div class="flex items-center gap-4">
+            <img
+              v-if="participant.headshot"
+              :src="getStrapiUrl(participant.headshot.formats.thumbnail.url)"
+              class="w-16 h-16 rounded-full object-cover cursor-pointer"
+              @click="showImagePreview(participant.headshot.url)"
+            />
+            <div
+              v-else
+              class="w-16 h-16 rounded-full bg-muted flex items-center justify-center"
             >
-              mdi-pencil
-            </v-icon>
-            <v-icon
-              small
+              <UIcon name="i-lucide-user" />
+            </div>
+            <div>
+              <div class="font-bold flex items-center gap-2">
+                {{ participant.name }}
+                <UBadge
+                  v-if="participant.participant_status === 'eliminated'"
+                  color="error"
+                  size="xs"
+                  label="Eliminated"
+                />
+              </div>
+              <div class="text-sm text-muted">#{{ participant.number }}</div>
+            </div>
+          </div>
+          <div class="flex gap-1">
+            <UButton
+              icon="i-lucide-pencil"
+              variant="ghost"
+              size="xs"
+              @click="showParticipantDialog(participant as ParticipantData)"
+            />
+            <UButton
+              icon="i-lucide-trash-2"
               color="error"
-              @click="deleteParticipant(item as ParticipantData)"
+              variant="ghost"
+              size="xs"
+              @click="deleteParticipant(participant as ParticipantData)"
+            />
+          </div>
+        </div>
+        <div
+          v-if="maleParticipants.length === 0"
+          class="text-center text-muted py-4"
+        >
+          No Male Participants
+        </div>
+      </div>
+
+      <div class="text-base font-semibold mt-4 mb-2">Female Participants</div>
+      <div class="space-y-1">
+        <div
+          v-for="participant in femaleParticipants"
+          :key="participant.id"
+          class="flex items-center justify-between p-2"
+        >
+          <div class="flex items-center gap-4">
+            <img
+              v-if="participant.headshot"
+              :src="getStrapiUrl(participant.headshot.formats.thumbnail.url)"
+              class="w-10 h-10 rounded-full object-cover cursor-pointer"
+              @click="showImagePreview(participant.headshot.url)"
+            />
+            <div
+              v-else
+              class="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
             >
-              mdi-delete
-            </v-icon>
-          </template>
-        </v-data-table>
-      </div>
-      <div v-else>
-        <div class="text-h6">Male Participants</div>
-        <v-list lines="two">
-          <v-list-item
-            v-for="participant in maleParticipants"
-            :key="participant.id"
-            :title="participant.name"
-            :subtitle="`#${participant.number}`"
-          >
-            <template #prepend>
-              <v-avatar
-                v-if="participant.headshot"
-                @click="showImagePreview(participant.headshot.url)"
-              >
-                <v-img :src="getStrapiUrl(participant.headshot.formats.thumbnail.url)" />
-              </v-avatar>
-              <v-avatar v-else>
-                <v-icon>mdi-account</v-icon>
-              </v-avatar>
-            </template>
-            <template #title>
-              <div class="d-flex align-center">
-                <span>{{ participant.name }}</span>
-                <v-chip
+              <UIcon name="i-lucide-user" />
+            </div>
+            <div>
+              <div class="font-bold flex items-center gap-2">
+                {{ participant.name }}
+                <UBadge
                   v-if="participant.participant_status === 'eliminated'"
-                  color="red"
-                  class="ml-2"
-                  size="small"
-                  label
-                >
-                  Eliminated
-                </v-chip>
+                  color="error"
+                  size="xs"
+                  label="Eliminated"
+                />
               </div>
-            </template>
-            <template #append>
-              <v-icon
-                class="mr-2"
-                @click="showParticipantDialog(participant as ParticipantData)"
-              >
-                mdi-pencil
-              </v-icon>
-              <v-icon
-                color="error"
-                @click="deleteParticipant(participant as ParticipantData)"
-              >
-                mdi-delete
-              </v-icon>
-            </template>
-          </v-list-item>
-          <v-list-item v-if="maleParticipants.length === 0">
-            <v-list-item-title class="text-center text-grey-darken-2">
-              No Male Participants
-            </v-list-item-title>
-          </v-list-item>
-        </v-list>
-
-        <div class="text-h6 mt-4">Female Participants</div>
-        <v-list lines="two">
-          <v-list-item
-            v-for="participant in femaleParticipants"
-            :key="participant.id"
-            :title="participant.name"
-            :subtitle="`#${participant.number}`"
-          >
-            <template #prepend>
-              <v-avatar
-                v-if="participant.headshot"
-                @click="showImagePreview(participant.headshot.url)"
-              >
-                <v-img :src="getStrapiUrl(participant.headshot.formats.thumbnail.url)" />
-              </v-avatar>
-              <v-avatar v-else>
-                <v-icon>mdi-account</v-icon>
-              </v-avatar>
-            </template>
-            <template #title>
-              <div class="d-flex align-center">
-                <span>{{ participant.name }}</span>
-                <v-chip
-                  v-if="participant.participant_status === 'eliminated'"
-                  color="red"
-                  class="ml-2"
-                  size="small"
-                  label
-                >
-                  Eliminated
-                </v-chip>
-              </div>
-            </template>
-            <template #append>
-              <v-icon
-                class="mr-2"
-                @click="showParticipantDialog(participant as ParticipantData)"
-              >
-                mdi-pencil
-              </v-icon>
-              <v-icon
-                color="error"
-                @click="deleteParticipant(participant as ParticipantData)"
-              >
-                mdi-delete
-              </v-icon>
-            </template>
-          </v-list-item>
-          <v-list-item v-if="femaleParticipants.length === 0">
-            <v-list-item-title class="text-center text-grey-darken-2">
-              No Female Participants
-            </v-list-item-title>
-          </v-list-item>
-        </v-list>
+              <div class="text-sm text-muted">#{{ participant.number }}</div>
+            </div>
+          </div>
+          <div class="flex gap-1">
+            <UButton
+              icon="i-lucide-pencil"
+              variant="ghost"
+              size="xs"
+              @click="showParticipantDialog(participant as ParticipantData)"
+            />
+            <UButton
+              icon="i-lucide-trash-2"
+              color="error"
+              variant="ghost"
+              size="xs"
+              @click="deleteParticipant(participant as ParticipantData)"
+            />
+          </div>
+        </div>
+        <div
+          v-if="femaleParticipants.length === 0"
+          class="text-center text-muted py-4"
+        >
+          No Female Participants
+        </div>
       </div>
-    </v-card-text>
+    </div>
 
-    <v-dialog
+    <ImagePreviewDialog
       v-model="imagePreviewDialog"
-      max-width="500px"
+      :image-url="imagePreviewUrl"
+    />
+
+    <UModal
+      v-model:open="participantDialog"
+      :title="editedParticipant.id ? 'Edit Participant' : 'Add Participant'"
     >
-      <v-card>
-        <v-img :src="imagePreviewUrl" />
-      </v-card>
-    </v-dialog>
-    <v-dialog
-      v-model="participantDialog"
-      max-width="500px"
-    >
-      <v-form @submit.prevent="saveParticipant">
-        <v-card>
-          <v-card-title>
-            <span class="headline">{{ editedParticipant.id ? 'Edit' : 'Add' }} Participant</span>
-          </v-card-title>
-          <v-card-text>
-            <v-img
-              v-if="headshotPreviewUrl"
-              :src="headshotPreviewUrl"
-              max-height="150"
-              class="mb-2"
-            />
-            <v-img
-              v-else-if="editedParticipant.headshot"
-              :src="getStrapiUrl(editedParticipant.headshot.url)"
-              max-height="150"
-              class="mb-2"
-              style="cursor: pointer"
-              @click="showImagePreview(editedParticipant.headshot.url)"
-            />
-            <v-file-input
-              v-model="headshotFile"
-              :label="
-                editedParticipant.headshot?.url ? 'Replace Headshot Image' : 'Upload Headshot Image'
-              "
-              accept="image/*"
-              prepend-icon="mdi-camera"
-              clearable
-            />
-            <v-text-field
-              v-model="editedParticipant.name"
-              label="Name"
-              :autofocus="true"
-              required
-            />
-            <v-text-field
-              v-model.number="editedParticipant.number"
-              label="Number"
-              type="number"
-              required
-            />
-            <v-select
-              v-model="editedParticipant.gender"
-              :items="['male', 'female']"
-              label="Gender"
-              required
-            />
-            <v-autocomplete
-              v-model="editedParticipant.department"
-              :items="departments"
-              item-title="name"
-              item-value="id"
-              label="Department"
-            />
-            <v-textarea
-              v-model="editedParticipant.notes"
-              label="Notes"
-            />
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer />
-            <v-btn
-              color="green"
-              @click="participantDialog = false"
-            >
-              Cancel
-            </v-btn>
-            <v-btn
-              color="green"
-              type="submit"
-              variant="tonal"
-            >
-              Save
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-form>
-    </v-dialog>
+      <template #body>
+        <img
+          v-if="headshotPreviewUrl"
+          :src="headshotPreviewUrl"
+          class="max-h-[150px] rounded mb-2"
+        />
+        <img
+          v-else-if="editedParticipant.headshot"
+          :src="getStrapiUrl(editedParticipant.headshot.url)"
+          class="max-h-[150px] rounded mb-2 cursor-pointer"
+          @click="showImagePreview(editedParticipant.headshot.url)"
+        />
+
+        <UForm @submit.prevent="saveParticipant">
+          <div class="space-y-4">
+            <UFormField label="Headshot Image">
+              <UInput
+                type="file"
+                accept="image/*"
+                class="w-full"
+                :label="
+                  editedParticipant.headshot?.url
+                    ? 'Replace Headshot Image'
+                    : 'Upload Headshot Image'
+                "
+                @change="
+                  (e: Event) => (headshotFile = (e.target as HTMLInputElement).files?.[0] || null)
+                "
+              />
+            </UFormField>
+            <UFormField label="Name">
+              <UInput
+                v-model="editedParticipant.name"
+                class="w-full"
+                autofocus
+                required
+              />
+            </UFormField>
+            <UFormField label="Number">
+              <UInput
+                v-model.number="editedParticipant.number"
+                class="w-full"
+                type="number"
+                required
+              />
+            </UFormField>
+            <UFormField label="Gender">
+              <USelect
+                v-model="editedParticipant.gender"
+                class="w-full"
+                :items="['male', 'female']"
+              />
+            </UFormField>
+            <UFormField label="Department">
+              <USelectMenu
+                :model-value="
+                  editedParticipant.department != null
+                    ? {
+                        label:
+                          departments.find((d: any) => d.id === editedParticipant.department)
+                            ?.name || '',
+                        value: editedParticipant.department as number,
+                      }
+                    : undefined
+                "
+                :items="departments.map((d: any) => ({ label: d.name, value: d.id }))"
+                class="w-full"
+                searchable
+                @update:model-value="
+                  (val: any) => (editedParticipant.department = val?.value ?? val)
+                "
+              />
+            </UFormField>
+            <UFormField label="Notes">
+              <UTextarea
+                v-model="editedParticipant.notes"
+                class="w-full"
+              />
+            </UFormField>
+          </div>
+        </UForm>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <UButton
+            label="Cancel"
+            color="neutral"
+            variant="ghost"
+            @click="participantDialog = false"
+          />
+          <UButton
+            label="Save"
+            color="success"
+            variant="subtle"
+            @click="saveParticipant"
+          />
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
@@ -384,8 +314,7 @@ const props = defineProps({
 
 const api = useStrapiApi()
 const eventsStore = useEventsStore()
-const snackbar = useSnackbar()
-const { smAndDown } = useDisplay()
+const { showSnackbar } = useSnackbar()
 
 const maleParticipants = computed(
   () => props.event.participants?.filter((p) => p.gender === 'male') || []
@@ -399,18 +328,13 @@ interface EditedParticipantData extends Omit<Partial<ParticipantData>, 'departme
 }
 
 const participantHeaders = [
-  {
-    title: 'Headshot',
-    key: 'headshot',
-    sortable: false,
-    class: 'font-weight-bold d-none d-sm-table-cell',
-  },
-  { title: 'Name', key: 'name', class: 'font-weight-bold' },
-  { title: 'Number', key: 'number', class: 'font-weight-bold' },
-  { title: 'Gender', key: 'gender', class: 'font-weight-bold d-none d-md-table-cell' },
-  { title: 'Department', key: 'department.name', class: 'font-weight-bold d-none d-md-table-cell' },
-  { title: 'Actions', key: 'actions', sortable: false, class: 'font-weight-bold' },
+  { accessorKey: 'name', header: 'Name' },
+  { accessorKey: 'number', header: 'Number' },
+  { accessorKey: 'gender', header: 'Gender' },
+  { accessorKey: 'department.name', header: 'Department' },
+  { accessorKey: 'actions', header: '' },
 ]
+
 const participantDialog = ref(false)
 const editedParticipant = ref<EditedParticipantData>({
   name: '',
@@ -486,8 +410,6 @@ const saveParticipant = async () => {
       event: props.event.id,
     }
 
-    // If it's an existing participant and no new headshot is uploaded and not explicitly cleared,
-    // retain the existing headshot ID.
     if (
       editedParticipant.value.documentId &&
       editedParticipant.value.headshot &&
@@ -498,14 +420,14 @@ const saveParticipant = async () => {
     }
 
     if (!participantData.name || !participantData.number || !participantData.gender) {
-      snackbar.showSnackbar('Name, number, and gender are required.', 'error')
+      showSnackbar('Name, number, and gender are required.', 'error')
       return
     }
 
     if (headshotFile.value) {
       const file: File = headshotFile.value
       if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-        snackbar.showSnackbar('Only JPEG, JPG, PNG, and WebP images are accepted.', 'error')
+        showSnackbar('Only JPEG, JPG, PNG, and WebP images are accepted.', 'error')
         return
       }
       const formData = new FormData()
@@ -522,10 +444,10 @@ const saveParticipant = async () => {
       await api.put(`/participants/${editedParticipant.value.documentId}`, {
         data: participantData,
       })
-      snackbar.showSnackbar('Participant updated successfully', 'success')
+      showSnackbar('Participant updated successfully', 'success')
     } else {
       await api.post('/participants/create', { data: participantData })
-      snackbar.showSnackbar('Participant created successfully', 'success')
+      showSnackbar('Participant created successfully', 'success')
     }
 
     await eventsStore.fetchEvent(props.event.id?.toString() || '')
@@ -544,12 +466,12 @@ const saveParticipant = async () => {
     const err = error as AxiosError<any>
 
     if (err.response?.status === 409) {
-      snackbar.showSnackbar(
+      showSnackbar(
         'An existing participant already has this number. Please input a different participant number.',
         'error'
       )
     } else {
-      snackbar.showSnackbar('Error saving participant', 'error')
+      showSnackbar('Error saving participant', 'error')
     }
 
     console.error('Error saving participant:', err)
@@ -563,9 +485,9 @@ const deleteParticipant = async (item: ParticipantData) => {
   try {
     await api.delete(`/participants/${item.documentId}`)
     await eventsStore.fetchEvent(props.event.id?.toString() || '')
-    snackbar.showSnackbar('Participant deleted successfully', 'success')
+    showSnackbar('Participant deleted successfully', 'success')
   } catch (error) {
-    snackbar.showSnackbar('Failed to delete participant', 'error')
+    showSnackbar('Failed to delete participant', 'error')
     console.error('Error deleting participant:', error)
   }
 }

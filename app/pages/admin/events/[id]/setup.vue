@@ -1,211 +1,130 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col cols="12">
-        <div class="d-flex justify-space-between align-top mb-4 flex-wrap ga-2">
-          <header
-            class="d-flex ml-n1 justify-space-between w-100 ga-sm-3 align-center ga-1 flex-shrink-1"
-          >
-            <v-chip
-              :color="statusColor"
-              size="large"
-              class="font-weight-bold flex-shrink-0"
-            >
-              {{ displayEvent?.event_status.toUpperCase() }}
-            </v-chip>
-            <div
-              v-if="!smAndDown"
-              class="d-flex flex-wrap ga-2 flex-shrink-0"
-            >
-              <v-btn
-                :loading="eventsStore.isLoading"
-                icon
-                color="primary"
-                variant="text"
-                @click="eventsStore.fetchEvent(eventId)"
-              >
-                <v-icon size="28">mdi-refresh</v-icon>
-                <v-tooltip
-                  activator="parent"
-                  location="bottom"
-                >
-                  Refresh Data
-                </v-tooltip>
-              </v-btn>
-              <v-btn
-                :to="`/admin/events/${eventId}/manage`"
-                icon
-                color="blue"
-                variant="text"
-              >
-                <v-icon size="28">mdi-cog</v-icon>
-                <v-tooltip
-                  activator="parent"
-                  location="bottom"
-                >
-                  Manage Event
-                </v-tooltip>
-              </v-btn>
-
-              <v-btn
-                :to="`/admin/events/${eventId}/setup`"
-                icon
-                color="green"
-                variant="text"
-              >
-                <v-icon size="28">mdi-pencil</v-icon>
-                <v-tooltip
-                  activator="parent"
-                  location="bottom"
-                >
-                  Setup Event
-                </v-tooltip>
-              </v-btn>
-
-              <v-btn
-                icon
-                color="red"
-                variant="text"
-                @click="deleteEvent"
-              >
-                <v-icon size="28">mdi-delete</v-icon>
-                <v-tooltip
-                  activator="parent"
-                  location="bottom"
-                >
-                  Delete Event
-                </v-tooltip>
-              </v-btn>
-            </div>
-            <div v-else>
-              <v-menu>
-                <template #activator="{ props }">
-                  <v-btn
-                    icon
-                    v-bind="props"
-                  >
-                    <v-icon>mdi-dots-vertical</v-icon>
-                  </v-btn>
-                </template>
-                <v-list>
-                  <v-list-item
-                    :loading="eventsStore.isLoading"
-                    @click="eventsStore.fetchEvent(eventId)"
-                  >
-                    <template #prepend>
-                      <v-icon color="primary">mdi-refresh</v-icon>
-                    </template>
-                    <v-list-item-title>Refresh Data</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item :to="`/admin/events/${eventId}/manage`">
-                    <template #prepend>
-                      <v-icon color="blue">mdi-cog</v-icon>
-                    </template>
-                    <v-list-item-title>Manage Event</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item :to="`/admin/events/${eventId}/setup`">
-                    <template #prepend>
-                      <v-icon color="green">mdi-pencil</v-icon>
-                    </template>
-                    <v-list-item-title>Setup Event</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item @click="deleteEvent">
-                    <template #prepend>
-                      <v-icon color="red">mdi-delete</v-icon>
-                    </template>
-                    <v-list-item-title>Delete Event</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-            </div>
-          </header>
-
-          <NuxtLink
-            :to="`/admin/events/${eventId}`"
-            class="text-decoration-none text-high-emphasis hover-underline"
-          >
-            <div class="d-flex flex-column ga-1">
-              <h1 class="text-sm-h4 text-h5 mb-2 mb-sm-0 font-weight-bold">
-                {{ event?.name }}
-              </h1>
-              <p class="text-sm-body-1 text-subtitle-2">
-                {{ event?.description || 'No description provided.' }}
-              </p>
-            </div>
-          </NuxtLink>
-        </div>
-      </v-col>
-    </v-row>
-
-    <v-card>
-      <v-tabs
-        v-model="tab"
-        show-arrows
-        color="green"
-        @update:model-value="onTabChange"
-      >
-        <v-tab value="one">Event Info</v-tab>
-        <v-tab value="two">Scoring Segments</v-tab>
-        <v-tab value="three">Judges</v-tab>
-        <v-tab value="four">Participants</v-tab>
-      </v-tabs>
-
-      <v-card-text>
-        <v-window v-model="tab">
-          <v-window-item value="one">
-            <AdminEventSetupInfoTab :event="event" />
-          </v-window-item>
-
-          <v-window-item value="two">
-            <AdminEventSetupSegmentsTab :event="event" />
-          </v-window-item>
-
-          <v-window-item value="three">
-            <AdminEventSetupJudgesTab
-              :event="event"
-              :availableJudges="availableJudges"
-              :judgeRoleId="judgeRoleId!"
-              @judges-updated="fetchAvailableJudges"
-            />
-          </v-window-item>
-
-          <v-window-item value="four">
-            <AdminEventSetupParticipantsTab
-              :event="event"
-              :departments="departments"
-            />
-          </v-window-item>
-        </v-window>
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn
-          color="green"
-          :disabled="!canActivate"
-          variant="flat"
-          class="ma-3"
-          @click="activateEvent"
+  <div class="mx-auto max-w-7xl px-4 py-6">
+    <div class="flex justify-between items-start mb-4 flex-wrap gap-2">
+      <header class="flex items-center gap-3 w-full justify-between">
+        <UBadge
+          :color="statusColor"
+          size="lg"
+          class="font-bold flex-shrink-0 capitalize"
         >
-          Activate Event
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-container>
+          {{ displayEvent?.event_status.toUpperCase() }}
+        </UBadge>
+
+        <div class="hidden md:flex flex-wrap gap-2 flex-shrink-0">
+          <UTooltip text="Refresh Data">
+            <UButton
+              icon="i-lucide-refresh-cw"
+              :loading="eventsStore.isLoading"
+              variant="ghost"
+              @click="eventsStore.fetchEvent(eventId)"
+            />
+          </UTooltip>
+          <UTooltip text="Manage Event">
+            <UButton
+              icon="i-lucide-settings"
+              variant="ghost"
+              :to="`/admin/events/${eventId}/manage`"
+            />
+          </UTooltip>
+          <UTooltip text="Setup Event">
+            <UButton
+              icon="i-lucide-pencil"
+              variant="ghost"
+              :to="`/admin/events/${eventId}/setup`"
+            />
+          </UTooltip>
+          <UTooltip text="Delete Event">
+            <UButton
+              icon="i-lucide-trash-2"
+              color="error"
+              variant="ghost"
+              @click="deleteEvent"
+            />
+          </UTooltip>
+        </div>
+
+        <div class="md:hidden">
+          <UDropdownMenu :items="mobileMenuItems">
+            <UButton icon="i-lucide-ellipsis-vertical" variant="ghost" />
+          </UDropdownMenu>
+        </div>
+      </header>
+
+      <NuxtLink
+        :to="`/admin/events/${eventId}`"
+        class="text-decoration-none hover:underline"
+      >
+        <div class="flex flex-col gap-1">
+          <h1 class="text-xl sm:text-2xl font-bold">
+            {{ event?.name }}
+          </h1>
+          <p class="text-sm sm:text-base text-muted">
+            {{ event?.description || 'No description provided.' }}
+          </p>
+        </div>
+      </NuxtLink>
+    </div>
+
+    <UCard>
+      <UTabs
+        v-model="tab"
+        :items="tabItems"
+        @update:model-value="onTabChange"
+      />
+
+      <div class="mt-4">
+        <AdminEventSetupInfoTab v-if="tab === 'one'" :event="event" />
+        <AdminEventSetupSegmentsTab v-else-if="tab === 'two'" :event="event" />
+        <AdminEventSetupJudgesTab
+          v-else-if="tab === 'three'"
+          :event="event"
+          :availableJudges="availableJudges"
+          :judgeRoleId="judgeRoleId!"
+          @judges-updated="fetchAvailableJudges"
+        />
+        <AdminEventSetupParticipantsTab
+          v-else-if="tab === 'four'"
+          :event="event"
+          :departments="departments"
+        />
+      </div>
+
+      <div class="flex justify-end mt-4">
+        <UButton
+          label="Activate Event"
+          :disabled="!canActivate"
+          class="m-3"
+          @click="activateEvent"
+        />
+      </div>
+    </UCard>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { useDisplay } from 'vuetify'
-
-const { smAndDown } = useDisplay()
-// --- State ---
 const tab = ref('one')
 const route = useRoute()
 const eventsStore = useEventsStore()
-const snackbar = useSnackbar()
+const { showSnackbar } = useSnackbar()
 const dataLoaded = ref(false)
 const displayEvent = computed<EventData>(() => eventsStore.event as EventData)
 const api = useStrapiApi()
 const router = useRouter()
+const tabItems = [
+  { label: 'Event Info', value: 'one' },
+  { label: 'Scoring Segments', value: 'two' },
+  { label: 'Judges', value: 'three' },
+  { label: 'Participants', value: 'four' },
+]
+
+const mobileMenuItems = [
+  [
+    { label: 'Refresh Data', icon: 'i-lucide-refresh-cw', onSelect: () => { eventsStore.fetchEvent(eventId) } },
+    { label: 'Manage Event', icon: 'i-lucide-settings', onSelect: () => { navigateTo(`/admin/events/${eventId}/manage`) } },
+    { label: 'Setup Event', icon: 'i-lucide-pencil', onSelect: () => { navigateTo(`/admin/events/${eventId}/setup`) } },
+    { label: 'Delete Event', icon: 'i-lucide-trash-2', color: 'error' as const, onSelect: () => { deleteEvent() } },
+  ]
+]
 
 const event = computed<Partial<EventData>>(() =>
   eventsStore.event
@@ -223,6 +142,7 @@ const event = computed<Partial<EventData>>(() =>
         name: '',
         description: '',
         event_status: 'draft',
+        final_scoring_mode: 'combine_all',
         segments: [],
         judges: [],
         participants: [],
@@ -231,16 +151,16 @@ const event = computed<Partial<EventData>>(() =>
 
 const deleteEvent = async () => {
   if (!event.value?.documentId) {
-    snackbar.showSnackbar('Cannot delete event without a documentId.', 'error')
+    showSnackbar('Cannot delete event without a documentId.', 'error')
     return
   }
   if (confirm('Are you sure you want to delete this event? This cannot be undone.')) {
     try {
       await api.delete(`/events/${event.value.documentId}`)
-      snackbar.showSnackbar('Event deleted successfully.', 'success')
+      showSnackbar('Event deleted successfully.', 'success')
       router.push('/admin/events')
     } catch (e) {
-      snackbar.showSnackbar('Failed to delete event.', 'error')
+      showSnackbar('Failed to delete event.', 'error')
       console.error(e)
     }
   }
@@ -248,16 +168,11 @@ const deleteEvent = async () => {
 
 const statusColor = computed(() => {
   switch (event.value?.event_status) {
-    case 'draft':
-      return 'grey'
-    case 'active':
-      return 'green'
-    case 'inactive':
-      return 'orange'
-    case 'finished':
-      return 'blue'
-    default:
-      return 'grey'
+    case 'draft': return 'neutral'
+    case 'active': return 'success'
+    case 'inactive': return 'warning'
+    case 'finished': return 'info'
+    default: return 'neutral'
   }
 })
 const availableJudges = ref<JudgeData[]>([])
@@ -310,8 +225,9 @@ const fetchDepartments = async () => {
   }
 }
 
-const onTabChange = (value: string) => {
-  if ((value === 'two' || value === 'three' || value === 'four') && !dataLoaded.value) {
+const onTabChange = (value: string | number) => {
+  const strValue = String(value)
+  if ((strValue === 'two' || strValue === 'three' || strValue === 'four') && !dataLoaded.value) {
     eventsStore.fetchEvent(eventId)
   }
 }
@@ -337,10 +253,9 @@ const totalSegmentWeight = computed(() =>
   (event.value.segments || []).reduce((sum: number, s: SegmentData) => sum + s.weight * 100, 0)
 )
 
-// Helper function to validate categories within a segment based on scoring mode
 const validateSegmentCategoriesForActivation = (segment: SegmentData): boolean => {
   if (!segment.categories || segment.categories.length === 0) {
-    return false // A segment must have categories to be valid for activation
+    return false
   }
 
   const totalCategoryWeight = segment.categories.reduce((sum, c) => sum + (c.weight || 0) * 100, 0)
@@ -349,26 +264,27 @@ const validateSegmentCategoriesForActivation = (segment: SegmentData): boolean =
     return Math.round(totalCategoryWeight) === 100
   } else if (segment.scoring_mode === 'raw_category') {
     return Math.round(totalCategoryWeight) === Math.round((segment.weight || 0) * 100)
+  } else if (segment.scoring_mode === 'ranking') {
+    return true
   }
-  return false // Unknown scoring modes are considered invalid for activation
+  return false
 }
 
-// --- Activation ---
 const canActivate = computed(() => {
   const segments = event.value.segments || []
 
-  // 1. Check if there are any segments
   if (segments.length === 0) {
     return false
   }
 
-  // 2. Validate total segment weight
-  const segmentsValid = Math.round(totalSegmentWeight.value) === 100
-  if (!segmentsValid) {
-    return false
+  const finalScoringMode = event.value.final_scoring_mode || 'combine_all'
+  if (finalScoringMode === 'combine_all') {
+    const segmentsValid = Math.round(totalSegmentWeight.value) === 100
+    if (!segmentsValid) {
+      return false
+    }
   }
 
-  // 3. Validate categories within each segment using the new helper
   const allCategoriesValid = segments.every((s: SegmentData) => {
     return validateSegmentCategoriesForActivation(s)
   })
@@ -377,7 +293,6 @@ const canActivate = computed(() => {
     return false
   }
 
-  // 4. Ensure event is not already active
   return event.value.event_status !== 'active'
 })
 
@@ -394,25 +309,12 @@ const activateEvent = async () => {
     }
 
     if (res.status === 200) {
-      snackbar.showSnackbar(`${event.value.name} is now active`, 'success')
+      showSnackbar(`${event.value.name} is now active`, 'success')
     }
     await eventsStore.fetchEvent(eventId)
   } catch (error) {
-    snackbar.showSnackbar(`Failed to activate ${event.value.name}`, 'error')
+    showSnackbar(`Failed to activate ${event.value.name}`, 'error')
     console.error('Error activating event:', error)
   }
 }
 </script>
-
-<style scoped>
-.rotate-180 {
-  transform: rotate(180deg);
-  transition: transform 0.2s ease-in-out;
-}
-.hover-underline {
-  text-decoration: none;
-  &:hover {
-    text-decoration: underline;
-  }
-}
-</style>

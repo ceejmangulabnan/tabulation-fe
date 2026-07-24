@@ -1,9 +1,9 @@
 <template>
-  <v-card class="w-100 ma-2 py-2 px-4 rounded-xl">
-    <v-skeleton-loader type="heading, list-item-two-line" />
-    <v-skeleton-loader
-      type="button"
-      class="w-[200px]"
-    />
-  </v-card>
+  <UCard>
+    <div class="space-y-3">
+      <USkeleton class="h-6 w-3/4" />
+      <USkeleton class="h-4 w-full" />
+      <USkeleton class="h-4 w-2/3" />
+    </div>
+  </UCard>
 </template>

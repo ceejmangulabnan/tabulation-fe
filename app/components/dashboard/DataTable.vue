@@ -1,72 +1,54 @@
 <template>
   <div>
-    <v-data-table
-      :headers="tableHeaders"
-      :items="participants"
+    <UTable
+      :data="participants"
+      :columns="tableHeaders"
     >
-      <template #[`item.headshot.url`]="{ value }">
-        <div @click="openDialog(value)">
-          <v-img
-            :src="`${baseApiUrl}${value}`"
+      <template #headshot-cell="{ row }">
+        <div class="cursor-pointer" @click="openDialog(row.original.headshot?.url)">
+          <img
+            v-if="row.original.headshot"
+            :src="`${baseApiUrl}${row.original.headshot.url}`"
             alt="Headshot"
-            :aspect-ratio="0.8"
-            :tile="true"
-            width="100px"
-          ></v-img>
+            class="w-[100px] object-cover rounded"
+          />
         </div>
       </template>
-      <template #[`item.name`]="{ item }">
-        <div class="d-flex align-center py-2">
-          <v-avatar
-            v-if="item.headshot"
-            :src="`${baseApiUrl}${item.headshot.url}`"
-            class="mr-3"
-            size="40"
-            @click="openDialog(item.headshot.url)"
+      <template #name-cell="{ row }">
+        <div class="flex items-center gap-3 py-2">
+          <img
+            v-if="row.original.headshot"
+            :src="`${baseApiUrl}${row.original.headshot.url}`"
+            class="w-10 h-10 rounded-full object-cover cursor-pointer"
+            @click="openDialog(row.original.headshot.url)"
           />
-          <v-avatar
-            v-else
-            icon="mdi-account"
-            class="mr-3"
-            size="40"
+          <div v-else class="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+            <UIcon name="i-lucide-user" />
+          </div>
+          <div class="font-bold">{{ row.original.name }}</div>
+          <UBadge
+            v-if="row.original.participant_status === 'eliminated'"
+            color="error"
+            size="xs"
+            label="Eliminated"
           />
-          <div class="font-weight-bold">{{ item.name }}</div>
-          <v-chip
-            v-if="item.participant_status === 'eliminated'"
-            color="red"
-            class="ml-2"
-            size="small"
-            label
-          >
-            Eliminated
-          </v-chip>
         </div>
       </template>
-    </v-data-table>
+    </UTable>
 
-    <v-dialog
-      v-model="dialog"
-      max-width="600"
-    >
-      <template #default="{ isActive }">
-        <v-card>
-          <v-img
-            :src="currentImgUrl"
-            contain
-            max-height="80vh"
-          ></v-img>
-
-          <v-card-actions class="justify-end">
-            <v-btn
-              color="primary"
-              variant="text"
-              text="Close Dialog"
-              @click="isActive.value = false"
-            ></v-btn>
-          </v-card-actions>
-        </v-card>
+    <UModal v-model:open="dialog">
+      <template #body>
+        <img
+          :src="currentImgUrl"
+          class="max-h-[80vh] w-full object-contain"
+        />
       </template>
-    </v-dialog>
+      <template #footer>
+        <div class="flex justify-end">
+          <UButton label="Close" color="neutral" variant="ghost" @click="dialog = false" />
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
@@ -85,30 +67,14 @@ function openDialog(url: string) {
 try {
   const api = useStrapiApi()
   const response = await api.get<FullParticipantsResponse>('/participants?populate=*')
-
   participants.value = response.data.data
-
-  console.log('participants', participants.value)
 } catch (error) {
   console.error('Failed to fetch populated participants:', error)
 }
 
 const tableHeaders = [
-  {
-    title: 'Name',
-    key: 'name',
-  },
-  {
-    title: 'Department',
-    key: 'department.name',
-  },
-  {
-    title: 'Headshot',
-    key: `headshot.url`,
-  },
+  { accessorKey: 'name', header: 'Name' },
+  { accessorKey: 'department.name', header: 'Department' },
+  { accessorKey: 'headshot.url', header: 'Headshot' },
 ]
 </script>
-
-<styles scoped>
-
-</styles>

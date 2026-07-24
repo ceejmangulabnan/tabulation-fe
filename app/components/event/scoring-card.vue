@@ -1,269 +1,149 @@
 <template>
-  <v-card flat>
-    <v-card-text>
-      <v-tabs
-        v-model="activeGenderTab"
-        background-color="secondary"
-        color="green"
-        show-arrows
-        dark
-      >
-        <v-tab
-          v-for="gender in genders"
-          :key="gender.key"
-          :value="gender.key"
-        >
-          {{ gender.label }}
-        </v-tab>
-      </v-tabs>
+  <UCard>
+    <UTabs v-model="activeGenderTab" :items="genderTabs" class="mb-4" />
 
-      <v-window v-model="activeGenderTab">
-        <v-window-item
-          v-for="gender in genders"
-          :key="gender.key"
-          :value="gender.key"
-        >
-          <v-form @submit.prevent="submitScores(segment)">
-            <v-data-table
-              v-if="!smAndDown"
-              :headers="getTableHeaders(segment)"
-              :items="getParticipantsByGender(gender.key, segment)"
-              item-value="id"
-              class="elevation-1 text-body-1"
-              :loading="isLoading"
-              :readonly="
-                segment.segment_status === 'inactive' || segment.segment_status === 'closed'
-              "
-            >
-              <template #item.name="{ item }">
-                <div class="d-flex align-center py-2">
-                  <v-avatar
-                    v-if="item.headshot?.formats?.thumbnail?.url"
-                    :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
-                    icon="mdi-account"
-                    class="mr-3"
-                    size="80"
-                    @click="showImagePreview(item.headshot.url)"
-                  />
-                  <v-avatar
-                    v-else
-                    icon="mdi-account"
-                    class="mr-3"
-                    size="40"
-                  />
-                  <v-chip
-                    v-if="
-                      item.participant_status === 'eliminated' &&
-                      item.eliminated_at_segment?.documentId === segment.documentId
-                    "
-                    color="red"
-                    class="mr-2"
-                    size="small"
-                    label
-                  >
-                    E
-                  </v-chip>
-                  <div class="font-weight-bold">{{ item.name }}</div>
-                </div>
-              </template>
-
-              <template #item.department="{ item }">
-                {{ item.department?.name || 'N/A' }}
-              </template>
-
-              <template
-                v-for="category in getActiveCategories(segment)"
-                :key="category.documentId"
-                #[`item.category_${category.documentId}`]="{ item }"
-              >
-                <div class="my-2">
-                  <span v-if="props.readonly">
-                    {{ item.scores[category.documentId] ?? '-' }}
-                  </span>
-                  <v-text-field
-                    v-else
-                    v-model.number="item.scores[category.documentId]"
-                    class="flex-shrink-0 score-input"
-                    type="number"
-                    variant="outlined"
-                    density="compact"
-                    :rules="getScoreRules(category.weight * 100)"
-                    validate-on="input"
-                    min="0"
-                    :max="category.weight * 100"
-                    step="1"
-                    maxlength="4"
-                    style="max-width: 80px"
-                    :readonly="
-                      category.locked ||
-                      segment.segment_status === 'closed' ||
-                      segment.segment_status === 'inactive' ||
-                      item.participant_status === 'eliminated'
-                    "
-                    @keydown="blockInvalidKeys"
-                  />
-                </div>
-              </template>
-
-              <template
-                #item.total_score="{ item }"
-                v-if="isAdmin"
-              >
-                <div class="font-weight-bold">
-                  {{ calculateTotalScore(item, segment) }}
-                </div>
-              </template>
-
-              <template #no-data>
-                <div class="pa-4 text-center">No participants found for this gender.</div>
-              </template>
-
-              <template
-                v-for="category in getActiveCategories(segment)"
-                :key="category.documentId"
-                #[`header.category_${category.documentId}`]="{ column }"
-              >
-                <div class="d-flex ga-2 align-start">
-                  <v-icon
-                    v-if="category.locked"
-                    size="small"
-                  >
-                    mdi-lock
-                  </v-icon>
-                  {{ column.title }}
-                </div>
-              </template>
-            </v-data-table>
-
-            <!-- Mobile View -->
-            <v-list
-              v-else
-              lines="three"
-            >
-              <v-list-item
-                v-for="item in getParticipantsByGender(gender.key, segment)"
-                :key="item.id"
-                class="pa-0"
-              >
-                <v-card>
-                  <v-card-title class="d-flex align-start flex-wrap">
-                    <div class="d-flex align-center">
-                      <v-avatar
+    <div v-for="gender in genders" :key="gender.key">
+      <div v-if="activeGenderTab === gender.key">
+        <form @submit.prevent="submitScores(segment)">
+          <!-- Desktop View -->
+          <div class="hidden md:block overflow-x-auto">
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="border-b">
+                  <th v-for="header in getTableHeaders(segment)" :key="header.value" class="text-left p-2 font-bold text-sm whitespace-nowrap">
+                    <div class="flex items-center gap-1">
+                      <UIcon v-if="getCategoryByHeader(header)?.locked" name="i-lucide-lock" class="size-3" />
+                      {{ header.title }}
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, idx) in getParticipantsByGender(gender.key, segment)" :key="item.id" class="border-b hover:bg-muted/50">
+                  <td class="p-2">{{ idx + 1 }}</td>
+                  <td class="p-2">
+                    <div class="flex items-center gap-2">
+                      <img
                         v-if="item.headshot?.formats?.thumbnail?.url"
-                        :image="getStrapiUrl(item.headshot.formats.thumbnail.url)"
-                        icon="mdi-account"
-                        class="mr-3"
-                        size="40"
+                        :src="getStrapiUrl(item.headshot.formats.thumbnail.url)"
+                        class="w-10 h-10 rounded-full object-cover cursor-pointer"
                         @click="showImagePreview(item.headshot.url)"
                       />
-                      <v-avatar
-                        v-else
-                        icon="mdi-account"
-                        class="mr-3"
-                        size="40"
-                      />
-                      <div>
-                        <div class="font-weight-bold text-wrap text-subtitle-1">
-                          {{ item.name }}
-                        </div>
-                        <div class="text-caption">
-                          {{ item.department?.name || 'N/A' }}
-                        </div>
+                      <div v-else class="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                        <UIcon name="i-lucide-user" />
                       </div>
+                      <UBadge
+                        v-if="item.participant_status === 'eliminated' && item.eliminated_at_segment?.documentId === segment.documentId"
+                        color="error"
+                        size="xs"
+                      >
+                        E
+                      </UBadge>
+                      <span class="font-bold">{{ item.name }}</span>
                     </div>
-                    <v-chip
-                      v-if="
-                        item.participant_status === 'eliminated' &&
-                        item.eliminated_at_segment?.documentId === segment.documentId
-                      "
-                      color="red"
-                      class="mt-1 ml-4"
-                      label
+                  </td>
+                  <td class="p-2">{{ item.department?.name || 'N/A' }}</td>
+                  <td v-for="category in getActiveCategories(segment)" :key="category.documentId" class="p-2">
+                    <div v-if="props.readonly" class="font-medium">
+                      {{ item.scores[category.documentId] ?? '-' }}
+                    </div>
+                    <UInput
+                      v-else
+                      :model-value="item.scores[category.documentId] as number"
+                      @update:model-value="(val: any) => item.scores[category.documentId] = val === '' || val === null ? null : Number(val)"
+                      type="number"
+                      :min="isRankingMode ? 1 : 0"
+                      :max="isRankingMode ? activeParticipantCount : category.weight * 100"
+                      step="1"
+                      class="w-20"
+                      :disabled="category.locked || segment.segment_status === 'closed' || segment.segment_status === 'inactive' || item.participant_status === 'eliminated'"
+                      @keydown="blockInvalidKeys"
+                    />
+                  </td>
+                  <td v-if="isAdmin" class="p-2 font-bold">{{ calculateTotalScore(item, segment) }}</td>
+                </tr>
+                <tr v-if="getParticipantsByGender(gender.key, segment).length === 0">
+                  <td :colspan="getTableHeaders(segment).length" class="p-4 text-center text-muted">
+                    No participants found for this gender.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile View -->
+          <div class="md:hidden space-y-3">
+            <UCard
+              v-for="item in getParticipantsByGender(gender.key, segment)"
+              :key="item.id"
+            >
+              <div class="flex items-center gap-3 mb-3">
+                <img
+                  v-if="item.headshot?.formats?.thumbnail?.url"
+                  :src="getStrapiUrl(item.headshot.formats.thumbnail.url)"
+                  class="w-10 h-10 rounded-full object-cover cursor-pointer"
+                  @click="showImagePreview(item.headshot.url)"
+                />
+                <div v-else class="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                  <UIcon name="i-lucide-user" />
+                </div>
+                <div class="flex-1">
+                  <div class="font-bold flex items-center gap-2">
+                    {{ item.name }}
+                    <UBadge
+                      v-if="item.participant_status === 'eliminated' && item.eliminated_at_segment?.documentId === segment.documentId"
+                      color="error"
+                      size="xs"
                     >
                       E
-                    </v-chip>
-                  </v-card-title>
-                  <v-card-text>
-                    <div
-                      v-for="category in getActiveCategories(segment)"
-                      :key="category.documentId"
-                      align="center"
-                      class="d-flex justify-space-between my-2 align-center ga-3 flex-wrap"
-                    >
-                      <div class="text-subtitle-1">
-                        <v-icon
-                          v-if="category.locked"
-                          size="small"
-                          class="mr-1"
-                        >
-                          mdi-lock
-                        </v-icon>
-                        {{ category.name }} ({{ (category.weight * 100).toFixed(0) }}%)
-                      </div>
-                      <div v-if="props.readonly">
-                        <span class="ml-auto font-weight-bold text-subtitle-1">
-                          {{ item.scores[category.documentId] ?? '-' }}
-                        </span>
-                      </div>
-                      <div v-else>
-                        <v-text-field
-                          align="end"
-                          class="ml-auto flex-shrink-0 score-input"
-                          v-model.number="item.scores[category.documentId]"
-                          type="number"
-                          variant="outlined"
-                          density="compact"
-                          :rules="getScoreRules(category.weight * 100)"
-                          validate-on="input"
-                          min="0"
-                          :max="category.weight * 100"
-                          step="1"
-                          maxlength="4"
-                          style="max-width: 80px"
-                          :readonly="
-                            category.locked ||
-                            segment.segment_status === 'closed' ||
-                            segment.segment_status === 'inactive' ||
-                            item.participant_status === 'eliminated'
-                          "
-                        />
-                      </div>
-                    </div>
-                  </v-card-text>
-                  <v-card-actions>
-                    <v-spacer />
-                    <span class="font-weight-bold text-sm-subtitle-1 text-body-1">
-                      Segment Score: {{ calculateTotalScore(item, segment) }} / 100
-                    </span>
-                  </v-card-actions>
-                </v-card>
-              </v-list-item>
-            </v-list>
+                    </UBadge>
+                  </div>
+                  <div class="text-sm text-muted">{{ item.department?.name || 'N/A' }}</div>
+                </div>
+              </div>
 
-            <v-card-actions v-if="!props.readonly">
-              <v-spacer />
-              <v-btn
-                variant="text"
-                @click="$emit('cancel-scoring')"
-              >
-                Cancel
-              </v-btn>
-              <v-btn
-                v-if="segment.segment_status !== 'closed'"
-                type="submit"
-                color="green"
-                variant="flat"
-                class="text-wrap"
-                :loading="isLoading"
-              >
-                Submit Scores for {{ segment.name }}
-              </v-btn>
-            </v-card-actions>
-          </v-form>
-        </v-window-item>
-      </v-window>
-    </v-card-text>
-  </v-card>
+              <div v-for="category in getActiveCategories(segment)" :key="category.documentId" class="flex items-center justify-between py-2 border-t">
+                <div class="text-sm">
+                  <UIcon v-if="category.locked" name="i-lucide-lock" class="size-3 mr-1" />
+                  {{ category.name }}
+                  <template v-if="!isRankingMode">({{ (category.weight * 100).toFixed(0) }}%)</template>
+                </div>
+                <div v-if="props.readonly" class="font-bold">{{ item.scores[category.documentId] ?? '-' }}</div>
+                <UInput
+                  v-else
+                  :model-value="item.scores[category.documentId] as number"
+                  @update:model-value="(val: any) => item.scores[category.documentId] = val === '' || val === null ? null : Number(val)"
+                  type="number"
+                  :min="isRankingMode ? 1 : 0"
+                  :max="isRankingMode ? activeParticipantCount : category.weight * 100"
+                  step="1"
+                  class="w-20"
+                  :disabled="category.locked || segment.segment_status === 'closed' || segment.segment_status === 'inactive' || item.participant_status === 'eliminated'"
+                />
+              </div>
+
+              <div class="flex justify-end pt-2 border-t">
+                <span class="font-bold text-sm">
+                  {{ isRankingMode ? 'Avg Rank' : 'Segment Score' }}:
+                  {{ calculateTotalScore(item, segment) }}{{ isRankingMode ? '' : ' / 100' }}
+                </span>
+              </div>
+            </UCard>
+          </div>
+
+          <div v-if="!props.readonly" class="flex justify-end gap-2 mt-4">
+            <UButton label="Cancel" color="neutral" variant="ghost" @click="$emit('cancel-scoring')" />
+            <UButton
+              v-if="segment.segment_status !== 'closed'"
+              label="Submit Scores"
+              type="submit"
+              :loading="isLoading"
+            />
+          </div>
+        </form>
+      </div>
+    </div>
+  </UCard>
 
   <ImagePreviewDialog
     v-model="imagePreviewDialog"
@@ -293,35 +173,66 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['scores-submitted', 'cancel-scoring', 'refetch-event'])
-console.log('Segment in event card props', props.segment)
-console.log('Participants in event card props', props.participants)
+
+const genderTabs = [
+  { label: 'Male', value: 'male' },
+  { label: 'Female', value: 'female' },
+]
 
 function getScoreRules(maxScore: number) {
   return [
     (v: number | string | null | undefined) => {
       if (v === null || v === undefined || v === '') return true
       const str = String(v)
-      if (!/^\d+(\.\d+)?$/.test(str)) {
-        return 'Invalid score'
-      }
+      if (!/^\d+(\.\d+)?$/.test(str)) return 'Invalid score'
       const num = Number(str)
-      if (num < 0 || num > maxScore) {
-        return `Score must be from 0 to ${maxScore}`
-      }
+      if (num < 0 || num > maxScore) return `Score must be from 0 to ${maxScore}`
       return true
     },
   ]
 }
 
-const { smAndDown } = useDisplay()
+function getRankRules(maxRank: number) {
+  return [
+    (v: number | string | null | undefined) => {
+      if (v === null || v === undefined || v === '') return true
+      const str = String(v)
+      if (!/^\d+$/.test(str)) return 'Rank must be a whole number'
+      const num = Number(str)
+      if (num < 1 || num > maxRank) return `Rank must be from 1 to ${maxRank}`
+      return true
+    },
+  ]
+}
+
+function getRankDuplicateRule(categoryDocId: string, participantDocId: string) {
+  return [
+    (v: any) => {
+      if (v === null || v === undefined || v === '') return true
+      const num = Number(v)
+      const otherHasSameRank = props.participants.some(
+        (p) =>
+          p.documentId !== participantDocId &&
+          p.participant_status === 'active' &&
+          Number(p.scores[categoryDocId]) === num
+      )
+      return !otherHasSameRank || 'Rank already assigned to another participant'
+    },
+  ]
+}
+
 const { showSnackbar } = useSnackbar()
 const api = useStrapiApi()
 const isLoading = ref<boolean>(false)
 
-// For form validation
 const formRefs = ref<Record<string, HTMLFormElement | null>>({})
-
 const activeGenderTab = ref<string>('male')
+
+const activeParticipantCount = computed(() => {
+  return props.participants.filter((p) => p.participant_status === 'active').length
+})
+
+const isRankingMode = computed(() => props.segment.scoring_mode === 'ranking')
 
 function getStrapiUrl(url: string) {
   const config = useRuntimeConfig()
@@ -333,36 +244,28 @@ const genders = [
   { key: 'female', label: 'Female' },
 ]
 
-// Filter scoreable categories based on locked value and active_judges
 function getActiveCategories(segment: SegmentData) {
-  if (!segment.categories) {
-    return []
-  }
-
+  if (!segment.categories) return []
   const categoriesToProcess = props.isAdmin
-    ? segment.categories // If admin, consider all categories from the segment
-    : segment.categories.filter((category) => category.active) // If not admin, only consider active categories
-
+    ? segment.categories
+    : segment.categories.filter((category) => category.active)
   return categoriesToProcess.map((category) => {
-    // Check if the current judge is in the category's active_judges list
     const isJudgeAssignedToCategory = category.active_judges?.some(
       (judge) => String(judge.documentId) === String(props.judgeId)
     )
-
-    // A category should be locked if:
-    // 1. Its 'locked' property from the backend is true.
-    // 2. OR it has active_judges defined, and the current judge is NOT among them.
-    //    If active_judges is not defined or is empty, it implies all judges can score (unless category.locked is true).
     const shouldBeLockedBecauseOfJudgeAssignment =
       category.active_judges && category.active_judges.length > 0 && !isJudgeAssignedToCategory
-
     return {
       ...category,
-      // The category is locked if it's explicitly locked from the backend,
-      // OR if it has active judges specified and the current judge is not one of them.
       locked: category.locked || shouldBeLockedBecauseOfJudgeAssignment,
     }
   })
+}
+
+function getCategoryByHeader(header: { title: string; value: string }) {
+  if (!header.value.startsWith('category_')) return null
+  const docId = header.value.replace('category_', '')
+  return getActiveCategories(props.segment).find(c => c.documentId === docId)
 }
 
 function getTableHeaders(segment: SegmentData) {
@@ -371,103 +274,82 @@ function getTableHeaders(segment: SegmentData) {
     { title: 'Name', value: 'name', sortable: true, width: '250' },
     { title: 'Department', value: 'department', sortable: true },
   ]
-
   const categoryHeaders =
     getActiveCategories(segment).map((category: CategoryData) => ({
-      title: `${category.name} (${category.weight * 100}%)`,
+      title: isRankingMode.value ? category.name : `${category.name} (${category.weight * 100}%)`,
       value: `category_${category.documentId}`,
       sortable: false,
-      locked: category.locked,
     })) || []
-
   const totalScoreHeaders = {
-    title: 'Total Score',
+    title: isRankingMode.value ? 'Avg Rank' : 'Total Score',
     value: 'total_score',
     align: 'center',
     sortable: false,
     width: '120',
   }
-
-  if (props.isAdmin) {
-    return [...staticHeaders, ...categoryHeaders, totalScoreHeaders]
-  }
-
+  if (props.isAdmin) return [...staticHeaders, ...categoryHeaders, totalScoreHeaders]
   return [...staticHeaders, ...categoryHeaders]
 }
 
 function getParticipantsByGender(gender: string, segment: SegmentData) {
   let genderFiltered = props.participants.filter((p) => p.gender === gender)
-
-  // Filter out participants eliminated in previous segments
   genderFiltered = genderFiltered.filter((p) => {
     if (p.participant_status === 'eliminated' && p.eliminated_at_segment) {
       return p.eliminated_at_segment.order >= segment.order
     }
     return true
   })
-
   if (segment.segment_status === 'closed') {
     return genderFiltered.sort((a, b) => {
       const scoreA = parseFloat(calculateTotalScore(a, segment))
       const scoreB = parseFloat(calculateTotalScore(b, segment))
-      return scoreB - scoreA
+      return segment.scoring_mode === 'ranking' ? scoreA - scoreB : scoreB - scoreA
     })
   }
   return genderFiltered.sort((a, b) => a.number - b.number)
 }
 
 function calculateTotalScore(participant: ParticipantWithScores, segment: SegmentData): string {
-  // sum category scores directly (they are already weighted)
+  if (segment.scoring_mode === 'ranking') {
+    const activeCats = getActiveCategories(segment)
+    let totalRank = 0
+    let rankedCount = 0
+    for (const category of activeCats) {
+      const value = participant.scores[category.documentId]
+      if (value === null || value === undefined || String(value) === '') continue
+      const rank = Number(value)
+      if (Number.isNaN(rank)) continue
+      totalRank += rank
+      rankedCount++
+    }
+    if (rankedCount === 0) return '-'
+    return (totalRank / rankedCount).toFixed(2)
+  }
+
   const rawSegmentTotal = getActiveCategories(segment).reduce((acc, category) => {
     const value = participant.scores[category.documentId]
-
-    if (value === null || value === undefined || String(value) === '') {
-      return acc
-    }
-
+    if (value === null || value === undefined || String(value) === '') return acc
     const score = Number(value)
     if (Number.isNaN(score)) return acc
-
     return acc + score
   }, 0)
 
-  // apply segment rule
   let finalSegmentScore = rawSegmentTotal
-
   if (segment.scoring_mode === 'normalized') {
     finalSegmentScore = rawSegmentTotal * segment.weight
   }
-
-  // raw_category → no multiplication
-
   return finalSegmentScore.toFixed(2)
 }
 
 function blockInvalidKeys(e: KeyboardEvent) {
   const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter']
-  if (allowedKeys.includes(e.key)) {
-    return
-  }
-  if (e.key === '.' && !(e.target as HTMLInputElement).value.includes('.')) {
-    return
-  }
-  if (!/^\d$/.test(e.key)) {
-    e.preventDefault()
-  }
+  if (allowedKeys.includes(e.key)) return
+  if (e.key === '.' && !(e.target as HTMLInputElement).value.includes('.')) return
+  if (!/^\d$/.test(e.key)) e.preventDefault()
 }
 
 async function submitScores(segment: SegmentData) {
   isLoading.value = true
-
-  const currentFormRef = formRefs.value[`${props.segment.id}-${activeGenderTab.value}`]
-  if (currentFormRef) {
-    const { valid } = await currentFormRef.validate()
-    if (!valid) {
-      showSnackbar('Please correct the invalid scores before submitting.', 'error')
-      isLoading.value = false
-      return
-    }
-  }
 
   if (!props.judgeId) {
     showSnackbar('Judge ID not found.', 'error')
@@ -477,8 +359,6 @@ async function submitScores(segment: SegmentData) {
 
   const activeCategories = getActiveCategories(segment)
   const promises = []
-
-  // Create a map for quick lookup of existing scores by participantId-categoryId-judgeId
   const existingScoreMap = new Map<string, ScoreData>()
   props.event?.scores?.forEach((s: ScoreData) => {
     if (s.participant?.documentId && s.category?.documentId && s.judge?.documentId) {
@@ -494,12 +374,9 @@ async function submitScores(segment: SegmentData) {
       const existingScore = existingScoreMap.get(key)
 
       if (existingScore) {
-        // Case 1: Existing score found
         if (scoreValue === null || scoreValue === undefined || String(scoreValue) === '') {
-          // If the score is now null/undefined/empty, delete it
           promises.push(api.delete(`/scores/${existingScore.documentId}`))
         } else if (existingScore.value !== scoreValue) {
-          // If the score has changed, update it
           promises.push(
             api.put(`/scores/update/${existingScore.documentId}`, {
               data: {
@@ -513,11 +390,9 @@ async function submitScores(segment: SegmentData) {
             })
           )
         }
-        // If existingScore and scoreValue are the same, no action needed
       } else {
-        // Case 2: No existing score found
         if (scoreValue !== null && scoreValue !== undefined && String(scoreValue) !== '') {
-          const createScorePayload = {
+          promises.push(api.post('/scores/create', {
             data: {
               value: scoreValue,
               participant: p.documentId,
@@ -526,13 +401,8 @@ async function submitScores(segment: SegmentData) {
               event: props.event.documentId,
               segment: segment.documentId,
             },
-          }
-
-          console.log('Create Score Payload', createScorePayload)
-          // If a new score is provided, create it
-          promises.push(api.post('/scores/create', createScorePayload))
+          }))
         }
-        // If no existing score and scoreValue is null/undefined/empty, no action needed
       }
     }
   }
@@ -558,9 +428,3 @@ async function submitScores(segment: SegmentData) {
   }
 }
 </script>
-
-<style lang="css" scoped>
-.score-input {
-  min-width: 100px;
-}
-</style>

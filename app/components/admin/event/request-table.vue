@@ -1,6 +1,6 @@
 <template>
   <section>
-    <header class="d-flex justify-space-between align-center w-100 mb-4">
+    <header class="flex items-center justify-between w-full mb-4">
       <h2>Judging Requests</h2>
       <span>
         {{
@@ -10,117 +10,96 @@
         }}
       </span>
     </header>
-    <v-table
-      class="border-sm rounded-lg"
-      striped="even"
+    <UTable
+      :data="judgeRequestsStore.allJudgeRequests"
+      :columns="[
+        { accessorKey: 'event.name', header: 'Event Name' },
+        { accessorKey: 'judge.name', header: 'Judge' },
+        { accessorKey: 'request_status', header: 'Request Status' },
+        { accessorKey: 'actions', header: 'Actions' },
+      ]"
     >
-      <thead>
-        <tr>
-          <th class="font-weight-bold text-subtitle-1 text-left">Event Name</th>
-          <th class="font-weight-bold text-subtitle-1 text-center">Judge</th>
-          <th class="font-weight-bold text-subtitle-1 text-center">Request Status</th>
-          <th class="font-weight-bold text-subtitle-1 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="judgeRequestsStore.allJudgeRequests.length == 0">
-          <td
-            colspan="4"
-            class="text-center text-grey-darken-2"
-          >
-            No Judge Requests
-          </td>
-        </tr>
-        <tr
-          v-for="item in judgeRequestsStore.allJudgeRequests"
-          :key="item.id"
+      <template #empty>
+        <div class="text-center py-4 text-muted">No Judge Requests</div>
+      </template>
+      <template #event.name-cell="{ row }">
+        {{ row.original.event?.name || 'No Event Found' }}
+      </template>
+      <template #judge.name-cell="{ row }">
+        {{ row.original.judge?.name ?? 'No Name' }}
+      </template>
+      <template #request_status-cell="{ row }">
+        <UBadge
+          :color="getStatusColor(row.original.request_status)"
+          class="capitalize"
         >
-          <td>{{ item.event?.name || 'No Event Found' }}</td>
-          <td align="center">{{ item.judge?.name ?? 'No Name ' }}</td>
-          <td align="center">
-            <v-chip
-              :color="getStatusColor(item.request_status)"
-              label
-              class="text-capitalize"
-            >
-              {{ item.request_status }}
-            </v-chip>
-          </td>
-          <td align="center">
-            <template v-if="item.request_status === 'pending'">
-              <v-btn
-                variant="tonal"
-                color="success"
-                class="mr-2"
-                @click="openConfirmationDialog(item, 'approve')"
-              >
-                Approve
-              </v-btn>
-              <v-btn
-                variant="tonal"
-                color="error"
-                @click="openConfirmationDialog(item, 'reject')"
-              >
-                Reject
-              </v-btn>
-            </template>
-            <span v-else>-</span>
-          </td>
-        </tr>
-      </tbody>
-    </v-table>
-    <v-dialog
-      v-model="confirmationDialog"
-      max-width="500px"
-    >
-      <v-card>
-        <v-card-title class="text-h5">
-          {{ actionToConfirm === 'approve' ? 'Approve' : 'Reject' }} Request
-        </v-card-title>
-        <v-card-text>
+          {{ row.original.request_status }}
+        </UBadge>
+      </template>
+      <template #actions-cell="{ row }">
+        <template v-if="row.original.request_status === 'pending'">
+          <UButton
+            label="Approve"
+            color="success"
+            variant="subtle"
+            class="mr-2"
+            @click="openConfirmationDialog(row.original, 'approve')"
+          />
+          <UButton
+            label="Reject"
+            color="error"
+            variant="subtle"
+            @click="openConfirmationDialog(row.original, 'reject')"
+          />
+        </template>
+        <span v-else>-</span>
+      </template>
+    </UTable>
+
+    <UModal v-model:open="confirmationDialog" :title="actionToConfirm === 'approve' ? 'Approve Request' : 'Reject Request'">
+      <template #body>
+        <p>
           Are you sure you want to {{ actionToConfirm }} the request for
           <strong>{{ selectedRequest?.judge.name }}</strong>
           to be a judge for the event
           <strong>{{ selectedRequest?.event.name }}</strong>
           ?
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            text
+        </p>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <UButton
+            label="Cancel"
+            color="neutral"
+            variant="ghost"
             @click="closeConfirmationDialog"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
+          />
+          <UButton
+            :label="actionToConfirm === 'approve' ? 'Approve' : 'Reject'"
             :color="actionToConfirm === 'approve' ? 'success' : 'error'"
             @click="confirmAction"
-          >
-            {{ actionToConfirm === 'approve' ? 'Approve' : 'Reject' }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+          />
+        </div>
+      </template>
+    </UModal>
   </section>
 </template>
 
 <script setup lang="ts">
 const judgeRequestsStore = useJudgeRequestsStore()
-const theme = useThemeStore()
 
 const confirmationDialog = ref(false)
 const selectedRequest = ref<JudgeRequestData | null>(null)
 const actionToConfirm = ref<'approve' | 'reject' | null>(null)
 
 const getStatusColor = (status: string) => {
-  const isDark = theme.current === 'dark'
   switch (status) {
     case 'approved':
-      return isDark ? 'success' : 'green-darken-2'
+      return 'success'
     case 'pending':
-      return isDark ? 'warning' : 'yellow-darken-2'
+      return 'warning'
     case 'rejected':
-      return isDark ? 'error' : 'red-darken-2'
+      return 'error'
     default:
       return 'info'
   }
@@ -153,6 +132,5 @@ const confirmAction = async () => {
 
 onMounted(async () => {
   await judgeRequestsStore.fetchAllJudgeRequests()
-  console.log('All Judge Requests:', judgeRequestsStore.allJudgeRequests)
 })
 </script>

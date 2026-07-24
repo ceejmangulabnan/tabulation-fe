@@ -1,7 +1,7 @@
 <template>
-  <v-container>
+  <div class="mx-auto max-w-7xl px-4 py-6">
     <AdminEventList />
-  </v-container>
+  </div>
 </template>
 
 <script setup lang="ts"></script>

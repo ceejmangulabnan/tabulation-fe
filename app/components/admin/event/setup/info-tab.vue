@@ -1,42 +1,55 @@
 <template>
   <div>
-    <v-card-title class="d-flex font-weight-bold mb-2">
-      <v-chip
-        class="mr-4 text-capitalize"
+    <div class="flex items-center gap-2 mb-2 font-bold">
+      <UBadge
         :color="statusColor"
-        variant="flat"
+        class="capitalize"
       >
         {{ props.event.event_status }}
-      </v-chip>
+      </UBadge>
       Event Information
-    </v-card-title>
+    </div>
 
-    <v-form
-      @submit.prevent
-      @submit="handleSave"
-    >
-      <v-card-text>
-        <v-text-field
-          v-model="formData.name"
-          label="Title"
-          :autofocus="true"
-        />
+    <UForm @submit.prevent="handleSave">
+      <div class="space-y-4 flex flex-col">
+        <UFormField label="Title">
+          <UInput
+            class="w-full"
+            v-model="formData.name"
+            autofocus
+          />
+        </UFormField>
 
-        <v-textarea
-          v-model="formData.description"
-          label="Description"
-        />
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn
-          color="green"
+        <UFormField label="Description">
+          <UTextarea
+            class="w-full"
+            :model-value="formData.description ?? undefined"
+            label="Description"
+            @update:model-value="(val: any) => (formData.description = val)"
+          />
+        </UFormField>
+
+        <UFormField label="Final Scoring Mode">
+          <USelect
+            class="w-full"
+            :model-value="formData.final_scoring_mode || undefined"
+            label="Final Scoring Mode"
+            :items="[
+              { label: 'Combine All Segments', value: 'combine_all' },
+              { label: 'Last Segment Only', value: 'last_segment_only' },
+            ]"
+            @update:model-value="(val: any) => (formData.final_scoring_mode = val)"
+          />
+        </UFormField>
+      </div>
+
+      <div class="flex justify-end mt-4">
+        <UButton
+          label="Update"
           type="submit"
-        >
-          Update
-        </v-btn>
-      </v-card-actions>
-    </v-form>
+        />
+      </div>
+    </UForm>
   </div>
 </template>
 
@@ -60,20 +73,20 @@ watch(
 
 const api = useStrapiApi()
 const eventsStore = useEventsStore()
-const snackbar = useSnackbar()
+const { showSnackbar } = useSnackbar()
 
 const statusColor = computed(() => {
   switch (props.event.event_status) {
     case 'draft':
-      return 'grey'
+      return 'neutral'
     case 'active':
-      return 'green'
+      return 'success'
     case 'inactive':
-      return 'orange'
+      return 'warning'
     case 'finished':
-      return 'blue'
+      return 'info'
     default:
-      return 'grey'
+      return 'neutral'
   }
 })
 const handleSave = async () => {
@@ -82,13 +95,14 @@ const handleSave = async () => {
       data: {
         name: formData.value.name,
         description: formData.value.description,
+        final_scoring_mode: formData.value.final_scoring_mode,
       },
     })
-    snackbar.showSnackbar('Event updated successfully.', 'success')
+    showSnackbar('Event updated successfully.', 'success')
     await eventsStore.fetchEvent(props.event.id?.toString() || '')
   } catch (error) {
     console.error('Error updating event:', error)
-    snackbar.showSnackbar('Failed to udpate event.', 'error')
+    showSnackbar('Failed to update event.', 'error')
   }
 }
 </script>

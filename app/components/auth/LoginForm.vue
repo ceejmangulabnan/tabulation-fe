@@ -1,58 +1,49 @@
 <template>
-  <v-card-text class="d-flex flex-column flex-grow-1">
-    <v-form
-      class="d-flex flex-column flex-grow-1 justify-space-between"
-      @submit.prevent="login"
-    >
-      <div>
-        <v-text-field
-          ref="usernameField"
-          v-model="user.username"
-          label="Username"
-          :autofocus="true"
-          :rules="requiredRule"
-        />
-        <v-text-field
-          v-model="user.password"
-          label="Password"
-          :type="showPassword ? 'text' : 'password'"
-          :rules="requiredRule"
-        >
-          <template #append-inner>
-            <v-btn
-              tabindex="-1"
-              icon
-              variant="text"
-              @click="toggleShowPassword"
-            >
-              <v-icon size="small">
-                {{ showPassword ? 'mdi-eye-outline' : 'mdi-eye-off' }}
-              </v-icon>
-            </v-btn>
-          </template>
-        </v-text-field>
-      </div>
+  <form
+    class="flex flex-col gap-4"
+    @submit.prevent="login"
+  >
+    <UInput
+      v-model="user.username"
+      label="Username"
+      placeholder="Enter your username"
+      autofocus
+      :rules="[(v: string) => !!v || 'Field is required']"
+    />
 
-      <v-btn
-        class="mt-4 flex-grow-0"
-        type="submit"
-        variant="elevated"
-        color="green"
-        block
-        :loading="authStore.isLoading"
-      >
-        Sign In
-      </v-btn>
-    </v-form>
+    <UInput
+      v-model="user.password"
+      label="Password"
+      :type="showPassword ? 'text' : 'password'"
+      placeholder="Enter your password"
+      :ui="{ trailing: 'pe-1' }"
+    >
+      <template #trailing>
+        <UButton
+          color="neutral"
+          variant="link"
+          :icon="showPassword ? 'i-lucide-eye' : 'i-lucide-eye-off'"
+          :padded="false"
+          aria-label="Toggle password visibility"
+          @click="showPassword = !showPassword"
+        />
+      </template>
+    </UInput>
 
     <div
       v-if="errorMsg"
-      class="mt-2"
-      style="color: red"
+      class="text-sm text-error"
     >
-      ❌ {{ errorMsg }}
+      {{ errorMsg }}
     </div>
-  </v-card-text>
+
+    <UButton
+      type="submit"
+      label="Sign In"
+      block
+      :loading="authStore.isLoading"
+    />
+  </form>
 </template>
 
 <script setup lang="ts">
@@ -66,11 +57,6 @@ const user = ref({ username: '', password: '' })
 const errorMsg = ref<string | null>(null)
 const showPassword = ref(false)
 
-const requiredRule = [(v: string) => !!v || 'Field is required']
-function toggleShowPassword() {
-  showPassword.value = !showPassword.value
-}
-
 async function login() {
   try {
     await authStore.login(user.value.username, user.value.password)
@@ -79,7 +65,7 @@ async function login() {
   } catch (error) {
     const err = error as { response?: { data?: { message?: string } } }
     errorMsg.value = err.response?.data?.message || 'Login failed'
-    showSnackbar(`User sign in failed`, 'error')
+    showSnackbar('User sign in failed', 'error')
   }
 }
 </script>

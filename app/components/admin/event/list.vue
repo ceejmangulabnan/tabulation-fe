@@ -1,152 +1,148 @@
 <template>
   <div>
-    <div class="d-flex justify-space-between align-center w-100 mb-4">
-      <h2 class="text-h5">All Events</h2>
-      <v-btn
-        color="green"
-        prepend-icon="mdi-plus"
+    <div class="flex items-center justify-between w-full mb-4">
+      <h2 class="text-xl font-bold">All Events</h2>
+      <UButton
+        icon="i-lucide-plus"
+        label="Create Event"
         @click="showCreateDialog = true"
-      >
-        Create Event
-      </v-btn>
+      />
     </div>
 
-    <v-data-table
-      :headers="headers"
-      :items="eventsStore.events"
+    <UTable
+      :data="eventsStore.events"
+      :columns="columns"
       :loading="eventsStore.isLoading"
-      show-expand
-      item-value="id"
+      v-model:expanded="expandedRows"
       class="border rounded-lg"
     >
-      <template #item.name="{ item }">
+      <template #name-cell="{ row }">
         <NuxtLink
-          :to="`/admin/events/${item.id}`"
-          class="font-weight-bold"
+          :to="`/admin/events/${row.original.id}`"
+          class="font-bold text-primary"
         >
-          {{ item.name }}
+          {{ row.original.name }}
         </NuxtLink>
       </template>
 
-      <template #item.event_status="{ item }">
-        <v-chip
-          size="small"
-          :color="getStatusColor(item.event_status)"
-          variant="tonal"
+      <template #event_status-cell="{ row }">
+        <UBadge
+          :color="getStatusColor(row.original.event_status)"
+          variant="subtle"
+          class="capitalize"
         >
-          {{ item.event_status }}
-        </v-chip>
+          {{ row.original.event_status }}
+        </UBadge>
       </template>
 
-      <template #item.actions="{ item }">
-        <div class="d-flex flex-nowrap">
-          <v-btn
-            icon="mdi-pencil"
-            variant="text"
-            :to="`/admin/events/${item.id}/setup`"
-          ></v-btn>
-          <v-btn
-            icon="mdi-delete"
-            variant="text"
+      <template #actions-cell="{ row }">
+        <div class="flex gap-1">
+          <UButton
+            icon="i-lucide-pencil"
+            variant="ghost"
+            :to="`/admin/events/${row.original.id}/setup`"
+          />
+          <UButton
+            icon="i-lucide-trash-2"
+            variant="ghost"
             color="error"
-            @click="deleteEvent(item)"
-          ></v-btn>
-          <v-btn
-            icon="mdi-arrow-right"
-            variant="text"
-            :to="`/admin/events/${item.id}`"
-          ></v-btn>
+            @click="deleteEvent(row.original)"
+          />
+          <UButton
+            icon="i-lucide-arrow-right"
+            variant="ghost"
+            :to="`/admin/events/${row.original.id}`"
+          />
         </div>
       </template>
 
-      <template #expanded-row="{ columns, item }">
-        <td :colspan="columns.length">
-          <v-card
-            class="ma-4"
-            variant="tonal"
-          >
-            <v-card-title>Segment & Scoring Overview</v-card-title>
-            <v-card-text>
-              <div v-if="!item.segments || item.segments.length === 0">
-                No segments defined for this event.
-              </div>
-              <div
-                v-for="segment in item.segments"
-                :key="segment.id"
-                class="mb-4"
-              >
-                <h4 class="font-weight-bold">
-                  {{ segment.name }} (Weight: {{ segment.weight * 100 }}%)
-                </h4>
-                <v-list
-                  density="compact"
-                  class="bg-transparent"
+      <template #expanded="{ row }">
+        <div class="p-4">
+          <UCard variant="subtle">
+            <h4 class="font-bold mb-2">Segment & Scoring Overview</h4>
+            <div v-if="!row.original.segments || row.original.segments.length === 0">
+              No segments defined for this event.
+            </div>
+            <div
+              v-for="segment in row.original.segments"
+              :key="segment.id"
+              class="mb-4"
+            >
+              <h4 class="font-bold">{{ segment.name }} (Weight: {{ segment.weight * 100 }}%)</h4>
+              <div class="space-y-1">
+                <div
+                  v-for="category in segment.categories"
+                  :key="category.id"
+                  class="text-sm"
                 >
-                  <v-list-item
-                    v-for="category in segment.categories"
-                    :key="category.id"
-                  >
-                    <v-list-item-title>{{ category.name }}</v-list-item-title>
-                    <v-list-item-subtitle>
-                      Scoring Progress: {{ getScoringProgress(category, item.judges, item.scores) }}
-                    </v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item v-if="!segment.categories || segment.categories.length === 0">
-                    <v-list-item-title class="text-grey">
-                      No categories in this segment.
-                    </v-list-item-title>
-                  </v-list-item>
-                </v-list>
+                  <div class="font-medium">{{ category.name }}</div>
+                  <div class="text-muted">
+                    Scoring Progress:
+                    {{ getScoringProgress(category, row.original.judges, row.original.scores) }}
+                  </div>
+                </div>
+                <div
+                  v-if="!segment.categories || segment.categories.length === 0"
+                  class="text-sm text-muted"
+                >
+                  No categories in this segment.
+                </div>
               </div>
-            </v-card-text>
-          </v-card>
-        </td>
+            </div>
+          </UCard>
+        </div>
       </template>
-    </v-data-table>
+    </UTable>
 
-    <v-dialog
-      v-model="showCreateDialog"
-      max-width="600px"
+    <UModal
+      v-model:open="showCreateDialog"
+      title="Create Event"
     >
-      <AdminEventCreate @close="showCreateDialog = false" />
-    </v-dialog>
+      <template #body>
+        <AdminEventCreate @close-dialog="showCreateDialog = false" />
+      </template>
+    </UModal>
   </div>
 </template>
 
 <script setup lang="ts">
 const eventsStore = useEventsStore()
 const api = useStrapiApi()
-const snackbar = useSnackbar()
+const { showSnackbar } = useSnackbar()
 const showCreateDialog = ref(false)
+const expandedRows = ref<Record<string, boolean>>({})
+
+function toggleExpand(row: any) {
+  expandedRows.value[row.id] = !expandedRows.value[row.id]
+}
 
 onMounted(async () => {
   await eventsStore.fetchEvents()
 })
 
-const headers = [
-  { title: 'Name', key: 'name' },
-  { title: 'Status', key: 'event_status' },
-  { title: 'Description', key: 'description' },
-  { title: 'Actions', key: 'actions', sortable: false },
-  { key: 'data-table-expand', sortable: false },
+const columns = [
+  { accessorKey: 'name', header: 'Name' },
+  { accessorKey: 'event_status', header: 'Status' },
+  { accessorKey: 'description', header: 'Description' },
+  { accessorKey: 'actions', header: '' },
 ]
 
 function getStatusColor(status: string) {
   switch (status) {
     case 'draft':
-      return 'grey'
+      return 'neutral'
     case 'active':
-      return 'green'
+      return 'success'
     case 'finished':
-      return 'blue'
+      return 'info'
     default:
-      return 'default'
+      return 'neutral'
   }
 }
 
 const deleteEvent = async (eventToDelete: EventData) => {
   if (!eventToDelete.documentId) {
-    snackbar.showSnackbar('Event data not available for deletion.', 'error')
+    showSnackbar('Event data not available for deletion.', 'error')
     return
   }
   if (
@@ -156,10 +152,10 @@ const deleteEvent = async (eventToDelete: EventData) => {
   ) {
     try {
       await api.delete(`/events/${eventToDelete.documentId}`)
-      snackbar.showSnackbar('Event deleted successfully.', 'success')
-      await eventsStore.fetchEvents() // Refresh the list
+      showSnackbar('Event deleted successfully.', 'success')
+      await eventsStore.fetchEvents()
     } catch (e) {
-      snackbar.showSnackbar('Failed to delete event.', 'error')
+      showSnackbar('Failed to delete event.', 'error')
       console.error('Error deleting event:', e)
     }
   }
@@ -168,12 +164,9 @@ const deleteEvent = async (eventToDelete: EventData) => {
 function getScoringProgress(category: CategoryData, judges: JudgeData[], eventScores: ScoreData[]) {
   if (!judges || judges.length === 0) return 'No judges assigned'
 
-  // Filter scores for the current category
   const categoryScores = (eventScores || []).filter((s) => s.category?.id === category.id)
-
   const assignedJudgeIds = new Set(judges.map((j) => j.id))
   const judgesWhoScored = new Set(categoryScores.map((s: any) => s.judge?.id).filter((id) => id))
-
   const scoredCount = [...judgesWhoScored].filter((id) => assignedJudgeIds.has(id)).length
 
   return `${scoredCount} of ${judges.length} judges have scored.`

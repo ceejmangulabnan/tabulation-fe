@@ -1,39 +1,30 @@
 <template>
-  <v-card
-    hover
-    class="d-flex flex-column w-100 ma-2 pa-3 rounded-xl"
+  <UCard
+    class="flex flex-col w-full cursor-pointer hover:shadow-lg transition-shadow"
     @click="router.push(`/${userRole}/events/${event.id}`)"
   >
-    <v-card-item>
-      <v-card-title
-        class="d-flex ga-2 align-start justify-space-between flex-wrap-reverse flex-lg-nowrap"
+    <div class="flex items-start justify-between gap-2 flex-wrap-reverse flex-lg:nowrap">
+      <h1 class="text-lg font-bold text-wrap">
+        {{ event?.name }}
+      </h1>
+      <UBadge
+        :color="statusColor"
+        size="lg"
+        class="font-bold flex-shrink-0 -mb-1.5"
       >
-        <h1 class="text-h6 font-weight-bold text-wrap ml-1">
-          {{ event?.name }}
-        </h1>
-        <v-chip
-          :color="statusColor"
-          size="large"
-          class="font-weight-bold flex-shrink-0 negative-ml"
-        >
-          {{ event?.event_status.toUpperCase() }}
-        </v-chip>
-      </v-card-title>
-    </v-card-item>
-    <v-card-text class="ml-1">
-      <p>{{ event.description }}</p>
-    </v-card-text>
-    <v-spacer></v-spacer>
-    <v-card-actions>
-      <v-btn
-        variant="flat"
-        color="green"
-        class="ml-2"
-      >
-        {{ userRole === 'admin' ? 'Edit Event' : 'View Details' }}
-      </v-btn>
-    </v-card-actions>
-  </v-card>
+        {{ event?.event_status.toUpperCase() }}
+      </UBadge>
+    </div>
+
+    <p class="mt-2 text-muted">{{ event.description }}</p>
+
+    <div class="mt-auto pt-4">
+      <UButton
+        variant="solid"
+        :label="userRole === 'admin' ? 'Edit Event' : 'View Details'"
+      />
+    </div>
+  </UCard>
 </template>
 
 <script setup lang="ts">
@@ -46,22 +37,11 @@ const userRole = computed(() => authStore.user?.userRole)
 
 const statusColor = computed(() => {
   switch (event.event_status) {
-    case 'draft':
-      return 'grey'
-    case 'active':
-      return 'green'
-    case 'inactive':
-      return 'orange'
-    case 'finished':
-      return 'blue'
-    default:
-      return 'grey'
+    case 'draft': return 'neutral'
+    case 'active': return 'success'
+    case 'inactive': return 'warning'
+    case 'finished': return 'info'
+    default: return 'neutral'
   }
 })
 </script>
-
-<style lang="css">
-.negative-ml {
-  margin-bottom: 6px;
-}
-</style>
