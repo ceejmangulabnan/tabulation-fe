@@ -12,7 +12,7 @@
             class="logo"
           />
           <div class="header-text">
-            <h1 class="event-org">St. Nicolas College of Business and Technology</h1>
+            <h1 class="event-org"></h1>
             <h2 class="event-title">{{ event.name }}</h2>
             <h3 class="title">{{ title }}</h3>
           </div>

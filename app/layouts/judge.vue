@@ -38,7 +38,10 @@
       </nav>
 
       <div class="border-t border-default p-3">
-        <UDropdownMenu :items="userMenuItems">
+        <UDropdownMenu
+          :items="userMenuItems"
+          :content="{ side: 'right' }"
+        >
           <button
             class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-default"
           >
@@ -46,7 +49,7 @@
               {{ authStore.user?.username?.charAt(0)?.toUpperCase() || '?' }}
             </div>
             <span class="truncate">{{ authStore.user?.username }}</span>
-            <UIcon name="i-lucide-chevron-up" class="ml-auto h-4 w-4 text-muted" />
+            <UIcon name="i-lucide-chevron-right" class="ml-auto h-4 w-4 text-muted" />
           </button>
         </UDropdownMenu>
       </div>

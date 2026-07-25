@@ -212,20 +212,32 @@
 
           <div
             v-if="!props.readonly"
-            class="flex justify-end gap-2 mt-4"
+            class="flex flex-col items-end gap-2 mt-4"
           >
-            <UButton
-              label="Cancel"
-              color="neutral"
-              variant="ghost"
-              @click="$emit('cancel-scoring')"
+            <UAlert
+              v-if="isRankingMode"
+              icon="i-lucide-alert-triangle"
+              color="warning"
+              variant="subtle"
+              title="Ranking Required"
+              description="You must assign a rank to every active participant before submitting."
+              class="w-full"
             />
-            <UButton
-              v-if="segment.segment_status !== 'closed'"
-              label="Submit Scores"
-              type="submit"
-              :loading="isLoading"
-            />
+            <div class="flex justify-end gap-2">
+              <UButton
+                label="Cancel"
+                color="neutral"
+                variant="ghost"
+                @click="$emit('cancel-scoring')"
+              />
+              <UButton
+                v-if="segment.segment_status !== 'closed'"
+                label="Submit Scores"
+                type="submit"
+                :loading="isLoading"
+                :disabled="!hasAllRanks"
+              />
+            </div>
           </div>
         </form>
       </div>
@@ -320,6 +332,19 @@ const activeParticipantCount = computed(() => {
 })
 
 const isRankingMode = computed(() => props.segment.scoring_mode === 'ranking')
+
+const hasAllRanks = computed(() => {
+  if (!isRankingMode.value) return true
+  const activeParticipants = props.participants.filter((p) => p.participant_status === 'active')
+  const activeCategories = getActiveCategories(props.segment).filter((c) => !c.locked)
+  if (activeCategories.length === 0 || activeParticipants.length === 0) return true
+  return activeCategories.every((category) =>
+    activeParticipants.every((p) => {
+      const val = p.scores[category.documentId]
+      return val !== null && val !== undefined && String(val) !== ''
+    })
+  )
+})
 
 const config = useRuntimeConfig()
 
