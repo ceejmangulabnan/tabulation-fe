@@ -221,7 +221,7 @@ const fetchData = async () => {
           if (!p.eliminated_at_segment) return true
           return segment.value ? p.eliminated_at_segment.order >= segment.value.order : true
         })
-        .sort((a, b) => a.participant_number - b.participant_number)
+        .sort((a, b) => a.rank - b.rank)
     }
     maleItems.value = filterAndSort(data.results.male)
     femaleItems.value = filterAndSort(data.results.female)
