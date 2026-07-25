@@ -1,16 +1,29 @@
 <template>
-  <div class="mx-auto max-w-7xl px-4 py-6" v-if="event">
+  <div
+    class="mx-auto max-w-7xl px-4 py-6 overflow-hidden"
+    v-if="event"
+  >
     <div class="flex justify-between items-start mb-4 flex-wrap gap-2">
       <header class="flex items-center gap-3 w-full">
-        <UBadge :color="statusColor" size="lg" class="font-bold flex-shrink-0 capitalize">
+        <UBadge
+          :color="statusColor"
+          variant="outline"
+          size="lg"
+          class="font-bold flex-shrink-0 capitalize"
+        >
           {{ event?.event_status.toUpperCase() }}
         </UBadge>
       </header>
 
-      <NuxtLink :to="`/judge/events/${eventId}`" class="text-decoration-none hover:underline">
+      <NuxtLink
+        :to="`/judge/events/${eventId}`"
+        class="text-decoration-none hover:underline"
+      >
         <div class="flex flex-col gap-1">
           <h1 class="text-xl sm:text-2xl font-bold">{{ event?.name }}</h1>
-          <p class="text-sm sm:text-base text-muted">{{ event?.description || 'No description provided.' }}</p>
+          <p class="text-sm sm:text-base text-muted">
+            {{ event?.description || 'No description provided.' }}
+          </p>
         </div>
       </NuxtLink>
     </div>
@@ -21,18 +34,33 @@
         <UButton
           label="Score Segment"
           @click="showScoringDialog = true"
-          :disabled="!event || !judgeId || !activeSegmentTab || currentSegment?.segment_status !== 'active' || allSegmentsClosed"
+          :disabled="
+            !event ||
+            !judgeId ||
+            !activeSegmentTab ||
+            currentSegment?.segment_status !== 'active' ||
+            allSegmentsClosed
+          "
         />
       </div>
 
-      <UTabs v-model="activeSegmentTab" :items="segmentTabsItems" />
+      <UTabs
+        v-model="activeSegmentTab"
+        :items="segmentTabsItems"
+      />
 
       <div class="mt-4">
-        <div v-if="!segmentsForTabs || segmentsForTabs.length < 1" class="text-center py-4 text-muted">
+        <div
+          v-if="!segmentsForTabs || segmentsForTabs.length < 1"
+          class="text-center py-4 text-muted"
+        >
           No segments found or selected.
         </div>
 
-        <div v-for="segment in segmentsForTabs" :key="segment.id">
+        <div
+          v-for="segment in segmentsForTabs"
+          :key="segment.id"
+        >
           <div v-if="activeSegmentTab === String(segment.id)">
             <EventScoringCard
               v-if="event && judgeId && currentSegment"
@@ -43,10 +71,16 @@
               :judgeId="judgeId"
               :readonly="true"
             />
-            <p v-if="currentSegment?.segment_status === 'closed'" class="text-error py-4 text-center">
+            <p
+              v-if="currentSegment?.segment_status === 'closed'"
+              class="text-error py-4 text-center"
+            >
               This segment is closed. You can no longer submit scores.
             </p>
-            <p v-if="currentSegment?.segment_status === 'inactive'" class="text-warning py-4 text-center">
+            <p
+              v-if="currentSegment?.segment_status === 'inactive'"
+              class="text-warning py-4 text-center"
+            >
               This segment is inactive. You cannot submit scores yet.
             </p>
           </div>
@@ -57,32 +91,53 @@
           <UCard class="mt-4">
             <div class="flex items-center justify-between mb-4">
               <h3 class="font-bold text-lg">Final Rankings</h3>
-              <UButton icon="i-lucide-refresh-cw" :loading="eventsStore.isLoading" variant="ghost" size="xs" @click="fetchFinalScores" />
+              <UButton
+                icon="i-lucide-refresh-cw"
+                :loading="eventsStore.isLoading"
+                variant="ghost"
+                size="xs"
+                @click="fetchFinalScores"
+              />
             </div>
 
-            <UTabs v-model="activeGenderTab" :items="genderTabs" class="mb-4" />
+            <UTabs
+              v-model="activeGenderTab"
+              :items="genderTabs"
+              class="mb-4"
+            />
 
-            <UTable
-              v-if="activeGenderTab === 'male'"
-              :data="finalMaleResults"
-              :columns="finalRankingsHeaders"
-            />
-            <UTable
-              v-else
-              :data="finalFemaleResults"
-              :columns="finalRankingsHeaders"
-            />
+            <div class="overflow-x-auto">
+              <UTable
+                v-if="activeGenderTab === 'male'"
+                :data="finalMaleResults"
+                :columns="finalRankingsHeaders"
+              />
+              <UTable
+                v-else
+                :data="finalFemaleResults"
+                :columns="finalRankingsHeaders"
+              />
+            </div>
           </UCard>
         </div>
       </div>
     </UCard>
 
     <!-- Scoring Dialog -->
-    <UModal v-model:open="showScoringDialog" fullscreen>
+    <UModal
+      v-model:open="showScoringDialog"
+      fullscreen
+    >
       <template #header>
         <div class="flex items-center justify-between w-full">
-          <h3 class="font-bold text-lg">Score Event: {{ event?.name }} - {{ currentSegmentName }}</h3>
-          <UButton icon="i-lucide-x" variant="ghost" @click="closeScoringDialog" />
+          <h3 class="font-bold text-lg">
+            Score Event: {{ event?.name }} - {{ currentSegmentName }}
+          </h3>
+          <UButton
+            icon="i-lucide-x"
+            variant="ghost"
+            @click="closeScoringDialog"
+          />
         </div>
       </template>
       <template #body>
@@ -97,7 +152,10 @@
           @cancel-scoring="closeScoringDialog"
           @refetch-event="eventsStore.fetchEvent(eventId)"
         />
-        <div v-else class="text-center py-4 text-muted">
+        <div
+          v-else
+          class="text-center py-4 text-muted"
+        >
           No active segment selected for scoring.
         </div>
       </template>
@@ -138,7 +196,13 @@ interface FinalParticipant {
 
 interface FinalEventScoresResponse {
   event: { documentId: string; name: string; description: string }
-  segments: { documentId: string; name: string; order: number; weight: number; scoring_mode?: string }[]
+  segments: {
+    documentId: string
+    name: string
+    order: number
+    weight: number
+    scoring_mode?: string
+  }[]
   results: { male: FinalParticipant[]; female: FinalParticipant[] }
 }
 
@@ -200,24 +264,52 @@ const finalSegments = ref<FinalEventScoresResponse['segments']>([])
 
 const finalRankingsHeaders = computed(() => {
   const staticHeaders = [
-    { accessorKey: 'participant_number', header: 'No.' },
-    { accessorKey: 'name', header: 'Participant' },
-    { accessorKey: 'department', header: 'Department' },
+    {
+      accessorKey: 'participant_number',
+      header: 'No.',
+      meta: { class: { td: 'w-[60px] whitespace-nowrap', th: 'w-[60px] whitespace-nowrap' } },
+    },
+    {
+      accessorKey: 'name',
+      header: 'Participant',
+      meta: {
+        class: { td: 'min-w-[250px] whitespace-nowrap', th: 'min-w-[250px] whitespace-nowrap' },
+      },
+    },
+    {
+      accessorKey: 'department',
+      header: 'Department',
+      meta: {
+        class: { td: 'min-w-[150px] whitespace-nowrap', th: 'min-w-[150px] whitespace-nowrap' },
+      },
+    },
   ]
   const segHeaders = finalSegments.value.map((segment) => ({
     accessorKey: `segment_score_${segment.documentId}`,
-    header: segment.scoring_mode === 'ranking' ? segment.name : `${segment.name} (${segment.weight * 100}%)`,
+    header:
+      segment.scoring_mode === 'ranking'
+        ? segment.name
+        : `${segment.name} (${segment.weight * 100}%)`,
+    meta: { class: { td: 'whitespace-nowrap', th: 'whitespace-nowrap' } },
   }))
   return [
     ...staticHeaders,
     ...segHeaders,
-    { accessorKey: 'averaged_score', header: 'Total Score' },
-    { accessorKey: 'rank', header: 'Rank' },
+    {
+      accessorKey: 'averaged_score',
+      header: 'Total Score',
+      meta: { class: { td: 'whitespace-nowrap', th: 'whitespace-nowrap' } },
+    },
+    {
+      accessorKey: 'rank',
+      header: 'Rank',
+      meta: { class: { td: 'whitespace-nowrap', th: 'whitespace-nowrap' } },
+    },
   ]
 })
 
 const segmentTabsItems = computed(() => {
-  const segTabs = segmentsForTabs.value.map(s => ({
+  const segTabs = segmentsForTabs.value.map((s) => ({
     label: s.name,
     value: String(s.id),
   }))
@@ -228,7 +320,10 @@ const segmentTabsItems = computed(() => {
 })
 
 async function fetchFinalScores() {
-  if (!event.value) { showSnackbar('Event data not available.', 'error'); return }
+  if (!event.value) {
+    showSnackbar('Event data not available.', 'error')
+    return
+  }
   eventsStore.isLoading = true
   try {
     const apiUrl = `/judge/events/${event.value.documentId}/scores`
@@ -239,7 +334,9 @@ async function fetchFinalScores() {
   } catch (e) {
     showSnackbar('Failed to fetch final scores.', 'error')
     console.error(e)
-  } finally { eventsStore.isLoading = false }
+  } finally {
+    eventsStore.isLoading = false
+  }
 }
 
 async function refreshEvent() {
@@ -255,7 +352,11 @@ async function refreshEvent() {
       const scoreParticipantId = score.participant?.documentId
       const scoreJudgeId = score.judge?.documentId
       const scoreCategoryId = score.category?.documentId
-      if (scoreParticipantId === p.documentId && scoreJudgeId === judgeId.value && scoreCategoryId) {
+      if (
+        scoreParticipantId === p.documentId &&
+        scoreJudgeId === judgeId.value &&
+        scoreCategoryId
+      ) {
         scores[scoreCategoryId] = score.value
       }
     })
@@ -267,9 +368,13 @@ async function refreshEvent() {
     activeSegmentTab.value = 'final-rankings'
   } else if (segmentsForTabs.value.length > 0) {
     if (activeSegmentTab.value === 'final-rankings') {
-      activeSegmentTab.value = segmentsForTabs.value[0] ? String(segmentsForTabs.value[0].id) : undefined
+      activeSegmentTab.value = segmentsForTabs.value[0]
+        ? String(segmentsForTabs.value[0].id)
+        : undefined
     } else if (activeSegmentTab.value === null || activeSegmentTab.value === undefined) {
-      activeSegmentTab.value = segmentsForTabs.value[0] ? String(segmentsForTabs.value[0].id) : undefined
+      activeSegmentTab.value = segmentsForTabs.value[0]
+        ? String(segmentsForTabs.value[0].id)
+        : undefined
     }
   } else {
     activeSegmentTab.value = undefined
@@ -302,12 +407,16 @@ watch(showScoringDialog, (newValue) => {
   else startAutoRefresh()
 })
 
-watch(eventId, async (id) => {
-  if (!id) return
-  stopAutoRefresh()
-  await eventsStore.fetchEvent(id)
-  startAutoRefresh()
-}, { immediate: true })
+watch(
+  eventId,
+  async (id) => {
+    if (!id) return
+    stopAutoRefresh()
+    await eventsStore.fetchEvent(id)
+    startAutoRefresh()
+  },
+  { immediate: true }
+)
 
 onMounted(async () => {
   await refreshEvent()
@@ -320,11 +429,16 @@ onUnmounted(() => {
 
 const statusColor = computed(() => {
   switch (event.value?.event_status) {
-    case 'draft': return 'neutral'
-    case 'active': return 'success'
-    case 'inactive': return 'warning'
-    case 'finished': return 'info'
-    default: return 'neutral'
+    case 'draft':
+      return 'neutral'
+    case 'active':
+      return 'success'
+    case 'inactive':
+      return 'warning'
+    case 'finished':
+      return 'info'
+    default:
+      return 'neutral'
   }
 })
 
@@ -337,8 +451,11 @@ const segmentsForTabs = computed(() => {
   if (!event.value?.segments) return []
   const order = ['active', 'inactive', 'closed']
   return event.value.segments
-    .filter((s: SegmentData) =>
-      s.segment_status === 'active' || s.segment_status === 'inactive' || s.segment_status === 'closed'
+    .filter(
+      (s: SegmentData) =>
+        s.segment_status === 'active' ||
+        s.segment_status === 'inactive' ||
+        s.segment_status === 'closed'
     )
     .sort((a, b) => order.indexOf(a.segment_status) - order.indexOf(b.segment_status))
 })

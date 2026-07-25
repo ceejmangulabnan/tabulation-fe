@@ -1,39 +1,64 @@
 <template>
   <UCard>
-    <UTabs v-model="activeGenderTab" :items="genderTabs" class="mb-4" />
+    <UTabs
+      v-model="activeGenderTab"
+      :items="genderTabs"
+      class="mb-4"
+    />
 
-    <div v-for="gender in genders" :key="gender.key">
+    <div
+      v-for="gender in genders"
+      :key="gender.key"
+    >
       <div v-if="activeGenderTab === gender.key">
         <form @submit.prevent="submitScores(segment)">
           <!-- Desktop View -->
           <div class="hidden md:block overflow-x-auto">
-            <table class="w-full border-collapse">
+            <table class="min-w-full table-fixed border-collapse whitespace-nowrap">
               <thead>
                 <tr class="border-b">
-                  <th v-for="header in getTableHeaders(segment)" :key="header.value" class="text-left p-2 font-bold text-sm whitespace-nowrap">
+                  <th
+                    v-for="header in getTableHeaders(segment)"
+                    :key="header.value"
+                    class="text-left p-2 font-bold text-sm whitespace-nowrap"
+                  >
                     <div class="flex items-center gap-1">
-                      <UIcon v-if="getCategoryByHeader(header)?.locked" name="i-lucide-lock" class="size-3" />
+                      <UIcon
+                        v-if="getCategoryByHeader(header)?.locked"
+                        name="i-lucide-lock"
+                        class="size-3"
+                      />
                       {{ header.title }}
                     </div>
                   </th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(item, idx) in getParticipantsByGender(gender.key, segment)" :key="item.id" class="border-b hover:bg-muted/50">
-                  <td class="p-2">{{ idx + 1 }}</td>
-                  <td class="p-2">
+                <tr
+                  v-for="(item, idx) in getParticipantsByGender(gender.key, segment)"
+                  :key="item.id"
+                  class="border-b hover:bg-muted/50"
+                >
+                  <td class="p-2 whitespace-nowrap w-[50px]">{{ idx + 1 }}</td>
+                  <td class="p-2 whitespace-nowrap w-[250px]">
                     <div class="flex items-center gap-2">
                       <img
                         v-if="item.headshot?.formats?.thumbnail?.url"
                         :src="getStrapiUrl(item.headshot.formats.thumbnail.url)"
-                        class="w-10 h-10 rounded-full object-cover cursor-pointer"
+                        class="w-10 h-10 shrink-0 rounded-full object-cover cursor-pointer"
                         @click="showImagePreview(item.headshot.url)"
                       />
-                      <div v-else class="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                      <div
+                        v-else
+                        class="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
+                      >
                         <UIcon name="i-lucide-user" />
                       </div>
                       <UBadge
-                        v-if="item.participant_status === 'eliminated' && item.eliminated_at_segment?.documentId === segment.documentId"
+                        v-if="
+                          item.participant_status === 'eliminated' &&
+                          item.eliminated_at_segment?.documentId === segment.documentId
+                        "
                         color="error"
                         size="xs"
                       >
@@ -42,28 +67,52 @@
                       <span class="font-bold">{{ item.name }}</span>
                     </div>
                   </td>
-                  <td class="p-2">{{ item.department?.name || 'N/A' }}</td>
-                  <td v-for="category in getActiveCategories(segment)" :key="category.documentId" class="p-2">
-                    <div v-if="props.readonly" class="font-medium">
+                  <td class="p-2 whitespace-nowrap">{{ item.department?.name || 'N/A' }}</td>
+                  <td
+                    v-for="category in getActiveCategories(segment)"
+                    :key="category.documentId"
+                    class="p-2 whitespace-nowrap"
+                  >
+                    <div
+                      v-if="props.readonly"
+                      class="font-medium"
+                    >
                       {{ item.scores[category.documentId] ?? '-' }}
                     </div>
                     <UInput
                       v-else
                       :model-value="item.scores[category.documentId] as number"
-                      @update:model-value="(val: any) => item.scores[category.documentId] = val === '' || val === null ? null : Number(val)"
+                      @update:model-value="
+                        (val: any) =>
+                          (item.scores[category.documentId] =
+                            val === '' || val === null ? null : Number(val))
+                      "
                       type="number"
                       :min="isRankingMode ? 1 : 0"
                       :max="isRankingMode ? activeParticipantCount : category.weight * 100"
                       step="1"
                       class="w-20"
-                      :disabled="category.locked || segment.segment_status === 'closed' || segment.segment_status === 'inactive' || item.participant_status === 'eliminated'"
+                      :disabled="
+                        category.locked ||
+                        segment.segment_status === 'closed' ||
+                        segment.segment_status === 'inactive' ||
+                        item.participant_status === 'eliminated'
+                      "
                       @keydown="blockInvalidKeys"
                     />
                   </td>
-                  <td v-if="isAdmin" class="p-2 font-bold">{{ calculateTotalScore(item, segment) }}</td>
+                  <td
+                    v-if="isAdmin"
+                    class="p-2 font-bold"
+                  >
+                    {{ calculateTotalScore(item, segment) }}
+                  </td>
                 </tr>
                 <tr v-if="getParticipantsByGender(gender.key, segment).length === 0">
-                  <td :colspan="getTableHeaders(segment).length" class="p-4 text-center text-muted">
+                  <td
+                    :colspan="getTableHeaders(segment).length"
+                    class="p-4 text-center text-muted"
+                  >
                     No participants found for this gender.
                   </td>
                 </tr>
@@ -84,14 +133,20 @@
                   class="w-10 h-10 rounded-full object-cover cursor-pointer"
                   @click="showImagePreview(item.headshot.url)"
                 />
-                <div v-else class="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                <div
+                  v-else
+                  class="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
+                >
                   <UIcon name="i-lucide-user" />
                 </div>
                 <div class="flex-1">
                   <div class="font-bold flex items-center gap-2">
                     {{ item.name }}
                     <UBadge
-                      v-if="item.participant_status === 'eliminated' && item.eliminated_at_segment?.documentId === segment.documentId"
+                      v-if="
+                        item.participant_status === 'eliminated' &&
+                        item.eliminated_at_segment?.documentId === segment.documentId
+                      "
                       color="error"
                       size="xs"
                     >
@@ -102,23 +157,47 @@
                 </div>
               </div>
 
-              <div v-for="category in getActiveCategories(segment)" :key="category.documentId" class="flex items-center justify-between py-2 border-t">
+              <div
+                v-for="category in getActiveCategories(segment)"
+                :key="category.documentId"
+                class="flex items-center justify-between py-2 border-t"
+              >
                 <div class="text-sm">
-                  <UIcon v-if="category.locked" name="i-lucide-lock" class="size-3 mr-1" />
+                  <UIcon
+                    v-if="category.locked"
+                    name="i-lucide-lock"
+                    class="size-3 mr-1"
+                  />
                   {{ category.name }}
-                  <template v-if="!isRankingMode">({{ (category.weight * 100).toFixed(0) }}%)</template>
+                  <template v-if="!isRankingMode">
+                    ({{ (category.weight * 100).toFixed(0) }}%)
+                  </template>
                 </div>
-                <div v-if="props.readonly" class="font-bold">{{ item.scores[category.documentId] ?? '-' }}</div>
+                <div
+                  v-if="props.readonly"
+                  class="font-bold"
+                >
+                  {{ item.scores[category.documentId] ?? '-' }}
+                </div>
                 <UInput
                   v-else
                   :model-value="item.scores[category.documentId] as number"
-                  @update:model-value="(val: any) => item.scores[category.documentId] = val === '' || val === null ? null : Number(val)"
+                  @update:model-value="
+                    (val: any) =>
+                      (item.scores[category.documentId] =
+                        val === '' || val === null ? null : Number(val))
+                  "
                   type="number"
                   :min="isRankingMode ? 1 : 0"
                   :max="isRankingMode ? activeParticipantCount : category.weight * 100"
                   step="1"
                   class="w-20"
-                  :disabled="category.locked || segment.segment_status === 'closed' || segment.segment_status === 'inactive' || item.participant_status === 'eliminated'"
+                  :disabled="
+                    category.locked ||
+                    segment.segment_status === 'closed' ||
+                    segment.segment_status === 'inactive' ||
+                    item.participant_status === 'eliminated'
+                  "
                 />
               </div>
 
@@ -131,8 +210,16 @@
             </UCard>
           </div>
 
-          <div v-if="!props.readonly" class="flex justify-end gap-2 mt-4">
-            <UButton label="Cancel" color="neutral" variant="ghost" @click="$emit('cancel-scoring')" />
+          <div
+            v-if="!props.readonly"
+            class="flex justify-end gap-2 mt-4"
+          >
+            <UButton
+              label="Cancel"
+              color="neutral"
+              variant="ghost"
+              @click="$emit('cancel-scoring')"
+            />
             <UButton
               v-if="segment.segment_status !== 'closed'"
               label="Submit Scores"
@@ -265,7 +352,7 @@ function getActiveCategories(segment: SegmentData) {
 function getCategoryByHeader(header: { title: string; value: string }) {
   if (!header.value.startsWith('category_')) return null
   const docId = header.value.replace('category_', '')
-  return getActiveCategories(props.segment).find(c => c.documentId === docId)
+  return getActiveCategories(props.segment).find((c) => c.documentId === docId)
 }
 
 function getTableHeaders(segment: SegmentData) {
@@ -392,16 +479,18 @@ async function submitScores(segment: SegmentData) {
         }
       } else {
         if (scoreValue !== null && scoreValue !== undefined && String(scoreValue) !== '') {
-          promises.push(api.post('/scores/create', {
-            data: {
-              value: scoreValue,
-              participant: p.documentId,
-              category: category.documentId,
-              judge: props.judgeId,
-              event: props.event.documentId,
-              segment: segment.documentId,
-            },
-          }))
+          promises.push(
+            api.post('/scores/create', {
+              data: {
+                value: scoreValue,
+                participant: p.documentId,
+                category: category.documentId,
+                judge: props.judgeId,
+                event: props.event.documentId,
+                segment: segment.documentId,
+              },
+            })
+          )
         }
       }
     }
