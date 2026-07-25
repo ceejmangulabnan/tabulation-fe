@@ -6,7 +6,7 @@
         <!-- HEADER -->
         <header class="header">
           <img
-            src="/logo.png"
+            src="/ginoo_ning_sta_ana_logo_clean.png"
             width="100"
             height="100"
             class="logo"
@@ -77,20 +77,25 @@
     <!-- PAGE 2 -->
     <section class="page">
       <div class="content center bottom-margin">
-        <h1 class="event-org-large">St. Nicolas College of Business and Technology</h1>
+        <!-- <h1 class="event-org-large">St. Nicolas College of Business and Technology</h1>
 
         <img
           src="/logo.png"
           class="logo-large"
+        /> -->
+        <h1 class="event-org-large">Ginoo ning Sta. Ana 2026</h1>
+        <img
+          src="/ginoo_ning_sta_ana_logo_clean.png"
+          class="logo-med"
         />
-
         <h3 class="title">
           {{
             gender === 'both'
-              ? 'MALE & FEMALE PARTICIPANTS'
+              ? 'ALL PARTICIPANTS'
               : `${gender.toUpperCase()} PARTICIPANTS`
           }}
         </h3>
+      
         <h3 class="title">{{ title }}</h3>
       </div>
     </section>
@@ -203,6 +208,13 @@ defineExpose({ generatePdf })
 .logo {
   margin-right: 16px;
 }
+
+
+.logo-med {
+  width: 100px;
+  margin: 1.2rem 0;
+}
+
 
 .logo-large {
   width: 350px;
