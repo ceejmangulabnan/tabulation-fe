@@ -116,7 +116,7 @@
                 <img
                   v-if="row.original.headshot"
                   :src="getStrapiUrl(row.original.headshot)"
-                  class="w-16 h-16 rounded-full object-cover cursor-pointer"
+                  class="w-16 h-16 rounded-full object-cover cursor-pointer shrink-0"
                   @click="showImagePreview(row.original.headshot)"
                 />
                 <div
@@ -221,7 +221,7 @@
               <img
                 v-if="row.original.headshot"
                 :src="getStrapiUrl(row.original.headshot)"
-                class="w-16 h-16 rounded-full object-cover cursor-pointer"
+                class="w-16 h-16 rounded-full object-cover cursor-pointer shrink-0"
                 @click="showImagePreview(row.original.headshot)"
               />
               <div

@@ -18,6 +18,7 @@ export default defineNuxtConfig({
     public: {
       strapiUrl: process.env.NUXT_PUBLIC_STRAPI_URL || 'http://localhost:1337',
       appUrl: process.env.NUXT_PUBLIC_APP_URL || 'http://localhost:3000',
+      minScoreCap: process.env.NUXT_PUBLIC_MIN_SCORE_CAP === 'true',
     },
   },
 })

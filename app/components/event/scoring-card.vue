@@ -88,9 +88,9 @@
                             val === '' || val === null ? null : Number(val))
                       "
                       type="number"
-                      :min="isRankingMode ? 1 : 0"
+                      :min="getCategoryMin(category)"
                       :max="isRankingMode ? activeParticipantCount : category.weight * 100"
-                      step="1"
+                      :step="isRankingMode ? 1 : 'any'"
                       class="w-20"
                       :disabled="
                         category.locked ||
@@ -188,9 +188,9 @@
                         val === '' || val === null ? null : Number(val))
                   "
                   type="number"
-                  :min="isRankingMode ? 1 : 0"
+                  :min="getCategoryMin(category)"
                   :max="isRankingMode ? activeParticipantCount : category.weight * 100"
-                  step="1"
+                  :step="isRankingMode ? 1 : 'any'"
                   class="w-20"
                   :disabled="
                     category.locked ||
@@ -320,6 +320,15 @@ const activeParticipantCount = computed(() => {
 })
 
 const isRankingMode = computed(() => props.segment.scoring_mode === 'ranking')
+
+const config = useRuntimeConfig()
+
+function getCategoryMin(category: CategoryData): number {
+  if (isRankingMode.value) return 1
+  if (!config.public.minScoreCap) return 0
+  const categoryMax = category.weight * 100
+  return Math.floor(categoryMax / 2)
+}
 
 function getStrapiUrl(url: string) {
   const config = useRuntimeConfig()
